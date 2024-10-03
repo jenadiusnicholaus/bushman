@@ -25,6 +25,8 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls')),
     path(f'api/{API_VERSION}/authentication/', include('authentication.urls')),
     path(f'api/{API_VERSION}/hunter/', include('hunter.urls')),
+    # bm_hunting_setting
+    path(f'api/{API_VERSION}/bm-hunting-seettings/', include('bm_hunting_settings.urls')),
 
 ]
 

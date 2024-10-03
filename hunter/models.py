@@ -1,195 +1,160 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django_countries.fields import CountryField
+from django.utils import timezone
 
-# himting settings  
-class Species(models.Model):
-    name = models.CharField(max_length=100)
-    description = models.TextField()    
-
-    class Meta:
-        verbose_name_plural = 'Species'
-        db_table = 'bm_species'
-
-    def __str__(self):
-        return self.name
-    
-# himting settings  
-class HuntingBlock(models.Model):
-    name = models.CharField(max_length=100)
-    description = models.TextField()
-    start_date = models.DateField()
-    end_date = models.DateField()
-    class Meta:
-        verbose_name_plural = 'Hunting Blocks'
-        db_table = 'bm_hunting_blocks'
-
-    def __str__(self):
-        return self.name
-# himting settings  
-class Quota(models.Model):
-    name = models.CharField(max_length=100)
-    description = models.TextField()
-    start_date = models.DateField()
-    end_date = models.DateField()
-    species = models.ForeignKey(Species, on_delete=models.CASCADE, related_name='quotas')
-    hunting_limit = models.IntegerField(default=0)
-    hunting_block = models.ForeignKey(HuntingBlock, on_delete=models.CASCADE, related_name='quotas')
-    class Meta:
-        verbose_name_plural = 'Quotas'
-        db_table = 'bm_quotas'
-
-    def __str__(self):  
-
-        return self.name
+from bm_hunting_settings.models import Package
 
 
-# Hunter Information:
-# Hunter Name
-# Passport Number
-# Passport Copy (attached)
-# Passport Photo (attached)
-
-class Hunter(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='hunter')
-    passport_number = models.CharField(max_length=100)
-    passport_copy = models.FileField(upload_to='passport_copy/')
-    passport_photo = models.ImageField(upload_to='passport_photo/')
+class ClientType(models.Model):
+    TYPE_CHOICES = (        
+        ('Hunter', 'Hunter'),
+        ('Companion', 'Companion'),
+        ('Observer', 'Observer'),
+        )    
+    client_type = models.CharField(max_length=100, choices=TYPE_CHOICES)
 
     class Meta:
-        verbose_name_plural = 'Hunters'
-        db_table = 'bm_hunters'    
+        verbose_name_plural = 'Client Types'        
+        db_table = 'client_types'
 
     def __str__(self):
-        return self.user.username   
-    
-
-# Observer Information:
-# Observer Name
-# Passport Number
-# Observer’s Passport Copy (attached)
-
-    
-class Observer(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='observer')
-    observer_name = models.CharField(max_length=100)
-    passport_number = models.CharField(max_length=100)
-    passport_copy = models.FileField(upload_to='passport_copy/')
-
-    class Meta: 
-        verbose_name_plural = 'Observers'
-        db_table = 'bm_observers'
+        return self.client_type
 
 
+class Client(models.Model):
+    passport_number = models.CharField(max_length=100, unique=True)
+    client_type = models.ForeignKey(ClientType, on_delete=models.CASCADE, related_name='clients', null=True, blank=True)
+    first_name = models.CharField(max_length=100, null=True, blank=True)
+    last_name = models.CharField(max_length=100, null=True, blank=True)
+    email_address = models.EmailField(max_length=100, null=True, blank=True)
+    phone_number = models.CharField(max_length=100, null=True, blank=True)
+    country = CountryField(null=True,)
+    address = models.CharField(max_length=100, null=True, blank=True)
+    city = models.CharField(max_length=100, null=True, blank=True)
+    state = models.CharField(max_length=100, null=True, blank=True)
+    create_date = models.DateTimeField(default=timezone.now)    
+    updated_date = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'clients'    
 
     def __str__(self):
-        return self.user.username 
+        return self.first_name
+
+
+
+
+
+    
+class ClientDocument(models.Model):
+
+    DocTYpe = ( 
+        ('Passport_Copy', 'Travel Packet(Passport Copy)'),
+        ("Passport_Photo", "Travel Packet(Passport  Photo"),
+        ('Visa', 'Visa'),
+        ('Gun Permits', 'Gun Permits'),
+        ('CITES Documentation', 'CITES Documentation'),
+    )    
+    document_type = models.CharField(max_length=100, choices=DocTYpe)
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='hunder_documents')
+    document = models.FileField(upload_to='documents/')
+    class Meta:
+        verbose_name_plural = 'Client Documents'
+        db_table = 'client_documents'
+
+    def __str__(self):
+       return self.client.first_name + " - " + self.document_type + " - " + self.document.name
     
 
-#  Hunting Safari package
-# Regular Safari
-# Premium Safari
-# Major Safari
+class Weapon(models.Model):   
+    weapon_type = models.CharField(max_length=100)
+    owner = models.CharField(max_length=100)
+    brand = models.CharField(max_length=100)
+    caliber = models.CharField(max_length=100)
+    serial_number = models.CharField(max_length=100)
+    ammo_quantity = models.IntegerField(default=0)
+    maker_number = models.CharField(max_length=100)
+    weapon_owner = models.CharField(max_length=100)
+    class Meta:
+        verbose_name_plural = 'Weapons'
+        db_table = 'weapons'
 
-# himting settings  
-class SafariPackageType(models.Model):
-    TYPES_CHOICES = (
-        ('Regular', 'Regular Safari'     ),
-        ('Premium', 'Premium Safari'),
-        ('Major', 'Major Safari'),
+    def __str__(self):
+        return self.owner + " - " + self.brand + " - " + self.caliber + " - " + self.serial_number + " - " + str(self.ammo_quantity) + " - " + self.maker_number + " - " + self.weapon_owner
+    
+
+
+class HunterItinerary(models.Model):
+    hunter = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='hunter_itinerary')
+    airport_arrival = models.CharField(max_length=100)
+    airport_departure = models.CharField(max_length=100)
+    charter_flight_arrangements = models.TextField()
+    hotel_bookings = models.TextField(
+        help_text="Number of rooms and types required"
     )
+    arrival_date = models.DateField()
+    departure_date = models.DateField()
+    class Meta:
+        verbose_name_plural = 'client Itineraries'
+        # db_table = 'client_itineraries'
+
+    def __str__(self):
+        return self.hunter.user.username + " - " + self.airport_arrival + " - " + self.airport_departure + " - " + self.charter_flight_arrangements + " - " + self.hotel_bookings + " - " + str(self.arrival_date) + " - " + str(self.departure_date)
     
-    name = models.CharField(max_length=100, choices=TYPES_CHOICES)
 
+
+class ClientPreferences(models.Model):
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='client_preferences')
+    food_preferences = models.TextField()
+    beverage_preferences = models.TextField()
+    allergies = models.TextField()
+    alcohol_preferences = models.TextField()
+    clothing_gear_needs = models.TextField()
+    special_requests = models.TextField()
     class Meta:
-        verbose_name_plural = 'Safari Package Types'
-        db_table = 'bm_safari_package_types'
+        verbose_name_plural = 'Client Preferences'
+        db_table = 'client_preferences'
 
 
     def __str__(self):
-        return self.name  
+        return self.client.first_name + " - " + self.food_preferences + " - " + self.beverage_preferences + " - " + self.allergies + " - " + self.alcohol_preferences + " - " + self.clothing_gear_needs + " - " + self.special_requests
     
-# himting settings  
-class SafariPackageHuntingSpeciesLimit(models.Model):
-    package_type = models.ForeignKey(SafariPackageType, on_delete=models.CASCADE, related_name='limits_species')
-    species = models.ForeignKey(Species, on_delete=models.CASCADE, related_name='limits_species')
-    hunting_limit = models.IntegerField(default=0)
-
-    class Meta:
-        verbose_name_plural = 'Safari Package Hunting Species Limits'
-        db_table = 'bm_safari_package_hunting_species_limits'
-
-    def __str__(self):
-        return self.package_type.name + " - " + self.species.name + " - " + str(self.hunting_limit)
-
-
-# himting settings  
-class HuntingType(models.Model):
-    TYPE_CHOICES = (
-        ('1x1', '1x1'),
-        ('2x1', '2x1'),
-        ('3x1', '3x1'),
-        ('4x1', '4x1'),
-        ('5x1', '5x1'),
-        ('6x1', '6x1'),
-        ('7x1', '7x1'),
-        ('8x1', '8x1'),
-        ('9x1', '9x1'),
-        ('10x1', '10x1'),
-    )
-    name = models.CharField(max_length=100, choices=TYPE_CHOICES)
-    description = models.TextField()
-
-    class Meta:
-     
-        verbose_name_plural = 'Hunting Types'
-        db_table = 'bm_hunting_types'
-
-    def __str__(self):
-        return self.name
+class ClinetSalesOrder(models.Model):
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='sales_orders')
+    order_number = models.CharField(max_length=100)
+    order_date = models.DateField()
     
-# himting settings  
-class HuntingDays(models.Model):
-    days_in_number = models.IntegerField(default=0)
+    package = models.ManyToManyField(Package, related_name='sales_order_package')
     class Meta:
-        verbose_name_plural = 'Hunting Days'
-        db_table = 'bm_hunting_days'
+        verbose_name_plural = 'Sales Orders'
+        db_table = 'client_sales_orders'
+    def __str__(self):
+        return self.client.first_name + " - " + self.order_number + " - " + str(self.order_date)
+
+
+
+# hunting settings  
+class HuntingClientLicense(models.Model):
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='hunting_license')
+    license_number = models.CharField(max_length=100)
+    issue_date = models.DateField()
+    expiry_date = models.DateField()
+    licence_document = models.FileField(upload_to='documents/')
+    class Meta:
+        verbose_name_plural = 'Hunting Licenses'
+        db_table = 'client_hunting_licenses'
 
     def __str__(self):
-        return str(self.day_in_number)
-    
-# himting settings  
-class BushmanHuntingScope(models.Model):
-    """
-    Determine by Quota and number of species remaning in quota and Busman Hunting  strategic plan
-    """
-    block = models.ForeignKey(HuntingBlock, on_delete=models.CASCADE, related_name='bushman_hunting_scope')
-    species = models.ForeignKey(Species, on_delete=models.CASCADE, related_name='bushman_hunting_scope')
-    hunting_limit = models.IntegerField(default=0)
-    class Meta:
-        verbose_name_plural = 'Bushman Hunting Scopes'
-        db_table = 'bm_bushman_hunting_scopes'
-
-    def __str__(self):
-        return self.block.name + " - " + self.species.name + " - " + str(self.hunting_limit)
+        return self.client.first_name + " - " + self.license_number + " - " + str(self.issue_date) + " - " + str(self.expiry_date) + " - " + self.licence_document.name
 
 
 
-class HunterHuntingDetails(models.Model):
-    hunter = models.ForeignKey(Hunter, on_delete=models.CASCADE, related_name='hunting_details')
-    hunting_block = models.ForeignKey(HuntingBlock, on_delete=models.CASCADE, related_name='hunting_block')
-    outfitter = models.CharField(max_length=100)
-    hunt_days = models.ForeignKey(HuntingDays, on_delete=models.CASCADE, related_name='hunt_days')
-    hunt_type = models.ForeignKey(HuntingType, on_delete=models.CASCADE, related_name='hunting_type')
-    species_to_be_hunted = models.ManyToManyField(
-        BushmanHuntingScope
-    )
-    start_date = models.DateField()
-    end_date = models.DateField()
-    class Meta:
-        verbose_name_plural = 'Hunt Details'
-        db_table = 'bm_hunt_details'
-    def __str__(self):
-        return self.hunter.user.username
+
+
+
+
+
             
 
 
