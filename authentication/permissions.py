@@ -8,6 +8,7 @@ class IsValidLogin(permissions.BasePermission):
     """
 
     def has_permission(self, request, view):
+          
         try:
             user = User.objects.get(id=request.user.id)
             if user.is_active:
