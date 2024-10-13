@@ -6,10 +6,22 @@ import logging
 from rest_framework import viewsets
 
 from authentication.permissions import IsAdmin
-from bm_hunting_settings.models import HuntingBlock, Species
+from bm_hunting_settings.models import (
+    AccommodationType,
+    Country,
+    HuntingArea,
+    Nationalities,
+    QuotaHutingAreaSpecies,
+    Species,
+)
 from bm_hunting_settings.serializers import (
+    CountrySerializeers,
     EntityCategoriesSerializer,
-    GetHuntingBlockSerializer,
+    GetAccommodationTypeSerializer,
+    GetContactTypeSerializer,
+    GetPaymentMethodSerializer,
+    HutingAreaSerializers,
+    NationalitiesSerializeers,
     SpeciesSerializer,
 )
 from rest_framework.response import Response
@@ -18,15 +30,42 @@ from django_countries import countries
 
 from rest_framework.decorators import api_view
 
-from sales.models import EntityCategories
+from sales.models import ContactType, EntityCategories, PaymentMethod
 
 logger = logging.getLogger(__name__)
 
 
 @api_view(["GET"])
 def country_list(request):
-    country_choices = [{"code": code, "name": name} for code, name in countries]
-    return Response(country_choices)
+    country_choices = Country.objects.all()
+    serializers = CountrySerializeers(country_choices, many=True)
+    return Response(serializers.data)
+
+
+@api_view(["GET"])
+def nationalities(request):
+    country_choices = Nationalities.objects.all()
+    serializers = NationalitiesSerializeers(country_choices, many=True)
+    return Response(serializers.data)
+
+
+@api_view(["GET"])
+def contactTypes(request):
+    contact_types = ContactType.objects.all()
+    serializers = GetContactTypeSerializer(contact_types, many=True)
+
+    return Response(serializers.data)
+
+
+class AccommodationTypeViewSets(viewsets.ModelViewSet):
+    queryset = AccommodationType.objects.all()
+    serializer_class = GetAccommodationTypeSerializer
+    permission_classes = [IsAuthenticated]
+
+
+class PaymentMethodViewSets(viewsets.ModelViewSet):
+    queryset = PaymentMethod.objects.all()
+    serializer_class = GetPaymentMethodSerializer
 
 
 class SpeciesListView(viewsets.ModelViewSet):
@@ -77,11 +116,13 @@ class EntityCateriesView(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-class HuntingBlockView(viewsets.ModelViewSet):
-    queryset = HuntingBlock.objects.all()
-    serializer_class = GetHuntingBlockSerializer
+class HutingAreaViewSets(viewsets.ModelViewSet):
+    serializer_class = HutingAreaSerializers
+    queryset = HuntingArea.objects.all()
     permission_classes = [IsAuthenticated]
 
-    def list(self, request):
-        countries_list = list(countries)
-        return Response(countries_list)
+    def list(self, request, *args, **kwargs):
+        # get all huting areas
+        querySet = self.get_queryset()
+        serializer = self.get_serializer(querySet, many=True)
+        return Response(serializer.data)

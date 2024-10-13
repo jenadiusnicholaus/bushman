@@ -226,7 +226,7 @@ CORS_ALLOW_CREDENTIALS = True
 #     },
 # }
 
-
+# https://gist.github.com/zamai/8e0d30a7f23f33e9c220c20db71c80dc
 NATIONALITIES = [
     "Afghan",
     "Albanian",

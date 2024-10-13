@@ -4,10 +4,10 @@ from django.utils import timezone
 
 from authentication.models import UserProfile
 from bm_hunting_settings.models import (
-    HuntingBlock,
+    # HuntingBlock,
     HuntingType,
     IdentityType,
-    Package,
+    # Package,
     SafariPackageType,
     Species,
 )
@@ -185,135 +185,133 @@ class ClientPreferences(models.Model):
         )
 
 
-class ClientCustomizablePackage(models.Model):
-    package_type = models.ForeignKey(
-        SafariPackageType,
-        on_delete=models.CASCADE,
-        related_name="customizable_packages",
-        null=True,
-        blank=True,
-    )
-    hunting_type = models.ForeignKey(
-        HuntingType,
-        on_delete=models.CASCADE,
-        related_name="customizable_packages",
-        null=True,
-    )
-    hunting_block = models.ForeignKey(
-        HuntingBlock,
-        on_delete=models.CASCADE,
-        related_name="customizable_packages",
-        null=True,
-    )
-    number_of_hunters = models.IntegerField(
-        default=0,
-        null=True,
-    )
-    number_of_days = models.IntegerField(
-        default=0,
-        null=True,
-    )
-    create_date = models.DateTimeField(
-        default=timezone.now,
-        null=True,
-    )
-    updated_date = models.DateTimeField(
-        auto_now=True,
-        null=True,
-    )
+# class ClientCustomizablePackage(models.Model):
+#     package_type = models.ForeignKey(
+#         SafariPackageType,
+#         on_delete=models.CASCADE,
+#         related_name="customizable_packages",
+#         null=True,
+#         blank=True,
+#     )
+#     hunting_type = models.ForeignKey(
+#         HuntingType,
+#         on_delete=models.CASCADE,
+#         related_name="customizable_packages",
+#         null=True,
+#     )
+#     hunting_block = models.ForeignKey(
+#         HuntingBlock,
+#         on_delete=models.CASCADE,
+#         related_name="customizable_packages",
+#         null=True,
+#     )
+#     number_of_hunters = models.IntegerField(
+#         default=0,
+#         null=True,
+#     )
+#     number_of_days = models.IntegerField(
+#         default=0,
+#         null=True,
+#     )
+#     create_date = models.DateTimeField(
+#         default=timezone.now,
+#         null=True,
+#     )
+#     updated_date = models.DateTimeField(
+#         auto_now=True,
+#         null=True,
+#     )
 
-    class Meta:
-        verbose_name_plural = "Client Customizable Packages"
-        db_table = "client_customizable_packages"
+#     class Meta:
+#         verbose_name_plural = "Client Customizable Packages"
+#         db_table = "client_customizable_packages"
 
-    def __str__(self):
-        return (
-            self.package_type.package_name
-            + " - "
-            + self.hunting_type.hunting_type_name
-            + " - "
-            + self.hunting_block.block_name
-            + " - "
-            + str(self.number_of_hunters)
-            + " - "
-            + str(self.number_of_days)
-            + " - "
-            + str(self.create_date)
-            + " - "
-            + str(self.updated_date)
-        )
-
-
-class ClientSalesOrder(models.Model):
-    ORDER_STATUS = (
-        ("Pending", "Pending"),
-        ("Confirmed", "Confirmed"),
-        ("Completed", "Completed"),
-    )
-    order_number = models.UUIDField(
-        primary_key=True, default=uuid.uuid4, editable=False
-    )
-    client = models.ForeignKey(
-        Client,
-        on_delete=models.CASCADE,
-        related_name="main_client_sales_orders",
-        null=True,
-        blank=True,
-    )
-
-    order_date = models.DateField(null=True)  # Removed auto_created
-    pre_def_package = models.ManyToManyField(Package)
-    package_customized = models.BooleanField(default=False)
-    customizable_package = models.ForeignKey(
-        ClientCustomizablePackage, on_delete=models.CASCADE, null=True, blank=True
-    )
-    confirm_date = models.DateField(null=True)
-    status = models.CharField(max_length=10, choices=ORDER_STATUS, default="Pending")
-    total_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True)
-    payment_status = models.CharField(max_length=100, null=True)
-    payment_date = models.DateField(null=True)
-    payment_document = models.FileField(upload_to="documents/", null=True, blank=True)
-
-    class Meta:
-        verbose_name_plural = "Client Sales Orders"
-        db_table = "client_sales_orders"
-
-    def __str__(self):
-        return f"{self.client.first_name} - {self.order_number} - {self.order_date}"
-
-    class Meta:
-        verbose_name_plural = "Sales Orders"
-        db_table = "client_sales_orders"
-
-    def __str__(self):
-        return f"{self.client.first_name} - {self.order_number} - {self.order_date}"
+#     def __str__(self):
+#         return (
+#             self.package_type.package_name
+#             + " - "
+#             + self.hunting_type.hunting_type_name
+#             + " - "
+#             + self.hunting_block.block_name
+#             + " - "
+#             + str(self.number_of_hunters)
+#             + " - "
+#             + str(self.number_of_days)
+#             + " - "
+#             + str(self.create_date)
+#             + " - "
+#             + str(self.updated_date)
+#         )
 
 
-# hunting settings
-class HuntingClientLicense(models.Model):
-    client = models.ForeignKey(
-        Client, on_delete=models.CASCADE, related_name="hunting_license"
-    )
-    license_number = models.CharField(max_length=100)
-    issue_date = models.DateField()
-    expiry_date = models.DateField()
-    licence_document = models.FileField(upload_to="documents/")
+# class ClientSalesOrder(models.Model):
+#     ORDER_STATUS = (
+#         ("Pending", "Pending"),
+#         ("Confirmed", "Confirmed"),
+#         ("Completed", "Completed"),
+#     )
+#     order_number = models.UUIDField(
+#         primary_key=True, default=uuid.uuid4, editable=False
+#     )
+#     client = models.ForeignKey(
+#         Client,
+#         on_delete=models.CASCADE,
+#         related_name="main_client_sales_orders",
+#         null=True,
+#         blank=True,
+#     )
 
-    class Meta:
-        verbose_name_plural = "Hunting Licenses"
-        db_table = "client_hunting_licenses"
+#     order_date = models.DateField(null=True)  # Removed auto_created
+#     pre_def_package = models.ManyToManyField(Package)
+#     package_customized = models.BooleanField(default=False)
+#     customizable_package = models.ForeignKey(
+#         ClientCustomizablePackage, on_delete=models.CASCADE, null=True, blank=True
+#     )
+#     confirm_date = models.DateField(null=True)
+#     status = models.CharField(max_length=10, choices=ORDER_STATUS, default="Pending")
+#     total_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True)
+#     payment_status = models.CharField(max_length=100, null=True)
+#     payment_date = models.DateField(null=True)
+#     payment_document = models.FileField(upload_to="documents/", null=True, blank=True)
 
-    def __str__(self):
-        return (
-            self.client.first_name
-            + " - "
-            + self.license_number
-            + " - "
-            + str(self.issue_date)
-            + " - "
-            + str(self.expiry_date)
-            + " - "
-            + self.licence_document.name
-        )
+#     class Meta:
+#         verbose_name_plural = "Client Sales Orders"
+#         db_table = "client_sales_orders"
+
+#     def __str__(self):
+#         return f"{self.client.first_name} - {self.order_number} - {self.order_date}"
+
+#     class Meta:
+#         verbose_name_plural = "Sales Orders"
+#         db_table = "client_sales_orders"
+
+#     def __str__(self):
+#         return f"{self.client.first_name} - {self.order_number} - {self.order_date}"
 
 
+# # hunting settings
+# class HuntingClientLicense(models.Model):
+#     client = models.ForeignKey(
+#         Client, on_delete=models.CASCADE, related_name="hunting_license"
+#     )
+#     license_number = models.CharField(max_length=100)
+#     issue_date = models.DateField()
+#     expiry_date = models.DateField()
+#     licence_document = models.FileField(upload_to="documents/")
+
+#     class Meta:
+#         verbose_name_plural = "Hunting Licenses"
+#         db_table = "client_hunting_licenses"
+
+#     def __str__(self):
+#         return (
+#             self.client.first_name
+#             + " - "
+#             + self.license_number
+#             + " - "
+#             + str(self.issue_date)
+#             + " - "
+#             + str(self.expiry_date)
+#             + " - "
+#             + self.licence_document.name
+#         )

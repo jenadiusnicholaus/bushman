@@ -16,7 +16,5 @@ class Command(BaseCommand):
             except Nationalities.DoesNotExist:
                 raise CommandError('Nationalities "%s" does not exist' % name)
 
-            nationalities.opened = False
-            nationalities.save()
 
             self.stdout.write(self.style.SUCCESS('Added Nationalities "%s"' % name))

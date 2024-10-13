@@ -1,6 +1,12 @@
 from rest_framework import serializers
-from bm_hunting_settings.models import HuntingBlock, Species
-from sales.models import EntityCategories, EntityCategory
+from bm_hunting_settings.models import (
+    AccommodationType,
+    Country,
+    HuntingArea,
+    Nationalities,
+    Species,
+)
+from sales.models import ContactType, EntityCategories, EntityCategory, PaymentMethod
 
 
 class SpeciesSerializer(serializers.ModelSerializer):
@@ -21,26 +27,42 @@ class CreateEntityCategorySerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-# =============enting EntityCategorySerializer========
-class GetHuntingBlockSerializer(serializers.ModelSerializer):
+class CountrySerializeers(serializers.ModelSerializer):
     class Meta:
-        model = HuntingBlock
+        model = Country
         fields = "__all__"
 
 
-class CreateHuntingBlockSerializer(serializers.ModelSerializer):
+class NationalitiesSerializeers(serializers.ModelSerializer):
     class Meta:
-        model = HuntingBlock
+        model = Nationalities
         fields = "__all__"
 
 
-class UpdateHuntingBlockSerializer(serializers.ModelSerializer):
+# --- contact types ---
+class GetContactTypeSerializer(serializers.ModelSerializer):
     class Meta:
-        model = HuntingBlock
+        model = ContactType
         fields = "__all__"
 
 
-class SpeciesSerializer(serializers.ModelSerializer):
+# --- accommodation  types---
+
+
+class GetAccommodationTypeSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Species
+        model = AccommodationType
+        fields = "__all__"
+
+
+class GetPaymentMethodSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PaymentMethod
+        fields = "__all__"
+
+
+# -----------hunting area serializers-
+class HutingAreaSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = HuntingArea
         fields = "__all__"

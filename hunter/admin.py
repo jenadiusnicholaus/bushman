@@ -4,7 +4,7 @@ from .models import (
     Weapon,
     clientItinerary,
     # ClientDocument,
-    ClientSalesOrder,
+    # ClientSalesOrder,
     Observer,
     Companion,
     # Entity,
@@ -12,21 +12,21 @@ from .models import (
     # EntityCategory,
 )
 from bm_hunting_settings.models import (
-    HuntingBlock,
+    # HuntingBlock,
     Species,
     HuntingType,
     SafariPackageType,
 )
 
 # admin.site.register(Client)
-admin.site.register(HuntingBlock)
+# admin.site.register(HuntingBlock)
 admin.site.register(Species)
 admin.site.register(HuntingType)
 admin.site.register(SafariPackageType)
 admin.site.register(Weapon)
 admin.site.register(clientItinerary)
 # admin.site.register(ClientDocument)
-admin.site.register(ClientSalesOrder)
+# admin.site.register(ClientSalesOrder)
 # admin.site.register(Observer)
 # admin.site.register(Companion)
 # admin.site.register(Entity)
