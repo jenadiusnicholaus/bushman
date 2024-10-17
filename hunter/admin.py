@@ -15,14 +15,13 @@ from bm_hunting_settings.models import (
     # HuntingBlock,
     Species,
     HuntingType,
-    SafariPackageType,
+    # RegulatoryHuntingpackage,
 )
 
 # admin.site.register(Client)
 # admin.site.register(HuntingBlock)
-admin.site.register(Species)
-admin.site.register(HuntingType)
-admin.site.register(SafariPackageType)
+# admin.site.register(HuntingType)
+# admin.site.register(SafariPackageType)
 admin.site.register(Weapon)
 admin.site.register(clientItinerary)
 # admin.site.register(ClientDocument)

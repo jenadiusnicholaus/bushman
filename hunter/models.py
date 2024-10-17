@@ -8,7 +8,7 @@ from bm_hunting_settings.models import (
     HuntingType,
     IdentityType,
     # Package,
-    SafariPackageType,
+    # SafariPackageType,
     Species,
 )
 import uuid

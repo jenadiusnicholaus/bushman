@@ -32,7 +32,7 @@ router.register(
     basename="sales_inquiry_preferences",
 )
 router.register(
-    r"sales-quotas-huting-area-species-vset",
+    r"sales-quotas-hunting-area-species-vset",
     QuotaHutingAreaSpeciesViewSets,
     basename="sales_quotas_huting_area_species",
 )

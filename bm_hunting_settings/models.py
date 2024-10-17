@@ -8,6 +8,20 @@ from django.utils import timezone
 from django_countries.fields import CountryField
 
 
+class Currency(models.Model):
+    name = models.CharField(max_length=100)
+    symbol = models.CharField(max_length=10)
+    create_date = models.DateTimeField(default=timezone.now)
+    updated_date = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "Currencies"
+        db_table = "currencies"
+
+    def __str__(self):
+        return self.name
+
+
 # hunting settings
 class Quota(models.Model):
     user = models.ForeignKey(
@@ -94,7 +108,7 @@ class LocationType(models.Model):
 
 
 class GeoLocationCoordinates(models.Model):
-    point_type = (
+    POINTYPE = (
         ("Point", "Point"),
         ("LineString", "LineString"),
         ("Polygon", "Polygon"),
@@ -103,10 +117,10 @@ class GeoLocationCoordinates(models.Model):
         ("MultiPolygon", "MultiPolygon"),
     )
 
-    point_type = models.CharField(max_length=100, null=True, blank=True)
+    coordinates_type = models.CharField(
+        max_length=100, null=True, blank=True, choices=POINTYPE, default="Point"
+    )
     coordinates = models.JSONField(default=list)
-    altitude = models.FloatField(null=True, blank=True)
-    satilate = models.FloatField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True)
     updated_at = models.DateTimeField(auto_now=True, null=True)
 
@@ -114,15 +128,12 @@ class GeoLocationCoordinates(models.Model):
         verbose_name_plural = "Geo Location Coordinates"
         db_table = "geo_location_coordinates"
 
-        def __str__(self):
-            return str(self.coordinates)
-
 
 class Locations(models.Model):
-    location_id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=100)
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=100, null=True, blank=True)
     location_type = models.ForeignKey(
-        LocationType, on_delete=models.CASCADE, related_name="location_type"
+        LocationType, on_delete=models.CASCADE, related_name="location_type", null=True
     )
     is_disabled = models.BooleanField(default=False)
     geo_coordinates = models.ForeignKey(
@@ -139,8 +150,8 @@ class Locations(models.Model):
         verbose_name_plural = "Locations"
         db_table = "locations"
 
-    def __str__(self):
-        return self.name
+    # def __str__(self):
+    #     return self.name
 
 
 # # hunting settings
@@ -149,7 +160,7 @@ class HuntingArea(models.Model):
     #     Quota, on_delete=models.CASCADE, related_name="hunting_blocks", null=True
     # )
     # species = models.ManyToManyField(Species)
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
     description = models.TextField()
     location = models.ForeignKey(
         Locations,
@@ -164,8 +175,8 @@ class HuntingArea(models.Model):
         verbose_name_plural = "Hunting Area"
         db_table = "hunting_areas"
 
-    def __str__(self):
-        return self.name
+    # def __str__(self):
+    #     return str(self.name)
 
 
 class HuntingQuatasArea(models.Model):
@@ -211,24 +222,63 @@ class QuotaHutingAreaSpecies(models.Model):
 
 
 # hunting settings
-class SafariPackageType(models.Model):
+class RegulatoryHuntingpackage(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="user_regulatory_hunting_packages",
+        null=True,
+    )
+    quota = models.ForeignKey(
+        Quota,
+        on_delete=models.CASCADE,
+        related_name="regulatory_hunting_packages",
+        null=True,
+    )
+
     TYPES_CHOICES = (
         ("Regular", "Regular Safari"),
         ("Premium", "Premium Safari"),
         ("Major", "Major Safari"),
     )
 
-    name = models.CharField(max_length=100, choices=TYPES_CHOICES, unique=True)
-    safari_duration = models.IntegerField(default=0)
-    species = models.ManyToManyField(Species, related_name="safari_species")
-    hunting_limit = models.IntegerField(default=0)
+    name = models.CharField(max_length=100, choices=TYPES_CHOICES)
+    duration = models.IntegerField(default=0)
+
+    created_date = models.DateTimeField(default=timezone.now, null=True)
+    updated_date = models.DateTimeField(auto_now=True, null=True)
 
     class Meta:
         verbose_name_plural = "Safari Package Types"
-        db_table = "safari_package_types"
+        db_table = "regulatory_hunting_packages"
+        unique_together = ("quota", "name")
 
     def __str__(self):
         return self.name
+
+
+class RegulatoryHuntingPackageSpecies(models.Model):
+    r_hunting_package = models.ForeignKey(
+        RegulatoryHuntingpackage,
+        on_delete=models.CASCADE,
+        related_name="regulatory_hunting_package_species",
+    )
+    species = models.ForeignKey(
+        Species,
+        on_delete=models.CASCADE,
+        related_name="regulatory_hunting_package_species",
+    )
+    quantity = models.IntegerField(default=0)
+
+    class Meta:
+        verbose_name_plural = "Regulatory Hunting Package Species"
+        db_table = "regulatory_hunting_package_species"
+
+    def __str__(self):
+        return self.r_hunting_package.name + " - " + self.species.name
+
+
+# -----------------------Sales Package------------------------------------------#
 
 
 # hunting settings
@@ -246,7 +296,6 @@ class HuntingType(models.Model):
         ("10x1", "10x1"),
     )
     name = models.CharField(max_length=100, choices=TYPE_CHOICES, unique=True)
-    price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     description = models.TextField()
 
     class Meta:
@@ -258,123 +307,214 @@ class HuntingType(models.Model):
         return self.name
 
 
-class TrophyFees(models.Model):
+class SalesPackage(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="user_sales_packages",
+        null=True,
+    )
+    sales_quota = models.ForeignKey(
+        Quota,
+        on_delete=models.CASCADE,
+        related_name="sales_packages",
+        null=True,
+    )
     name = models.CharField(max_length=100, unique=True)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.TextField()
 
-    class Meta:
-        verbose_name_plural = "Trophy Fees"
-        db_table = "trophy_fees"
-
-
-class PackageType(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-    description = models.TextField()
-
-    class Meta:
-        verbose_name_plural = "Package Types"
-        db_table = "package_types"
+    class meta:
+        verbose_name_plural = "Sales Packages"
+        db_table = "sales_packages"
 
     def __str__(self):
         return self.name
 
 
-class CompanionHunterCost(models.Model):
+class HuntingPriceList(models.Model):
+    area = models.ForeignKey(
+        HuntingArea, on_delete=models.CASCADE, related_name="hunting_price_list"
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="user_hunting_price_list",
+        null=True,
+    )
+    start_date = models.DateField()
+    end_date = models.DateField()
+    is_active = models.BooleanField(default=True)
+    created_date = models.DateTimeField(default=timezone.now, null=True)
+    updated_date = models.DateTimeField(auto_now=True, null=True)
+
+    class Meta:
+        verbose_name_plural = "Hunting Price List"
+        db_table = "hunting_price_list"
+
+
+class HuntingPriceListType(models.Model):
+    price_list = models.ForeignKey(
+        HuntingPriceList,
+        on_delete=models.CASCADE,
+        related_name="hunting_price_list_type",
+    )
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    currency = models.ForeignKey(
+        Currency, on_delete=models.CASCADE, related_name="hunting_price_list_type"
+    )
+    hunting_type = models.ForeignKey(
+        HuntingType, on_delete=models.CASCADE, related_name="hunting_price_list_type"
+    )
+    is_active = models.BooleanField(default=True)
+    description = models.TextField(null=True, blank=True)
+    name = models.CharField(max_length=100, null=True, blank=True)
+    duration = models.IntegerField(default=0, null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = "Hunting Price List Type"
+        db_table = "hunting_price_list_type"
+        unique_together = (
+            "price_list",
+            "hunting_type",
+        )
+
+    def __str__(self):
+        if self.name:
+            return self.name
+        else:
+            return self.hunting_type.name
+
+
+class HuntingPriceTypePackage(models.Model):
+    price_list_type = models.ForeignKey(
+        HuntingPriceListType,
+        on_delete=models.CASCADE,
+        related_name="hunting_price_type_package",
+    )
+    sales_package = models.ForeignKey(
+        SalesPackage,
+        on_delete=models.CASCADE,
+        related_name="hunting_price_type_package",
+    )
+    create_date = models.DateTimeField(default=timezone.now, null=True)
+    updated_date = models.DateTimeField(auto_now=True, null=True)
+
+    class Meta:
+        verbose_name_plural = "Hunting Price Type Package"
+        db_table = "hunting_price_type_package"
+        unique_together = (
+            "price_list_type",
+            "sales_package",
+        )
+
+    def __str__(self):
+        return self.price_list_type.name + " - " + self.sales_package.name
+
+
+class SalesPackageSpecies(models.Model):
+    sales_package = models.ForeignKey(
+        SalesPackage,
+        on_delete=models.CASCADE,
+        related_name="sales_package_species",
+    )
+    species = models.ForeignKey(
+        Species,
+        on_delete=models.CASCADE,
+        related_name="sales_package_species",
+    )
+    quantity = models.IntegerField(default=0)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    # currency = models.ForeignKey(
+    #     Currency, on_delete=models.CASCADE, related_name="sales_package_species"
+    # )
+
+    class Meta:
+        verbose_name_plural = "Sales Package Species"
+        db_table = "sales_package_species"
+        unique_together = (
+            "sales_package",
+            "species",
+        )
+
+    def __str__(self):
+        return self.sales_package.name + " - " + self.species.name
+
+
+class HuntingPackageUpgradeFees(models.Model):
+    huting_price_list_type_package = models.ForeignKey(
+        HuntingPriceTypePackage,
+        on_delete=models.CASCADE,
+        related_name="hunting_package_upgrade_fees",
+    )
+    species = models.ForeignKey(
+        Species,
+        on_delete=models.CASCADE,
+        related_name="hunting_package_upgrade_fees",
+    )
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    currency = models.ForeignKey(
+        Currency, on_delete=models.CASCADE, related_name="hunting_package_upgrade_fees"
+    )
+    description = models.TextField()
+
+    class Meta:
+        verbose_name_plural = "Hunting Package Upgrade Fees"
+        db_table = "hunting_package_upgrade_fees"
+
+    def __str__(self):
+        return (
+            self.huting_price_list_type_package.price_list_type.name
+            + " - "
+            + self.species.name
+        )
+
+
+class HuntingPackageCompanionsHunter(models.Model):
+    hunting_price_list_type_package = models.ForeignKey(
+        HuntingPriceTypePackage,
+        on_delete=models.CASCADE,
+        related_name="hunting_package_companions_hunter",
+    )
     days = models.IntegerField(default=0)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
 
     class Meta:
-        verbose_name_plural = "Companion Hunter Cost"
-        db_table = "companion_hunter_cost"
+        verbose_name_plural = "Hunting Package Companions Hunter"
+        db_table = "hunting_package_companions_hunter"
 
     def __str__(self):
-        return str(self.days) + " days - " + str(self.price)
+        return (
+            self.hunting_price_list_type_package.price_list_type.name
+            + " - "
+            + str(self.days)
+        )
 
 
-# class Package(models.Model):
+class AdditionalServices(models.Model):
+    PAYMENT_MODEL = (
+        ("per_person", "Per Person"),
+        ("daily", "Daily"),
+        ("round", "Round"),
+    )
+    COST_USER_CASE = (
+        ("person", "Person"),
+        ("hunter", "Hunter"),
+    )
 
-#     publication_status = (
-#         ("Draft", "Draft"),
-#         ("Published", "Published"),
-#     )
-
-#     name = models.CharField(max_length=100)
-#     description = models.TextField()
-#     package_type = models.ForeignKey(
-#         SafariPackageType, on_delete=models.CASCADE, related_name="package_type"
-#     )
-#     hunting_type = models.ForeignKey(
-#         HuntingType, on_delete=models.CASCADE, related_name="hunting_type"
-#     )
-#     hunting_block = models.ForeignKey(
-#         HuntingBlock, on_delete=models.CASCADE, related_name="hunting_block"
-#     )
-#     number_of_hunters = models.IntegerField(default=0)
-#     upgrade_fees = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-#     number_of_days = models.IntegerField(default=0)
-#     companion_hunter_cost = models.DecimalField(
-#         max_digits=10, decimal_places=2, default=0
-#     )
-#     # Safari Extras
-#     observer_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-#     change_of_area_fees = models.DecimalField(
-#         max_digits=10, decimal_places=2, default=0
-#     )
-#     baiting_vehicle_cost = models.DecimalField(
-#         max_digits=10, decimal_places=2, default=0
-#     )
-#     firearm_hire_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-#     wifi_charges = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-#     is_active = models.BooleanField(default=True)
-#     status = models.CharField(
-#         max_length=100, choices=publication_status, default="Draft"
-#     )
-#     species = models.ManyToManyField(
-#         SpeciesAvailabilityAndCost, related_name="package_species_list"
-#     )
-#     created_by = models.ForeignKey(
-#         User, on_delete=models.CASCADE, related_name="created_by"
-#     )
-#     baiting_vehicle_with_PH_cost = models.DecimalField(
-#         max_digits=10, decimal_places=2, default=0
-#     )
-#     total_cost = models.DecimalField(
-#         max_digits=10, decimal_places=2, default=0, editable=False
-#     )
-#     # trophy_fees_list = models.ManyToManyField(TrophyFees, related_name='trophy_fees_list')
-
-#     class Meta:
-#         verbose_name_plural = "Pre-defined Sales Packages"
-#         db_table = "pre_defined_sales_packages"
-
-#     def __str__(self):
-#         # packe name total cost
-#         return self.name + " - " + str(self.total_cost)
-
-#     def save(self, *args, **kwargs):
-#         self.total_cost = self.get_total_cost()
-#         super(Package, self).save(*args, **kwargs)
-
-#     def extra_fees(self):
-#         pass
-
-#     def get_total_cost(self):
-#         pass
-
-
-class Currency(models.Model):
-    name = models.CharField(max_length=100)
-    symbol = models.CharField(max_length=10)
-    create_date = models.DateTimeField(default=timezone.now)
-    updated_date = models.DateTimeField(auto_now=True)
+    service_id = models.CharField(max_length=100, unique=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    payment_model = models.CharField(max_length=100, choices=PAYMENT_MODEL)
+    cost_use_case = models.CharField(max_length=100, choices=COST_USER_CASE)
 
     class Meta:
-        verbose_name_plural = "Currencies"
-        db_table = "currencies"
+        verbose_name_plural = "Additional Services"
+        db_table = "additional_services"
 
     def __str__(self):
-        return self.name
+        return self.service_id
+
+
+# ------------------------ end of Sales Package-#---------------------------#
 
 
 class IdentityType(models.Model):

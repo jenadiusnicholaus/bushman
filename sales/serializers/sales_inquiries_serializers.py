@@ -11,6 +11,8 @@ from sales.models import (
     Entity,
     EntityCategory,
     SalesInquiry,
+    SalesInquiryArea,
+    SalesInquirySpecies,
     SalesIquiryPreference,
 )
 
@@ -20,8 +22,9 @@ from sales.models import (
 class GetEntitySerializers(serializers.ModelSerializer):
     category = serializers.SerializerMethodField()
     country = CountrySerializeers()
-    sales_inquiry = serializers.SerializerMethodField()
+    # sales_inquiry = serializers.SerializerMethodField()
     nationality = NationalitiesSerializeers()
+    contacts = serializers.SerializerMethodField()
 
     def get_category(self, obj):
         try:
@@ -34,16 +37,11 @@ class GetEntitySerializers(serializers.ModelSerializer):
         except:
             return None
 
-    def get_sales_inquiry(self, obj):
-        try:
-            sales_inquiry = obj.sales_inquiry_entity_set.get()
-            if sales_inquiry:
-                sez = GetSalesInquirySerializers(sales_inquiry)
-                return sez.data
-            else:
-                return None
-        except:
-            return None
+    def get_contacts(self, obj):
+        contants = obj.entity_contacts_set.all()
+        if contants:
+            sez = GetContactsSerializers(contants, many=True)
+            return sez.data
 
     class Meta:
         model = Entity
@@ -51,6 +49,7 @@ class GetEntitySerializers(serializers.ModelSerializer):
 
 
 class CreateEntitySerializers(serializers.ModelSerializer):
+
     class Meta:
         model = Entity
         fields = "__all__"
@@ -79,9 +78,36 @@ class CreateEntityCategorySerializers(serializers.ModelSerializer):
 
 # -------------------------- Sales Inquiry Serializers ---------- #
 class GetSalesInquirySerializers(serializers.ModelSerializer):
+    entity = GetEntitySerializers()
+    preference = serializers.SerializerMethodField()
+    preferred_species = serializers.SerializerMethodField()
+
     class Meta:
         model = SalesInquiry
         fields = "__all__"
+
+    def get_preferred_species(self, obj):
+        try:
+            species = obj.sales_inquiry_species_set.all()
+            if len(species) > 0:
+                sez = GetSalesInquirySpeciesSerializer(species, many=True)
+                return sez.data
+            else:
+                return []
+        except:
+            return []
+
+    def get_preference(self, obj):
+
+        preferences = (
+            obj.sales_inquiry_preference_set.all()
+        )  # Get all related preferences
+        if preferences.exists():  # Check if any preferences exist
+            preference = preferences.latest("create_date")
+            sez = SalesIquiryPreferenceSerializers(preference)
+            return sez.data
+        else:
+            return None
 
 
 class CreateSalesInquirySerializers(serializers.ModelSerializer):
@@ -134,6 +160,39 @@ class UpdateContactsSerializers(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class GetSalesInquirySpeciesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SalesInquirySpecies
+        fields = "__all__"
+        depth = 1
 
 
+class CreateSalesInquirySpeciesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SalesInquirySpecies
+        fields = "__all__"
 
+
+class UpdateSalesInquirySpeciesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SalesInquirySpecies
+        fields = "__all__"
+
+
+# ---------- Sales Inquiry Area Serializers ---------- #
+class GetSalesInquiryAreaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SalesInquiryArea
+        fields = "__all__"
+
+
+class CreateSalesInquiryAreaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SalesInquiryArea
+        fields = "__all__"
+
+
+class UpdateSalesInquiryAreaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SalesInquiryArea
+        fields = "__all__"

@@ -4,12 +4,13 @@ from bm_hunting_settings.models import (
     AccommodationType,
     Country,
     Currency,
+    HuntingArea,
     # HuntingBlock,
     HuntingType,
     IdentityType,
     Nationalities,
     # Package,
-    SafariPackageType,
+    # SafariPackageType,
     Species,
 )
 from django_countries.fields import CountryField
@@ -40,6 +41,7 @@ class PaymentMethod(models.Model):
 
 
 class EntityCategories(models.Model):
+
     name = models.CharField(max_length=100)
     create_date = models.DateTimeField(default=timezone.now)
     updated_date = models.DateTimeField(auto_now=True)
@@ -86,7 +88,7 @@ class SalesInquiry(models.Model):
 
     remarks = models.TextField(max_length=500, null=True, blank=True)
     updated_date = models.DateTimeField(auto_now=True)
-    create_date = models.DateTimeField(default=timezone.now)
+    created_date = models.DateTimeField(default=timezone.now)
 
     class Meta:
         verbose_name_plural = "Sales Inquiries"
@@ -109,11 +111,17 @@ class SalesInquiry(models.Model):
 
 class SalesInquirySpecies(models.Model):
     sales_inquiry = models.ForeignKey(
-        SalesInquiry, on_delete=models.CASCADE, related_name="sales_inquiry_species_set"
+        SalesInquiry,
+        on_delete=models.CASCADE,
+        related_name="sales_inquiry_species_set",
+        null=True,
     )
     species = models.ForeignKey(
         Species, on_delete=models.CASCADE, related_name="species_sales_inquiry_set"
     )
+    quantity = models.IntegerField(default=1)
+    create_date = models.DateTimeField(default=timezone.now)
+    updated_date = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name_plural = "Sales Inquiry Species"
@@ -205,7 +213,7 @@ class SalesIquiryPreference(models.Model):
     )
     prev_experience = models.TextField(max_length=500, null=True, blank=True)
 
-    preffered_date = models.DateTimeField(default=timezone.now)
+    prefferred_date = models.DateTimeField(default=timezone.now)
     no_of_hunters = models.IntegerField(default=1)
     no_of_observers = models.IntegerField(default=0)
     no_of_days = models.IntegerField(default=0)
@@ -230,6 +238,33 @@ class SalesIquiryPreference(models.Model):
             + " - "
             + str(self.no_of_days)
         )
+
+
+class SalesInquiryArea(models.Model):
+    sales_inquiry = models.ForeignKey(
+        SalesInquiry,
+        on_delete=models.CASCADE,
+        related_name="hunting_inquiry_area_set",
+        null=True,
+    )
+    area = models.ForeignKey(
+        HuntingArea,
+        on_delete=models.CASCADE,
+        related_name="hunting_inquiry_area_set",
+        null=True,
+    )
+    create_date = models.DateTimeField(default=timezone.now)
+    updated_date = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "Hunting Inquiry Areas"
+        db_table = "sales_inquiry_areas"
+
+    def __str__(self):
+        if self.area:
+            return self.sales_inquiry.entity.full_name + " - " + self.area.name
+        else:
+            return self.sales_inquiry.entity.full_name + " - " + "No Area Selected"
 
 
 class ContractType(models.Model):
@@ -278,7 +313,12 @@ class Document(models.Model):
 
 
 class ContactType(models.Model):
-    name = models.CharField(max_length=100)
+    CONTACT_TYPE = (
+        ("email", "Email"),
+        ("phone", "Phone"),
+        ("address", "Address"),
+    )
+    name = models.CharField(max_length=100, choices=CONTACT_TYPE, null=True)
 
     class Meta:
         verbose_name_plural = "Contact Types"
@@ -293,10 +333,15 @@ class Contacts(models.Model):
         Entity, on_delete=models.CASCADE, related_name="entity_contacts_set"
     )
     contact_type = models.ForeignKey(
-        ContactType, on_delete=models.CASCADE, related_name="contact_type_set"
+        ContactType,
+        on_delete=models.CASCADE,
+        related_name="contact_type_set",
+        null=True,
     )
     contact = models.CharField(max_length=100)
-    contactable = models.BooleanField(default=True)
+    contactable = models.BooleanField(
+        default=True,
+    )
 
     class Meta:
         verbose_name_plural = "Contacts"

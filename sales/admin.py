@@ -7,6 +7,10 @@ from sales.models import (
     SalesInquiry,
     ContactType,
     PaymentMethod,
+    SalesIquiryPreference,
+    SalesInquirySpecies,
+    Contacts,
+    SalesInquiryArea,
 )
 
 # Register your models here.
@@ -18,3 +22,7 @@ admin.site.register(EntityCategory)
 admin.site.register(SalesInquiry)
 admin.site.register(ContactType)
 admin.site.register(PaymentMethod)
+admin.site.register(SalesIquiryPreference)
+admin.site.register(SalesInquirySpecies)
+admin.site.register(Contacts)
+admin.site.register(SalesInquiryArea)

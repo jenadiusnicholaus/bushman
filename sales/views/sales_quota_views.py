@@ -40,7 +40,15 @@ class QuotaViewSets(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+
+        data = {
+            "user": request.user.id,
+            "name": request.data.get("name"),
+            "description": request.data.get("description"),
+            "start_date": request.data.get("start_date"),
+            "end_date": request.data.get("end_date"),
+        }
+        serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
@@ -90,12 +98,6 @@ class QuotaHutingAreaSpeciesViewSets(viewsets.ModelViewSet):
         quota_id = request.query_params.get("quota_id")
         species_id = request.query_params.get("species_id")
         area_id = request.query_params.get("area_id")
-
-        print(current_year)
-        print(quota_id)
-        print(species_id)
-        print(area_id)
-        # Check for required fields
 
         # Initialize the queryset with all species
         querySet = self.get_queryset()
