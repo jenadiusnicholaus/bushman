@@ -9,14 +9,19 @@ from authentication.permissions import IsAdmin
 from bm_hunting_settings.models import (
     AccommodationType,
     Country,
+    Currency,
     GeoLocationCoordinates,
     HuntingArea,
+    HuntingType,
     LocationType,
     Locations,
     Nationalities,
     QuotaHutingAreaSpecies,
     RegulatoryHuntingpackage,
     Species,
+)
+from bm_hunting_settings.other_serializers.price_list_serializers import (
+    GetHuntingTypeSerializer,
 )
 from bm_hunting_settings.serializers import (
     CountrySerializeers,
@@ -28,6 +33,7 @@ from bm_hunting_settings.serializers import (
     EntityCategoriesSerializer,
     GetAccommodationTypeSerializer,
     GetContactTypeSerializer,
+    GetCurrencySerializer,
     GetPaymentMethodSerializer,
     GetRegulatoryHuntingPackageSerializers,
     HutingAreaSerializers,
@@ -74,6 +80,18 @@ class AccommodationTypeViewSets(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
 
+class CurrencyViewSets(viewsets.ModelViewSet):
+    queryset = Currency.objects.all()
+    serializer_class = GetCurrencySerializer
+    permission_classes = [IsAuthenticated]
+
+
+class HuntingTypesViewSets(viewsets.ModelViewSet):
+    queryset = HuntingType.objects.all()
+    serializer_class = GetHuntingTypeSerializer
+    permission_classes = [IsAuthenticated]
+
+
 class PaymentMethodViewSets(viewsets.ModelViewSet):
     queryset = PaymentMethod.objects.all()
     serializer_class = GetPaymentMethodSerializer
@@ -93,6 +111,7 @@ class SpeciesListView(viewsets.ModelViewSet):
             return None
 
     def list(self, request):
+        area_id = self.request.query_params.get("area_id", None)
         queryset = Species.objects.all()
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)

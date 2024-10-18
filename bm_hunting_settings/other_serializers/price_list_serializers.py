@@ -10,6 +10,7 @@ from bm_hunting_settings.models import (
     SalesPackage,
     SalesPackageSpecies,
 )
+from bm_hunting_settings.serializers import HutingAreaSerializers, SpeciesSerializer
 
 
 # ----------------HuntingType Serializer----------------
@@ -33,10 +34,20 @@ class UpdateHuntingTypeSerializer(serializers.ModelSerializer):
 
 # ---------------SalesPackage Serializer----------------
 class GetSalesPackageSerializer(serializers.ModelSerializer):
+    species = serializers.SerializerMethodField()
 
     class Meta:
         model = SalesPackage
-        fields = "__all__"
+        # fields = "__all__"
+        depth = 1
+        exclude = ["user"]
+
+    def get_species(self, obj):
+        species = obj.sales_package_species.all()
+        if len(species) == 0:
+            return []
+        serializer = GetSalesPackageSpeciesSerializer(species, many=True)
+        return serializer.data
 
 
 class CreateSalesPackageSerializer(serializers.ModelSerializer):
@@ -56,22 +67,11 @@ class UpdateSalesPackageSerializer(serializers.ModelSerializer):
 
 
 class GetHuntingPriceListSerializer(serializers.ModelSerializer):
-    hunting_price_list_type = serializers.SerializerMethodField()
-
-    def get_hunting_price_list_type(self, obj):
-        try:
-            price_list_type = obj.hunting_price_list_type.all()
-            serializer = GetHuntingPriceListTypeSerializer(price_list_type, many=True)
-            return serializer.data
-        except:
-
-            return None
+    area = HutingAreaSerializers()
 
     class Meta:
         model = HuntingPriceList
-        # fields = "__all__"
-        depth = 2
-        exclude = ["user"]
+        fields = ["area"]
 
 
 class CreateHuntingPriceListSerializer(serializers.ModelSerializer):
@@ -91,18 +91,9 @@ class UpdateHuntingPriceListSerializer(serializers.ModelSerializer):
 
 
 class GetHuntingPriceListTypeSerializer(serializers.ModelSerializer):
+    price_list = GetHuntingPriceListSerializer()
     hunting_type = GetHuntingTypeSerializer()
-    packages = serializers.SerializerMethodField()
-
-    def get_packages(self, obj):
-        try:
-            price_list_type = obj.hunting_price_type_package.all()
-            serializer = GetHuntingPriceTypePackageSerializer(
-                price_list_type, many=True
-            )
-            return serializer.data
-        except:
-            return None
+    currency = serializers.CharField(source="currency.symbol")
 
     class Meta:
 
@@ -116,23 +107,27 @@ class CreateHuntingPriceListTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = HuntingPriceListType
         fields = "__all__"
+        # depth = 2
 
 
 class UpdateHuntingPriceListTypeSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = HuntingPriceListType
         fields = "__all__"
 
 
-# ------------------HuntingPriceTypePackage-=------------------------
+# ------------------HƒuntingPriceTypePackage-=------------------------
 
 
 class GetHuntingPriceTypePackageSerializer(serializers.ModelSerializer):
     sales_package = GetSalesPackageSerializer()
+    price_list_type = GetHuntingPriceListTypeSerializer()
 
     class Meta:
         model = HuntingPriceTypePackage
         fields = "__all__"
+        # depth = 2
 
 
 class CreateHuntingPriceTypePackageSerializer(serializers.ModelSerializer):
@@ -152,7 +147,9 @@ class UpdateHuntingPriceTypePackageSerializer(serializers.ModelSerializer):
 
 
 class GetSalesPackageSpeciesSerializer(serializers.ModelSerializer):
-    class Mata:
+    species = SpeciesSerializer()
+
+    class Meta:
         model = SalesPackageSpecies
         fields = "__all__"
 

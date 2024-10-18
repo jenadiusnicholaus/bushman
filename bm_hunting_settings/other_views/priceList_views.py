@@ -25,7 +25,7 @@ from rest_framework.permissions import IsAuthenticated
 from pprint import pprint
 
 
-class PriceListViewSet(viewsets.ModelViewSet):
+class CreatePriceListViewSet(viewsets.ModelViewSet):
     serializer_class = GetHuntingPriceListSerializer
     queryset = HuntingPriceList.objects.all()
     permission_classes = [IsAuthenticated]
@@ -61,7 +61,10 @@ class PriceListViewSet(viewsets.ModelViewSet):
             sales_package_serializer = CreateSalesPackageSerializer(
                 data=sales_package_data
             )
-            sales_package_serializer.is_valid(raise_exception=True)
+            if not sales_package_serializer.is_valid():
+                return Response(
+                    sales_package_serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                )
             sales_package = sales_package_serializer.save()
 
             # Create the Hunting Price List
@@ -71,7 +74,9 @@ class PriceListViewSet(viewsets.ModelViewSet):
             )
             if not price_list_serializer.is_valid():
                 sales_package.delete()  # Delete the previously created sales_package
-                return Response(price_list_serializer.errors)
+                return Response(
+                    price_list_serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                )
 
             price_list = price_list_serializer.save()
 
@@ -84,7 +89,10 @@ class PriceListViewSet(viewsets.ModelViewSet):
 
                 price_list.delete()  # Delete the previously created price_list
                 sales_package.delete()  # Delete the previously created sales_package
-                return Response(price_list_type_serializer.errors)
+                return Response(
+                    price_list_type_serializer.errors,
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
             price_list_type = price_list_type_serializer.save()
 
@@ -102,7 +110,10 @@ class PriceListViewSet(viewsets.ModelViewSet):
                 price_list_type.delete()  # Delete the previously created price_list_type
                 price_list.delete()  # Delete the previously created price_list
                 sales_package.delete()  # Delete the previously created sales_package
-                return Response(hunting_price_type_package_serializer.errors)
+                return Response(
+                    hunting_price_type_package_serializer.errors,
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
             hunting_price_type_package_serializer.save()
 
@@ -124,8 +135,37 @@ class PriceListViewSet(viewsets.ModelViewSet):
                     price_list_type.delete()  # Delete the previously created price_list_type
                     price_list.delete()  # Delete the previously created price_list
                     sales_package.delete()  # Delete the previously created sales_package
-                    return Response(sales_package_species_serializer.errors)
+                    return Response(
+                        sales_package_species_serializer.errors,
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
 
                 sales_package_species_serializer.save()
 
-        return Response(sales_package_serializer.data, status=status.HTTP_201_CREATED)
+        return Response(
+            {
+                "message": "Price List created successfully",
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class PricesListListView(viewsets.ModelViewSet):
+    serializer_class = GetHuntingPriceTypePackageSerializer
+    queryset = HuntingPriceTypePackage.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = HuntingPriceTypePackage.objects.filter()
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        hunting_type_id = request.query_params.get("hunting_type_id")
+        if hunting_type_id is not None:
+            queryset = self.get_queryset().filter(
+                price_list_type__hunting_type__id=hunting_type_id
+            )
+        else:
+            queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)

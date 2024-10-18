@@ -320,7 +320,7 @@ class SalesPackage(models.Model):
         related_name="sales_packages",
         null=True,
     )
-    name = models.CharField(max_length=100, unique=True)
+    name = models.CharField(max_length=100)
     description = models.TextField()
 
     class meta:

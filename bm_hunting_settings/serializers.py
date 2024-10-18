@@ -2,6 +2,7 @@ from rest_framework import serializers
 from bm_hunting_settings.models import (
     AccommodationType,
     Country,
+    Currency,
     GeoLocationCoordinates,
     HuntingArea,
     Locations,
@@ -11,6 +12,11 @@ from bm_hunting_settings.models import (
     Species,
 )
 from sales.models import ContactType, EntityCategories, EntityCategory, PaymentMethod
+
+class GetCurrencySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Currency
+        fields = "__all__"
 
 
 class SpeciesSerializer(serializers.ModelSerializer):
