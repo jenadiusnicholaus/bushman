@@ -123,6 +123,16 @@ class UpdateHuntingPriceListTypeSerializer(serializers.ModelSerializer):
 class GetHuntingPriceTypePackageSerializer(serializers.ModelSerializer):
     sales_package = GetSalesPackageSerializer()
     price_list_type = GetHuntingPriceListTypeSerializer()
+    componions_hunter = serializers.SerializerMethodField()
+
+    def get_componions_hunter(self, obj):
+        componions_hunter = obj.hunting_package_companions_hunter.all()
+        if len(componions_hunter) == 0:
+            return []
+        serializer = GetHuntingPackageCompanionsHunterSerializer(
+            componions_hunter, many=True
+        )
+        return serializer.data
 
     class Meta:
         model = HuntingPriceTypePackage
@@ -193,10 +203,16 @@ class UpdateHuntingPackageUpgradeFeesSerializer(serializers.ModelSerializer):
 class GetHuntingPackageCompanionsHunterSerializer(serializers.ModelSerializer):
     class Meta:
         model = HuntingPackageCompanionsHunter
-        field = "__all__"
+        fields = "__all__"
 
 
 class CreateHuntingPackageCompanionsHunterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HuntingPackageCompanionsHunter
+        fields = "__all__"
+
+
+class UpdateHuntingPackageCompanionsHunterSerializer(serializers.ModelSerializer):
     class Meta:
         model = HuntingPackageCompanionsHunter
         fields = "__all__"

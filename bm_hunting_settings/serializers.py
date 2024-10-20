@@ -9,9 +9,11 @@ from bm_hunting_settings.models import (
     Nationalities,
     RegulatoryHuntingPackageSpecies,
     RegulatoryHuntingpackage,
+    Seasons,
     Species,
 )
 from sales.models import ContactType, EntityCategories, EntityCategory, PaymentMethod
+
 
 class GetCurrencySerializer(serializers.ModelSerializer):
     class Meta:
@@ -178,4 +180,23 @@ class CreateRegulatoryHuntingPackageSpeciesSerializers(serializers.ModelSerializ
 class UpdateRegulatoryHuntingPackageSpeciesSerializers(serializers.ModelSerializer):
     class Meta:
         model = RegulatoryHuntingPackageSpecies
+        fields = "__all__"
+
+
+# ---------------------- seasons--------------
+class GetSeasonsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Seasons
+        fields = "__all__"
+
+
+class CreateSeasonsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Seasons
+        fields = "__all__"
+
+
+class UpdateSeasonsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Seasons
         fields = "__all__"

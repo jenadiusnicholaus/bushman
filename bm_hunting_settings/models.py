@@ -57,9 +57,9 @@ class AccommodationType(models.Model):
 
 # hunting settings
 class Species(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
     scientific_name = models.CharField(max_length=100, null=True, blank=True)
-    description = models.TextField()
+    description = models.TextField(null=True, blank=True)
 
     class Meta:
         verbose_name_plural = "Species"
@@ -409,6 +409,18 @@ class HuntingPriceTypePackage(models.Model):
 
     def __str__(self):
         return self.price_list_type.name + " - " + self.sales_package.name
+
+
+class Seasons(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField()
+
+    class Meta:
+        verbose_name_plural = "Seasons"
+        db_table = "seasons"
+
+    def __str__(self):
+        return self.name
 
 
 class SalesPackageSpecies(models.Model):

@@ -18,6 +18,7 @@ from bm_hunting_settings.models import (
     Nationalities,
     QuotaHutingAreaSpecies,
     RegulatoryHuntingpackage,
+    Seasons,
     Species,
 )
 from bm_hunting_settings.other_serializers.price_list_serializers import (
@@ -36,6 +37,7 @@ from bm_hunting_settings.serializers import (
     GetCurrencySerializer,
     GetPaymentMethodSerializer,
     GetRegulatoryHuntingPackageSerializers,
+    GetSeasonsSerializer,
     HutingAreaSerializers,
     NationalitiesSerializeers,
     SpeciesSerializer,
@@ -97,6 +99,12 @@ class PaymentMethodViewSets(viewsets.ModelViewSet):
     serializer_class = GetPaymentMethodSerializer
 
 
+class SeasonsViewSets(viewsets.ModelViewSet):
+    serializer_class = GetSeasonsSerializer
+    queryset = Seasons.objects.all()
+    permission_classes = [IsAuthenticated]
+
+
 class SpeciesListView(viewsets.ModelViewSet):
     queryset = Species.objects.all()
     serializer_class = SpeciesSerializer
@@ -118,16 +126,30 @@ class SpeciesListView(viewsets.ModelViewSet):
 
     def create(self, request):
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        if not serializer.is_valid():
+            return Response(
+                serializer.errors,
+                status=400,
+            )
         serializer.save()
-        return Response(serializer.data)
+        return Response({"message": "Species created successfully"}, status=201)
 
     def patch(self, request, pk=None):
         species = self.get_object()
         serializer = self.get_serializer(species, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
+        if not serializer.is_valid():
+            return Response(
+                serializer.errors,
+                status=400,
+            )
         serializer.save()
-        return Response(serializer.data)
+        return Response(
+            {
+                "message": "Species updated successfully",
+                "data": serializer.data,
+            },
+            status=200,
+        )
 
     def delete(self, request, pk=None):
         species = self.get_object()

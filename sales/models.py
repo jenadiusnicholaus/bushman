@@ -9,6 +9,7 @@ from bm_hunting_settings.models import (
     HuntingType,
     IdentityType,
     Nationalities,
+    Seasons,
     # Package,
     # SafariPackageType,
     Species,
@@ -85,7 +86,7 @@ class SalesInquiry(models.Model):
 
     create_date = models.DateTimeField(default=timezone.now)
     code = models.CharField(max_length=100, unique=True, null=True, blank=True)
-
+    season = models.ForeignKey(Seasons, on_delete=models.CASCADE, null=True)
     remarks = models.TextField(max_length=500, null=True, blank=True)
     updated_date = models.DateTimeField(auto_now=True)
     created_date = models.DateTimeField(default=timezone.now)
@@ -213,7 +214,7 @@ class SalesIquiryPreference(models.Model):
     )
     prev_experience = models.TextField(max_length=500, null=True, blank=True)
 
-    prefferred_date = models.DateTimeField(default=timezone.now)
+    preferred_date = models.DateTimeField(default=timezone.now)
     no_of_hunters = models.IntegerField(default=1)
     no_of_observers = models.IntegerField(default=0)
     no_of_days = models.IntegerField(default=0)

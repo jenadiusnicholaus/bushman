@@ -10,6 +10,7 @@ from .views import (
     RegulatoryHuntingPackageViewSets,
     HuntingTypesViewSets,
     CurrencyViewSets,
+    SeasonsViewSets,
 )
 from .views import country_list, nationalities, contactTypes
 from .other_views.priceList_views import PricesListListView, CreatePriceListViewSet
@@ -30,6 +31,7 @@ router.register(r"price-list", PricesListListView)
 router.register(r"create-price-list", CreatePriceListViewSet)
 router.register(r"hunting-types", HuntingTypesViewSets)
 router.register(r"currencies", CurrencyViewSets)
+router.register(r"seasons", SeasonsViewSets)
 
 
 urlpatterns = [

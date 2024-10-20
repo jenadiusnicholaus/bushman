@@ -1,5 +1,7 @@
+from datetime import datetime
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
+from django.utils.dateparse import parse_date, parse_duration, parse_datetime
 
 from bm_hunting_settings.serializers import CreateEntityCategorySerializer
 from sales.helpers import SalesHelper
@@ -27,16 +29,59 @@ from sales.serializers.sales_inquiries_serializers import (
 from rest_framework.response import Response
 from rest_framework import status
 from django.db import transaction
-import datetime
+from django.utils import timezone
 
+from django.db.models import Q
 
-# Create your views here.
+from utils.utitlities import format_any_date
 
 
 class SalesInquiriesViewSet(viewsets.ModelViewSet):
-    queryset = SalesInquiry.objects.all().order_by("-created_date")
+    queryset = SalesInquiry.objects.filter().order_by("-created_date")
     serializer_class = GetSalesInquirySerializers
     permission_classes = [IsAuthenticated]
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.queryset.all()
+
+        # Get query parameters
+        preferred_date = request.query_params.get("preferred_date")
+        season_id = request.query_params.get("season_id")
+
+        # Check if both parameters are None or empty strings
+        if not preferred_date and not season_id:
+            # No filters applied if both are empty
+            return Response(self.serializer_class(queryset, many=True).data)
+
+        # Try to format the preferred date
+        try:
+            formatted_date = (
+                format_any_date(str(preferred_date)) if preferred_date else None
+            )
+
+        except ValueError as e:
+            return Response(
+                {"message": str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Filter by parsed date only if it is valid
+        if formatted_date:
+            queryset = queryset.filter(
+                # Q(sales_inquiry_preference_set__preferred_date__lte=formatted_date)
+                Q(sales_inquiry_preference_set__preferred_date__gte=formatted_date)
+            ).order_by("sales_inquiry_preference_set__preferred_date")
+
+        # Filter by season_id only if it is valid (not empty)
+        if season_id:
+            queryset = queryset.filter(season__id=season_id).order_by(
+                "sales_inquiry_preference_set__preferred_date"
+            )
+
+        # Serializing the queryset
+        serializer = self.serializer_class(queryset, many=True)
+
+        return Response(serializer.data)
 
     # save the following tables
     # entity
@@ -45,7 +90,16 @@ class SalesInquiriesViewSet(viewsets.ModelViewSet):
     # sales_inquiry
     # area of hunting
     # species preference
+
     def create(self, request, *args, **kwargs):
+        try:
+            preferred_date_str = format_any_date(request.data.get("preferred_date"))
+        except ValueError as e:
+            return Response(
+                {"message": str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         categories = EntityCategories.objects.filter(
             name__in=request.data.get("categories")
         )
@@ -76,6 +130,7 @@ class SalesInquiriesViewSet(viewsets.ModelViewSet):
 
         sales_inquiry_data = {
             "user": request.user.id,
+            "season": request.data.get("season"),
             "entity": None,
         }
         sales_inquiry_areas_of_hunting_data = {
@@ -89,7 +144,7 @@ class SalesInquiriesViewSet(viewsets.ModelViewSet):
             "no_of_companions": request.data.get("no_of_companions"),
             "no_of_days": request.data.get("no_of_days"),
             "no_of_observers": request.data.get("no_of_observers"),
-            "prefferred_date": datetime.datetime.now().strftime("%Y-%m-%d"),
+            "preferred_date": preferred_date_str,
         }
         sales_prefered_species_data = {"sales_inquiry": None, "species": None}
 

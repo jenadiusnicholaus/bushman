@@ -4,6 +4,7 @@ from django_countries.serializer_fields import CountryField
 
 from bm_hunting_settings.serializers import (
     CountrySerializeers,
+    HutingAreaSerializers,
     NationalitiesSerializeers,
 )
 from sales.models import (
@@ -81,6 +82,18 @@ class GetSalesInquirySerializers(serializers.ModelSerializer):
     entity = GetEntitySerializers()
     preference = serializers.SerializerMethodField()
     preferred_species = serializers.SerializerMethodField()
+    area = serializers.SerializerMethodField()
+
+    def get_area(self, obj):
+        try:
+            area = obj.hunting_inquiry_area_set.all()
+            if len(area) > 0:
+                sez = GetSalesInquiryAreaSerializer(area, many=True)
+                return sez.data
+            else:
+                return []
+        except:
+            return []
 
     class Meta:
         model = SalesInquiry
@@ -161,6 +174,7 @@ class UpdateContactsSerializers(serializers.ModelSerializer):
 
 
 class GetSalesInquirySpeciesSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = SalesInquirySpecies
         fields = "__all__"
@@ -181,6 +195,8 @@ class UpdateSalesInquirySpeciesSerializer(serializers.ModelSerializer):
 
 # ---------- Sales Inquiry Area Serializers ---------- #
 class GetSalesInquiryAreaSerializer(serializers.ModelSerializer):
+    area = HutingAreaSerializers()
+
     class Meta:
         model = SalesInquiryArea
         fields = "__all__"
