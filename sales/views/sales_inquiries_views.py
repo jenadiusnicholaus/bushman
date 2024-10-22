@@ -363,6 +363,25 @@ class SalesInquiriesClientBasicinfosViewSet(viewsets.ModelViewSet):
         )
 
 
+class SearchSalesInquiriesViewSet(viewsets.ModelViewSet):
+    queryset = SalesInquiry.objects.all()
+    serializer_class = GetSalesInquirySerializers
+    permission_classes = [IsAuthenticated]
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.queryset.all().order_by(
+            "-sales_inquiry_preference_set__preferred_date"
+        )
+        query = request.query_params.get("query", None)
+        if query:
+            queryset = self.queryset.filter(
+                Q(entity__full_name__icontains=query) | Q(code=query)
+            ).order_by("-sales_inquiry_preference_set__preferred_date")
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 class SalesClientContactsViewSet(viewsets.ModelViewSet):
     queryset = Contacts.objects.all()
     serializer_class = GetContactsSerializers

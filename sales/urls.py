@@ -7,6 +7,7 @@ from sales.views.sales_inquiries_views import (
     SalesInquiriesViewSet,
     SalesClientContactsViewSet,
     SalesIquiryPreferenceViewSet,
+    SearchSalesInquiriesViewSet,
 )
 from sales.views.sales_quota_views import (
     QuotaViewSets,
@@ -37,6 +38,11 @@ router.register(
     basename="sales_quotas_huting_area_species",
 )
 
+router.register(
+    r"search-sales-inquiries",
+    SearchSalesInquiriesViewSet,
+    basename="search_sales_inquiries",
+)
 
 urlpatterns = [
     path("", include(router.urls)),

@@ -119,39 +119,6 @@ class Weapon(models.Model):
         )
 
 
-class clientItinerary(models.Model):
-    client = models.ForeignKey(
-        Client, on_delete=models.CASCADE, related_name="client_itinerary"
-    )
-    airport_arrival = models.CharField(max_length=100)
-    airport_departure = models.CharField(max_length=100)
-    charter_flight_arrangements = models.TextField()
-    hotel_bookings = models.TextField(help_text="Number of rooms and types required")
-    arrival_date = models.DateField()
-    departure_date = models.DateField()
-
-    class Meta:
-        verbose_name_plural = "client Itineraries"
-        # db_table = 'client_itineraries'
-
-    def __str__(self):
-        return (
-            self.hunter.user.username
-            + " - "
-            + self.airport_arrival
-            + " - "
-            + self.airport_departure
-            + " - "
-            + self.charter_flight_arrangements
-            + " - "
-            + self.hotel_bookings
-            + " - "
-            + str(self.arrival_date)
-            + " - "
-            + str(self.departure_date)
-        )
-
-
 class ClientPreferences(models.Model):
     client = models.ForeignKey(
         Client, on_delete=models.CASCADE, related_name="client_preferences"

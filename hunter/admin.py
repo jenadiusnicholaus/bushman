@@ -2,28 +2,23 @@ from django.contrib import admin
 from .models import (
     Client,
     Weapon,
-    clientItinerary,
+    # clientItinerary,
     # ClientDocument,
     # ClientSalesOrder,
-    Observer,
-    Companion,
+    # Observer,
+    # Companion,
     # Entity,
     # EntityCategories,
     # EntityCategory,
 )
-from bm_hunting_settings.models import (
-    # HuntingBlock,
-    Species,
-    HuntingType,
-    # RegulatoryHuntingpackage,
-)
+
 
 # admin.site.register(Client)
 # admin.site.register(HuntingBlock)
 # admin.site.register(HuntingType)
 # admin.site.register(SafariPackageType)
 admin.site.register(Weapon)
-admin.site.register(clientItinerary)
+# admin.site.register(clientItinerary)
 # admin.site.register(ClientDocument)
 # admin.site.register(ClientSalesOrder)
 # admin.site.register(Observer)
