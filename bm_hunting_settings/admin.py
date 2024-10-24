@@ -17,7 +17,7 @@ admin.site.register(models.GeoLocationCoordinates)
 admin.site.register(models.Locations)
 
 # SalesPackage
-admin.site.register(models.SalesPackage)
+admin.site.register(models.SalesPackages)
 admin.site.register(models.HuntingPriceList)
 admin.site.register(models.HuntingPriceTypePackage)
 admin.site.register(models.HuntingPackageCompanionsHunter)

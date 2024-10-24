@@ -3,8 +3,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 
 
 from authentication.serialisers.profile_serializers import CreateUserProfileSerializer, GetProfileSerializer, GetUserSerializer, UpdateUserProfileSerializer, UpdateUserSerializer
-from hunter.models import Client
-from hunter.serializers.client_sz import CreateClientSerializer
+
 from..serialisers.global_serializers import RegisterSerializer
 from django.contrib.auth.models import User
 from rest_framework.response import Response

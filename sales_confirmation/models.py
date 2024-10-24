@@ -1,6 +1,6 @@
 from django.db import models
 
-from bm_hunting_settings.models import SalesPackage
+from bm_hunting_settings.models import SalesPackages
 from sales.models import Entity, SalesInquiry
 from django.core.validators import MaxLengthValidator
 
@@ -42,7 +42,7 @@ class SalesConfirmationProposalPackage(models.Model):
         related_name="sales_confirmation_package",
     )
     package = models.ForeignKey(
-        SalesPackage,
+        SalesPackages,
         on_delete=models.CASCADE,
         related_name="sales_confirmation_package_package",
         null=True,
@@ -157,6 +157,11 @@ class SalesConfirmationProposalClientPreference(models.Model):
 
 
 class Installment(models.Model):
+    DUE_LIMIT_CHOICES = (
+        ("prior", "Due Before the Due Date"),
+        ("after", "Due After the Due Date"),
+        ("none", "No Due Date"),
+    )
     sales_confirmation_proposal = models.ForeignKey(
         SalesConfirmationProposal,
         on_delete=models.CASCADE,
@@ -164,11 +169,14 @@ class Installment(models.Model):
     )
     description = models.CharField(max_length=255)
     amount_due = models.DecimalField(max_digits=10, decimal_places=2)
-    due_date = models.DateField()
+    days = models.IntegerField(null=True, blank=True)
+    due_limit = models.CharField(
+        max_length=255, choices=DUE_LIMIT_CHOICES, default="none"
+    )
 
     class Meta:
         verbose_name_plural = "Installments"
         db_table = "sales_confirmation_installment"
 
     def __str__(self):
-        return f"Installment for {self.sales_confirmation.client.name} - Due: {self.due_date}"
+        return f"{self.sales_confirmation_proposal} - {self.description}"

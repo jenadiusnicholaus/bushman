@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from sales.serializers.sales_inquiries_serializers import GetSalesInquirySerializers
 from sales_confirmation.models import (
+    Installment,
     SalesConfirmationProposal,
     SalesConfirmationProposalAdditionalService,
     SalesConfirmationProposalItinerary,
@@ -15,6 +16,7 @@ class GetSalesConfirmationProposalSerializer(serializers.ModelSerializer):
     proposed_package = serializers.SerializerMethodField()
     itinerary = serializers.SerializerMethodField()
     additional_services = serializers.SerializerMethodField()
+    installments = serializers.SerializerMethodField()
 
     class Meta:
         model = SalesConfirmationProposal
@@ -49,6 +51,13 @@ class GetSalesConfirmationProposalSerializer(serializers.ModelSerializer):
                 many=True,  # Use many=True if this is a queryset/list
             ).data
         return None
+
+    def get_installments(self, obj):
+        installments = obj.installments.all()
+        if len(installments) > 0:
+            return GetInstallmentSerializer(installments, many=True).data
+        else:
+            return []
 
 
 class CreateSalesConfirmationProposalSerializer(serializers.ModelSerializer):
@@ -129,4 +138,23 @@ class UpdateSalesConfirmationProposalAdditionalServiceSerializer(
 ):
     class Meta:
         model = SalesConfirmationProposalAdditionalService
+        fields = "__all__"
+
+
+# -------------------- Installment Serializer ------------------ #
+class GetInstallmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Installment
+        fields = "__all__"
+
+
+class CreateInstallmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Installment
+        fields = "__all__"
+
+
+class UpdateInstallmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Installment
         fields = "__all__"

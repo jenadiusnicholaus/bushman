@@ -14,7 +14,7 @@ from ..other_serializers.price_list_serializers import (
 )
 
 from ..models import (
-    SalesPackage,
+    SalesPackages,
     HuntingPriceList,
     HuntingPriceListType,
     HuntingPriceTypePackage,

@@ -7,7 +7,7 @@ from bm_hunting_settings.models import (
     HuntingPriceListType,
     HuntingPriceTypePackage,
     HuntingType,
-    SalesPackage,
+    SalesPackages,
     SalesPackageSpecies,
 )
 from bm_hunting_settings.serializers import HutingAreaSerializers, SpeciesSerializer
@@ -37,7 +37,7 @@ class GetSalesPackageSerializer(serializers.ModelSerializer):
     species = serializers.SerializerMethodField()
 
     class Meta:
-        model = SalesPackage
+        model = SalesPackages
         # fields = "__all__"
         depth = 1
         exclude = ["user"]
@@ -53,13 +53,13 @@ class GetSalesPackageSerializer(serializers.ModelSerializer):
 class CreateSalesPackageSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = SalesPackage
+        model = SalesPackages
         fields = "__all__"
 
 
 class UpdateSalesPackageSerializer(serializers.ModelSerializer):
     class Meta:
-        model = SalesPackage
+        model = SalesPackages
         fields = "__all__"
 
 

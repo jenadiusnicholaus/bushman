@@ -2,6 +2,7 @@ from rest_framework import viewsets
 
 from sales_confirmation.models import SalesConfirmationProposal
 from sales_confirmation.serializers import (
+    CreateInstallmentSerializer,
     CreateSalesConfirmationProposalAdditionalServiceSerializer,
     CreateSalesConfirmationProposalItinerarySerializer,
     CreateSalesConfirmationProposalPackageSerializer,
@@ -31,10 +32,7 @@ class SalesConfirmationViewSet(viewsets.ModelViewSet):
             )
             if not proposal_serializer.is_valid():
                 return Response(
-                    {
-                        "message": "Proposal creation failed",
-                        "errors": proposal_serializer.errors,
-                    },
+                    proposal_serializer.errors,
                     status=status.HTTP_400_BAD_REQUEST,
                 )
             saved_proposal = proposal_serializer.save()
@@ -74,13 +72,35 @@ class SalesConfirmationViewSet(viewsets.ModelViewSet):
                 saved_proposal.delete()
                 saved_package.delete()
                 return Response(
-                    {
-                        "message": "Itinerary creation failed",
-                        "errors": itinerary_serializer.errors,
-                    },
+                    itinerary_serializer.errors,
                     status=status.HTTP_400_BAD_REQUEST,
                 )
             saved_itinerary = itinerary_serializer.save()
+
+            installments = request.data.get("installments", [])
+            for installment in installments:
+
+                installment_data = {
+                    "sales_confirmation_proposal": saved_proposal.id,
+                    "description": installment.get("description"),
+                    "amount_due": installment.get("amount"),
+                    "days": installment.get("days"),
+                    "due_limit": installment.get("due_limit"),
+                }
+
+                installment_serializer = CreateInstallmentSerializer(
+                    data=installment_data
+                )
+
+                if not installment_serializer.is_valid():
+                    saved_proposal.delete()
+                    saved_package.delete()
+                    saved_itinerary.delete()
+                    return Response(
+                        installment_serializer.errors,
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                saved_installment = installment_serializer.save()
 
             # Handle multiple additional services
             # services = request.data.get("services", [])

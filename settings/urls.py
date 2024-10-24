@@ -26,7 +26,6 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("api-auth/", include("rest_framework.urls")),
     path(f"api/{API_VERSION}/authentication/", include("authentication.urls")),
-    path(f"api/{API_VERSION}/client/", include("hunter.urls")),
     # bm_hunting_setting
     path(f"api/{API_VERSION}/settings/", include("bm_hunting_settings.urls")),
     path(f"api/{API_VERSION}/sales/", include("sales.urls")),

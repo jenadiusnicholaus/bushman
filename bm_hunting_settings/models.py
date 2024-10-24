@@ -307,7 +307,7 @@ class HuntingType(models.Model):
         return self.name
 
 
-class SalesPackage(models.Model):
+class SalesPackages(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -325,7 +325,6 @@ class SalesPackage(models.Model):
 
     class meta:
         verbose_name_plural = "Sales Packages"
-        db_table = "sales_packages"
 
     def __str__(self):
         return self.name
@@ -392,7 +391,7 @@ class HuntingPriceTypePackage(models.Model):
         related_name="hunting_price_type_package",
     )
     sales_package = models.ForeignKey(
-        SalesPackage,
+        SalesPackages,
         on_delete=models.CASCADE,
         related_name="hunting_price_type_package",
     )
@@ -425,7 +424,7 @@ class Seasons(models.Model):
 
 class SalesPackageSpecies(models.Model):
     sales_package = models.ForeignKey(
-        SalesPackage,
+        SalesPackages,
         on_delete=models.CASCADE,
         related_name="sales_package_species",
     )

@@ -48,7 +48,6 @@ INSTALLED_APPS = [
     "django_filters",
     # my apps
     "authentication",
-    "hunter",
     "bm_hunting_settings",
     "sales",
     "sales_confirmation",
