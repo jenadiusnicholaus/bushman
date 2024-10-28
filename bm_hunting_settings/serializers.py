@@ -12,7 +12,7 @@ from bm_hunting_settings.models import (
     Seasons,
     Species,
 )
-from sales.models import ContactType, EntityCategories, EntityCategory, PaymentMethod
+from sales.models import ContactType, Doctype, EntityCategories, EntityCategory, PaymentMethod
 
 
 class GetCurrencySerializer(serializers.ModelSerializer):
@@ -199,4 +199,11 @@ class CreateSeasonsSerializer(serializers.ModelSerializer):
 class UpdateSeasonsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Seasons
+        fields = "__all__"
+
+# ---------- Doctype--------------
+
+class GetDoctypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Doctype
         fields = "__all__"

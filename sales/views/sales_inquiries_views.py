@@ -41,8 +41,13 @@ class SalesInquiriesViewSet(viewsets.ModelViewSet):
     serializer_class = GetSalesInquirySerializers
     permission_classes = [IsAuthenticated]
 
+    from django.db.models import Q
+
     def list(self, request, *args, **kwargs):
-        queryset = self.queryset.all()
+        queryset = self.queryset.filter(
+            Q(sales_confirmation_proposal__status=None)
+            # | Q(sales_confirmation_proposal__status__status="pending")
+        )
 
         # Get query parameters
         preferred_date = request.query_params.get("preferred_date")
@@ -68,13 +73,12 @@ class SalesInquiriesViewSet(viewsets.ModelViewSet):
         # Filter by parsed date only if it is valid
         if formatted_date:
             queryset = queryset.filter(
-                # Q(sales_inquiry_preference_set__preferred_date__lte=formatted_date)
                 Q(sales_inquiry_preference_set__preferred_date__gte=formatted_date)
             ).order_by("sales_inquiry_preference_set__preferred_date")
 
         # Filter by season_id only if it is valid (not empty)
         if season_id:
-            queryset = queryset.filter(season__id=season_id).order_by(
+            queryset = queryset.filter(Q(season__id=season_id)).order_by(
                 "sales_inquiry_preference_set__preferred_date"
             )
 

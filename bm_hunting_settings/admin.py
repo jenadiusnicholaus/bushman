@@ -28,3 +28,6 @@ admin.site.register(models.HuntingPriceListType)
 admin.site.register(models.Currency)
 # Seasons
 admin.site.register(models.Seasons)
+# HuntingPackageOberverHunter
+admin.site.register(models.HuntingPackageOberverHunter)
+# Document

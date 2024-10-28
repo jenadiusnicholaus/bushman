@@ -388,7 +388,7 @@ class HuntingPriceTypePackage(models.Model):
     price_list_type = models.ForeignKey(
         HuntingPriceListType,
         on_delete=models.CASCADE,
-        related_name="hunting_price_type_package",
+        related_name="hunting_price_list_type_package",
     )
     sales_package = models.ForeignKey(
         SalesPackages,
@@ -405,9 +405,6 @@ class HuntingPriceTypePackage(models.Model):
             "price_list_type",
             "sales_package",
         )
-
-    def __str__(self):
-        return self.price_list_type.name + " - " + self.sales_package.name
 
 
 class Seasons(models.Model):
@@ -491,7 +488,7 @@ class HuntingPackageCompanionsHunter(models.Model):
 
     class Meta:
         verbose_name_plural = "Hunting Package Companions Hunter"
-        db_table = "hunting_package_companions_hunter"
+        db_table = "hunting_package_companions_hunter_cost"
 
     def __str__(self):
         return (
@@ -499,6 +496,20 @@ class HuntingPackageCompanionsHunter(models.Model):
             + " - "
             + str(self.days)
         )
+
+
+class HuntingPackageOberverHunter(models.Model):
+    hunting_price_list_type_package = models.ForeignKey(
+        HuntingPriceTypePackage,
+        on_delete=models.CASCADE,
+        related_name="hunting_package_oberver_hunter",
+    )
+    days = models.IntegerField(default=0)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+
+    class Meta:
+        verbose_name_plural = "Hunting Package Oberver Hunter"
+        db_table = "hunting_package_oberver_hunter_cost"
 
 
 class AdditionalServices(models.Model):

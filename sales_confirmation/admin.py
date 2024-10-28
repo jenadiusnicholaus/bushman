@@ -6,6 +6,7 @@ from .models import (
     SalesConfirmationProposalAdditionalService,
     SalesConfirmationProposalClientPreference,
     Installment,
+    SalesConfirmationProposalStatus
 )
 
 admin.site.register(SalesConfirmationProposal)
@@ -14,3 +15,4 @@ admin.site.register(SalesConfirmationProposalItinerary)
 admin.site.register(SalesConfirmationProposalAdditionalService)
 admin.site.register(SalesConfirmationProposalClientPreference)
 admin.site.register(Installment)
+admin.site.register(SalesConfirmationProposalStatus)

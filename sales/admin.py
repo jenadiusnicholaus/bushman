@@ -11,7 +11,10 @@ from sales.models import (
     SalesInquirySpecies,
     Contacts,
     SalesInquiryArea,
+    Document,
+    Doctype,
 )
+from sales_confirmation.models import SalesQuotaSpeciesStatus
 
 # Register your models here.
 
@@ -26,3 +29,6 @@ admin.site.register(SalesIquiryPreference)
 admin.site.register(SalesInquirySpecies)
 admin.site.register(Contacts)
 admin.site.register(SalesInquiryArea)
+admin.site.register(Document)
+admin.site.register(Doctype)
+admin.site.register(SalesQuotaSpeciesStatus)

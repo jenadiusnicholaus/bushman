@@ -1,8 +1,14 @@
 from django.db import models
 
-from bm_hunting_settings.models import SalesPackages
-from sales.models import Entity, SalesInquiry
+from bm_hunting_settings.models import HuntingArea, Quota, SalesPackages, Species
+from sales.models import Document, Entity, SalesInquiry
 from django.core.validators import MaxLengthValidator
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.contrib.auth.models import User
+
+# timezone
+from django.utils import timezone
 
 
 class SalesConfirmationProposal(models.Model):
@@ -28,7 +34,7 @@ class SalesConfirmationProposal(models.Model):
 
     class Meta:
         verbose_name_plural = "Sales Confirmation Proposals"
-        db_table = "sales_confirmation_proposal"
+        # db_table = "sales_confirmation_proposals"
         unique_together = ("sales_inquiry", "id")
 
     def __str__(self):
@@ -60,6 +66,62 @@ class SalesConfirmationProposalPackage(models.Model):
 
     def __str__(self):
         return f"{self.sales_confirmation_proposal} - {self.hunting_license}"
+
+
+class SalesConfirmationProposalStatus(models.Model):
+    STATUS = (
+        ("pending", "Pending"),
+        ("provision_sales", "Provision Sales"),
+        ("confirmed", "Confirmed"),
+        ("declined", "Declined"),
+        ("cancelled", "Cancelled"),
+        ("completed", "Completed"),
+    )
+    sales_confirmation_proposal = models.OneToOneField(
+        SalesConfirmationProposal,
+        on_delete=models.CASCADE,
+        related_name="status",
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="sales_confirmation_status_user",
+        null=True,
+        blank=True,
+    )
+    status = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        validators=[MaxLengthValidator(255)],
+        choices=STATUS,
+        default="pending",
+    )
+    document = models.ForeignKey(
+        Document,
+        on_delete=models.SET_NULL,
+        related_name="sales_confirmation_status_documents",
+        null=True,
+        blank=True,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "Sales Confirmation Status"
+        db_table = "sales_confirmation"
+
+    def __str__(self):
+        return f"{self.sales_confirmation_proposal} - {self.status}"
+
+
+@receiver(post_save, sender=SalesConfirmationProposal)
+def create_or_update_sales_confirmation_status(sender, instance, created, **kwargs):
+    if created:
+        status, created = SalesConfirmationProposalStatus.objects.get_or_create(
+            sales_confirmation_proposal=instance
+        )
+    # instance.status.save()
 
 
 class SalesConfirmationProposalItinerary(models.Model):
@@ -180,3 +242,46 @@ class Installment(models.Model):
 
     def __str__(self):
         return f"{self.sales_confirmation_proposal} - {self.description}"
+
+
+class SalesQuotaSpeciesStatus(models.Model):
+    # from sales.models import SalesEnquiry
+
+    STATUS = (
+        ("pending", "Pending"),
+        ("provision_sales", "Provision Sales"),
+        ("confirmed", "Confirmed"),
+        ("declined", "Declined"),
+        ("cancelled", "Cancelled"),
+        ("completed", "Completed"),
+    )
+    sales_proposal = models.ForeignKey(
+        SalesConfirmationProposal,
+        on_delete=models.CASCADE,
+        related_name="species_sales_inquiry_status_set",
+    )
+    quota = models.ForeignKey(
+        Quota, on_delete=models.CASCADE, related_name="species_sales_quota_status_set"
+    )
+    area = models.ForeignKey(
+        HuntingArea,
+        on_delete=models.CASCADE,
+        related_name="species_sales_area_status_set",
+    )
+
+    species = models.ForeignKey(
+        Species,
+        on_delete=models.CASCADE,
+        related_name="species_sales_species_status_set",
+    )
+    status = models.CharField(max_length=100, choices=STATUS, default="pending")
+    quantity = models.IntegerField(default=0)
+    create_date = models.DateTimeField(default=timezone.now)
+    updated_date = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "Sales Quota Species Status"
+        db_table = "sales_quota_species_status"
+
+    def __str__(self):
+        return self.species.name + " - " + self.status

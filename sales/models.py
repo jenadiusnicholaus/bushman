@@ -9,6 +9,7 @@ from bm_hunting_settings.models import (
     HuntingType,
     IdentityType,
     Nationalities,
+    Quota,
     Seasons,
     # Package,
     # SafariPackageType,
@@ -281,17 +282,27 @@ class ContractType(models.Model):
         return self.name
 
 
+class Doctype(models.Model):
+    code = models.CharField(max_length=100, unique=True, null=True, blank=True)
+    name = models.CharField(max_length=100)
+
+    class Meta:
+        verbose_name_plural = "Document Types"
+        db_table = "doc_types"
+
+    def __str__(self):
+        return self.name
+
+
 class Document(models.Model):
-    DocType = (
-        ("Passport_Copy", "Travel Packet(Passport Copy)"),
-        ("Passport_Photo", "Travel Packet(Passport  Photo"),
-        ("Visa", "Visa"),
-        ("Gun Permits", "Gun Permits"),
-        ("CITES Documentation", "CITES Documentation"),
+    doc_type = models.ForeignKey(
+        Doctype,
+        on_delete=models.CASCADE,
+        related_name="doc_type_set",
+        null=True,
+        blank=True,
     )
-    forWho = models.CharField(max_length=100, null=True)
-    document_type = models.CharField(max_length=100, choices=DocType)
-    client = models.ForeignKey(
+    enity = models.ForeignKey(
         Entity, on_delete=models.CASCADE, related_name="entity_document_set"
     )
     document = models.FileField(upload_to="documents/")
@@ -299,15 +310,14 @@ class Document(models.Model):
     updated_at = models.DateTimeField(auto_now=True, null=True)
 
     class Meta:
-        verbose_name_plural = "Client Documents"
+        verbose_name_plural = " Documents"
         db_table = "documents"
-        unique_together = ("forWho", "document_type")
 
     def __str__(self):
         return (
-            self.client.user.username
+            self.enity.user.username
             + " - "
-            + self.document_type
+            + self.doc_type.name
             + " - "
             + self.document.name
         )

@@ -35,6 +35,7 @@ from bm_hunting_settings.serializers import (
     GetAccommodationTypeSerializer,
     GetContactTypeSerializer,
     GetCurrencySerializer,
+    GetDoctypeSerializer,
     GetPaymentMethodSerializer,
     GetRegulatoryHuntingPackageSerializers,
     GetSeasonsSerializer,
@@ -49,7 +50,7 @@ from django.db import transaction
 
 from rest_framework.decorators import api_view
 
-from sales.models import ContactType, EntityCategories, PaymentMethod
+from sales.models import ContactType, Doctype, EntityCategories, PaymentMethod
 
 logger = logging.getLogger(__name__)
 
@@ -102,6 +103,11 @@ class PaymentMethodViewSets(viewsets.ModelViewSet):
 class SeasonsViewSets(viewsets.ModelViewSet):
     serializer_class = GetSeasonsSerializer
     queryset = Seasons.objects.all()
+    permission_classes = [IsAuthenticated]
+
+class DocumentTypesViewSets(viewsets.ModelViewSet):
+    queryset = Doctype.objects.all()
+    serializer_class = GetDoctypeSerializer
     permission_classes = [IsAuthenticated]
 
 

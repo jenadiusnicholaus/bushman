@@ -33,13 +33,11 @@ class CreatePriceListViewSet(viewsets.ModelViewSet):
     serializer_class = GetHuntingPriceListSerializer
 
     queryset = HuntingPriceList.objects.filter(
-        hunting_price_list_type__hunting_price_type_package__sales_package__sales_quota__start_date__year=current_year
+        hunting_price_list_type__hunting_price_list_type_package__sales_package__sales_quota__start_date__year=current_year
     )
     permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
-        pprint(request.data)
-
         sales_package_data = {
             "user": request.user.id,
             "name": request.data.get("name"),
@@ -138,7 +136,6 @@ class CreatePriceListViewSet(viewsets.ModelViewSet):
                     data=componants_hunter_data
                 )
             )
-            pprint(componion_hunter_serializer.is_valid())
             if not componion_hunter_serializer.is_valid():
                 # Clean up the previously created objects for data consistency
                 hunting_price_type_package_serializer.save()  # Assuming this can be re-saved or skip deletion
@@ -155,7 +152,6 @@ class CreatePriceListViewSet(viewsets.ModelViewSet):
             # Create Sales Package Species Data
             species_object_list = request.data.get("species_object_list", [])
 
-            pprint(species_object_list.__len__())
             for species_data in species_object_list:
                 sales_package_species_data = {
                     "sales_package": sales_package.id,
@@ -166,7 +162,6 @@ class CreatePriceListViewSet(viewsets.ModelViewSet):
                 sales_package_species_serializer = CreateSalesPackageSpeciesSerializer(
                     data=sales_package_species_data
                 )
-                pprint(sales_package_species_serializer.is_valid())
                 if not sales_package_species_serializer.is_valid():
                     # Clean up the previously created objects
                     hunting_price_type_package_serializer.save()  # Assuming this can be re-saved or skip deletion
