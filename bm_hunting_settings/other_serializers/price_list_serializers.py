@@ -124,6 +124,7 @@ class GetHuntingPriceTypePackageSerializer(serializers.ModelSerializer):
     sales_package = GetSalesPackageSerializer()
     price_list_type = GetHuntingPriceListTypeSerializer()
     componions_hunter = serializers.SerializerMethodField()
+    oberver = serializers.SerializerMethodField()
 
     def get_componions_hunter(self, obj):
         componions_hunter = obj.hunting_package_companions_hunter.all()
@@ -132,6 +133,13 @@ class GetHuntingPriceTypePackageSerializer(serializers.ModelSerializer):
         serializer = GetHuntingPackageCompanionsHunterSerializer(
             componions_hunter, many=True
         )
+        return serializer.data
+
+    def get_oberver(self, obj):
+        oberver = obj.hunting_package_oberver_hunter.all()
+        if len(oberver) == 0:
+            return []
+        serializer = GetHuntingPackageOberverHunterSerializer(oberver, many=True)
         return serializer.data
 
     class Meta:
@@ -213,6 +221,25 @@ class CreateHuntingPackageCompanionsHunterSerializer(serializers.ModelSerializer
 
 
 class UpdateHuntingPackageCompanionsHunterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HuntingPackageCompanionsHunter
+        fields = "__all__"
+
+
+# ---------------------- Hunting package Oberver Cost--------------
+class GetHuntingPackageOberverHunterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HuntingPackageCompanionsHunter
+        fields = "__all__"
+
+
+class CreateHuntingPackageOberverHunterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HuntingPackageCompanionsHunter
+        fields = "__all__"
+
+
+class UpdateHuntingPackageOberverHunterSerializer(serializers.ModelSerializer):
     class Meta:
         model = HuntingPackageCompanionsHunter
         fields = "__all__"

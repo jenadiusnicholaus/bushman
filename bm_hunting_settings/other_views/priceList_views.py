@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from django.db import transaction
 from ..other_serializers.price_list_serializers import (
     CreateHuntingPackageCompanionsHunterSerializer,
+    CreateHuntingPackageOberverHunterSerializer,
     CreateHuntingPriceTypePackageSerializer,
     CreateSalesPackageSerializer,
     CreateHuntingPriceListSerializer,
@@ -10,15 +11,11 @@ from ..other_serializers.price_list_serializers import (
     GetHuntingPriceListSerializer,
     GetHuntingPriceTypePackageSerializer,
     CreateSalesPackageSpeciesSerializer,
-    GetSalesPackageSerializer,
 )
 
 from ..models import (
-    SalesPackages,
     HuntingPriceList,
-    HuntingPriceListType,
     HuntingPriceTypePackage,
-    SalesPackageSpecies,
 )
 
 from rest_framework import viewsets
@@ -148,6 +145,28 @@ class CreatePriceListViewSet(viewsets.ModelViewSet):
                 )
 
             componion_hunter_serializer.save()
+
+            # create the observer cost
+            observer_data = {
+                "hunting_price_list_type_package": saved_hunting_price_type_package.id,
+                "days": request.data.get("observer_days"),
+                "amount": request.data.get("observer_amount"),
+            }
+
+            oberver_serialiozers = CreateHuntingPackageOberverHunterSerializer(
+                data=observer_data
+            )
+            if not oberver_serialiozers.is_valid():
+                # Clean up the previously created objects for data consistency
+                hunting_price_type_package_serializer.save()  # Assuming this can be re-saved or skip deletion
+                price_list_type.delete()  # Delete the previously created price_list_type
+                price_list.delete()  # Delete the previously created price_list
+                sales_package.delete()  # Delete the previously created sales_package
+                return Response(
+                    componion_hunter_serializer.errors,
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            oberver_serialiozers.save()
 
             # Create Sales Package Species Data
             species_object_list = request.data.get("species_object_list", [])
