@@ -8,7 +8,7 @@ from sales_confirmation.serializers import UpdateSalesQuotaSpeciesStatusSerializ
 
 class TrackSpeciesStatus:
     @staticmethod
-    def track_species_status(sales_confirmation_proposal_id, status, quota_id, area_id):
+    def track(sales_confirmation_proposal_id, status, quota_id, area_id):
         """
         This function updates the available quantity of species in the QuotaHutingAreaSpecies
         based on the sold species quantity from the sales inquiry, depending on the status.
@@ -21,7 +21,9 @@ class TrackSpeciesStatus:
             raise ValueError("SalesInquiry not found.")
 
         sold_species = (
-            sales_inquiry.sales_confirmation_proposal.sales_confirmation_package.package.sales_package_species.all()
+            sales_inquiry.sales_inquiry_species_set.all()
+            # from the package
+            # sales_inquiry.sales_confirmation_proposal.sales_confirmation_package.package.sales_package_species.all()
         )
 
         for species in sold_species:

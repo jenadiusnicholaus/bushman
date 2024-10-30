@@ -1,11 +1,6 @@
 from rest_framework import viewsets
 
-from bm_hunting_settings.models import (
-    HuntingPackageCompanionsHunter,
-    HuntingPackageOberverHunter,
-    HuntingPriceTypePackage,
-)
-from sales.models import SalesIquiryPreference
+
 from sales_confirmation.models import (
     SalesConfirmationProposal,
     SalesConfirmationProposalStatus,
@@ -13,11 +8,9 @@ from sales_confirmation.models import (
 )
 from sales_confirmation.serializers import (
     CreateInstallmentSerializer,
-    CreateSalesConfirmationProposalAdditionalServiceSerializer,
     CreateSalesConfirmationProposalItinerarySerializer,
     CreateSalesConfirmationProposalPackageSerializer,
     CreateSalesConfirmationProposalSerializer,
-    CreateSalesConfirmationProposalStatusSerializer,
     GetSalesConfirmationProposalSerializer,
     GetSalesConfirmationProposalStatusSerializer,
     GetSalesQuotaSpeciesStatusSerializer,
@@ -31,7 +24,6 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
-from utils import track_species_status
 from utils.sales_price_breakdown import calculate_total_cost
 from utils.track_species_status import TrackSpeciesStatus
 
@@ -54,6 +46,7 @@ class SalesConfirmationViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         confirmation_proposal_data = {
             "sales_inquiry": request.data.get("sales_inquiry_id"),
+            "regulatory_package": request.data.get("regulatory_package_id"),
         }
 
         # with transaction.atomic():
@@ -188,11 +181,29 @@ class SalesConfirmation(viewsets.ModelViewSet):
         # and update the status of proposal use CreateSalesConfirmationProposalStatusSerializer
         quota_id = request.data.get("quota_id")
         area_id = request.data.get("area_id")
-        doc_data = {
-            "doc_type": request.data.get("doc_type_id"),
-            "enity": request.data.get("entity_id"),
-            "document": request.data.get("document"),
-        }
+        contract_doc = request.data.get("contract_doc")
+        payment_doc = request.data.get("payment_doc")
+        documents = []
+        if contract_doc is not None and contract_doc != "undefined":
+            documents.append({"type": "contract", "file": contract_doc})
+
+        if payment_doc is not None and payment_doc != "undefined":
+            documents.append({"type": "payment_receipt", "file": payment_doc})
+
+        if len(documents) > 0:
+            for doc in documents:
+                doc_data = {
+                    "doc_type": doc.get("type"),
+                    "entity": request.data.get("entity_id"),
+                    "document": doc.get("file"),
+                }
+                doc_serializer = UploadDocSerializer(data=doc_data)
+                if not doc_serializer.is_valid():
+                    return Response(
+                        doc_serializer.errors,
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                saved_doc = doc_serializer.save()
 
         status_obj, created = SalesConfirmationProposalStatus.objects.get_or_create(
             sales_confirmation_proposal_id=request.data.get(
@@ -220,25 +231,19 @@ class SalesConfirmation(viewsets.ModelViewSet):
         #     )
 
         # with transaction.atomic():/
-        doc_serializer = UploadDocSerializer(data=doc_data)
-        if not doc_serializer.is_valid():
-            return Response(
-                doc_serializer.errors,
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        saved_doc = doc_serializer.save()
-        status_data["document"] = saved_doc.id
+
+        # status_data["document"] = saved_doc.id
         status_serializer = UpdateSalesConfirmationProposalStatusSerializer(
             instance=status_obj, data=status_data, partial=True
         )
         if not status_serializer.is_valid():
-            saved_doc.delete()
+            # saved_doc.delete()
             return Response(
                 status_serializer.errors,
                 status=status.HTTP_400_BAD_REQUEST,
             )
         saved_status = status_serializer.save()
-        TrackSpeciesStatus.track_species_status(
+        TrackSpeciesStatus.track(
             request.data.get("sales_confirmation_proposal_id"),
             request.data.get("status_id"),
             quota_id,

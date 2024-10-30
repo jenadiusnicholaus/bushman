@@ -12,7 +12,13 @@ from bm_hunting_settings.models import (
     Seasons,
     Species,
 )
-from sales.models import ContactType, Doctype, EntityCategories, EntityCategory, PaymentMethod
+from sales.models import (
+    ContactType,
+    Doctype,
+    EntityCategories,
+    EntityCategory,
+    PaymentMethod,
+)
 
 
 class GetCurrencySerializer(serializers.ModelSerializer):
@@ -140,12 +146,8 @@ class UpdateLocationSerializer(serializers.ModelSerializer):
 class GetRegulatoryHuntingPackageSerializers(serializers.ModelSerializer):
     class Meta:
         model = RegulatoryHuntingpackage
-        fields = [
-            "id",
-            "name",
-            "quota",
-        ]
-        depth = 1
+        fields = "__all__"
+        # depth = 1
 
 
 class CreateRegulatoryHuntingPackageSerializers(serializers.ModelSerializer):
@@ -164,6 +166,7 @@ class UpdateRegulatoryHuntingPackageSerializers(serializers.ModelSerializer):
 
 
 class GetRegulatoryHuntingPackageSpeciesSerializers(serializers.ModelSerializer):
+    species = SpeciesSerializer()
 
     class Meta:
         model = RegulatoryHuntingPackageSpecies
@@ -201,7 +204,9 @@ class UpdateSeasonsSerializer(serializers.ModelSerializer):
         model = Seasons
         fields = "__all__"
 
+
 # ---------- Doctype--------------
+
 
 class GetDoctypeSerializer(serializers.ModelSerializer):
     class Meta:

@@ -229,12 +229,12 @@ class RegulatoryHuntingpackage(models.Model):
         related_name="user_regulatory_hunting_packages",
         null=True,
     )
-    quota = models.ForeignKey(
-        Quota,
-        on_delete=models.CASCADE,
-        related_name="regulatory_hunting_packages",
-        null=True,
-    )
+    # quota = models.ForeignKey(
+    #     Quota,
+    #     on_delete=models.CASCADE,
+    #     related_name="regulatory_hunting_packages",
+    #     null=True,
+    # )
 
     TYPES_CHOICES = (
         ("Regular", "Regular Safari"),
@@ -242,16 +242,15 @@ class RegulatoryHuntingpackage(models.Model):
         ("Major", "Major Safari"),
     )
 
-    name = models.CharField(max_length=100, choices=TYPES_CHOICES)
+    name = models.CharField(max_length=100, choices=TYPES_CHOICES, unique=True)
     duration = models.IntegerField(default=0)
 
     created_date = models.DateTimeField(default=timezone.now, null=True)
     updated_date = models.DateTimeField(auto_now=True, null=True)
 
     class Meta:
-        verbose_name_plural = "Safari Package Types"
+        verbose_name_plural = "Safari Package"
         db_table = "regulatory_hunting_packages"
-        unique_together = ("quota", "name")
 
     def __str__(self):
         return self.name
@@ -261,12 +260,12 @@ class RegulatoryHuntingPackageSpecies(models.Model):
     r_hunting_package = models.ForeignKey(
         RegulatoryHuntingpackage,
         on_delete=models.CASCADE,
-        related_name="regulatory_hunting_package_species",
+        related_name="regulatory_hunting_package_set",
     )
     species = models.ForeignKey(
         Species,
         on_delete=models.CASCADE,
-        related_name="regulatory_hunting_package_species",
+        related_name="regulatory_hunting_package_species_set",
     )
     quantity = models.IntegerField(default=0)
 
@@ -475,6 +474,66 @@ class HuntingPackageUpgradeFees(models.Model):
             + " - "
             + self.species.name
         )
+
+
+class HuntingPackageCustomization(models.Model):
+    hunting_price_list_type_package = models.ForeignKey(
+        HuntingPriceTypePackage,
+        on_delete=models.CASCADE,
+        related_name="hunting_package_customization",
+    )
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+
+    hunting_type = models.ForeignKey(
+        HuntingType,
+        on_delete=models.CASCADE,
+        related_name="hunting_package_customized_hunting_type_set",
+    )
+    area = models.ForeignKey(
+        HuntingArea,
+        on_delete=models.CASCADE,
+        related_name="hunting_package_customized_area_set",
+        null=True,
+        blank=True,
+    )
+    season = models.ForeignKey(
+        Seasons,
+        on_delete=models.CASCADE,
+        related_name="hunting_package_customized_season_set",
+        null=True,
+        blank=True,
+    )
+
+    class Meta:
+        verbose_name_plural = "Hunting Package Customization"
+        db_table = "sales_package_customization"
+
+    def __str__(self):
+        return self.hunting_price_list_type_package.price_list_type.name
+
+
+class HuntingPackageCustomizedSpecies(models.Model):
+    hunting_package_customization = models.ForeignKey(
+        HuntingPackageCustomization,
+        on_delete=models.CASCADE,
+        related_name="hunting_package_customized_set",
+    )
+    species = models.ForeignKey(
+        Species,
+        on_delete=models.CASCADE,
+        related_name="hunting_package_customized_species_set",
+    )
+    quantity = models.IntegerField(default=0)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+
+    description = models.TextField()
+
+    class Meta:
+        verbose_name_plural = "Hunting Package Customized Species"
+        db_table = "hunting_package_customized_species"
+
+    def __str__(self):
+        return self.hunting_package_customization.name + " - " + self.species.name
 
 
 class HuntingPackageCompanionsHunter(models.Model):

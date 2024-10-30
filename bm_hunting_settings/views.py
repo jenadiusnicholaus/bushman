@@ -17,6 +17,7 @@ from bm_hunting_settings.models import (
     Locations,
     Nationalities,
     QuotaHutingAreaSpecies,
+    RegulatoryHuntingPackageSpecies,
     RegulatoryHuntingpackage,
     Seasons,
     Species,
@@ -38,6 +39,7 @@ from bm_hunting_settings.serializers import (
     GetDoctypeSerializer,
     GetPaymentMethodSerializer,
     GetRegulatoryHuntingPackageSerializers,
+    GetRegulatoryHuntingPackageSpeciesSerializers,
     GetSeasonsSerializer,
     HutingAreaSerializers,
     NationalitiesSerializeers,
@@ -105,6 +107,7 @@ class SeasonsViewSets(viewsets.ModelViewSet):
     queryset = Seasons.objects.all()
     permission_classes = [IsAuthenticated]
 
+
 class DocumentTypesViewSets(viewsets.ModelViewSet):
     queryset = Doctype.objects.all()
     serializer_class = GetDoctypeSerializer
@@ -161,6 +164,20 @@ class SpeciesListView(viewsets.ModelViewSet):
         species = self.get_object()
         species.delete()
         return Response(status=204)
+
+
+class LicenceRegulatoryHuntingPackageSpecies(viewsets.ModelViewSet):
+    serializer_class = GetRegulatoryHuntingPackageSpeciesSerializers
+    queryset = RegulatoryHuntingPackageSpecies.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def list(self, request, *args, **kwargs):
+        quota_id = self.request.query_params.get("quota_id", None)
+        querySet = self.get_queryset().filter(
+            r_hunting_package__quota__id=quota_id,
+        )
+        serializer = self.get_serializer(querySet, many=True)
+        return Response(serializer.data)
 
 
 class EntityCateriesView(viewsets.ModelViewSet):
@@ -270,7 +287,6 @@ class RegulatoryHuntingPackageViewSets(viewsets.ModelViewSet):
 
         package_data = {
             "user": request.user.id,
-            "quota": request.data.get("quota_id"),
             "name": request.data.get("name"),
             "duration": request.data.get("duration"),
         }

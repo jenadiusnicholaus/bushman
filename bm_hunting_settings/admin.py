@@ -8,15 +8,10 @@ admin.site.register(models.Species)
 admin.site.register(models.HuntingArea)
 admin.site.register(models.HuntingQuatasArea)
 admin.site.register(models.QuotaHutingAreaSpecies)
-# RegulatoryHuntingpackage
 admin.site.register(models.RegulatoryHuntingpackage)
-# RegulatoryHuntingPackageSpecies
 admin.site.register(models.RegulatoryHuntingPackageSpecies)
-# GeoLocationCoordinates
 admin.site.register(models.GeoLocationCoordinates)
 admin.site.register(models.Locations)
-
-# SalesPackage
 admin.site.register(models.SalesPackages)
 admin.site.register(models.HuntingPriceList)
 admin.site.register(models.HuntingPriceTypePackage)
@@ -26,8 +21,7 @@ admin.site.register(models.HuntingPackageUpgradeFees)
 admin.site.register(models.HuntingType)
 admin.site.register(models.HuntingPriceListType)
 admin.site.register(models.Currency)
-# Seasons
 admin.site.register(models.Seasons)
-# HuntingPackageOberverHunter
 admin.site.register(models.HuntingPackageOberverHunter)
-# Document
+admin.site.register(models.HuntingPackageCustomization)
+admin.site.register(models.HuntingPackageCustomizedSpecies)

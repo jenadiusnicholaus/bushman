@@ -1,6 +1,12 @@
 from django.db import models
 
-from bm_hunting_settings.models import HuntingArea, Quota, SalesPackages, Species
+from bm_hunting_settings.models import (
+    HuntingArea,
+    Quota,
+    RegulatoryHuntingpackage,
+    SalesPackages,
+    Species,
+)
 from sales.models import Document, Entity, SalesInquiry
 from django.core.validators import MaxLengthValidator
 from django.db.models.signals import post_save
@@ -18,6 +24,12 @@ class SalesConfirmationProposal(models.Model):
         related_name="sales_confirmation_proposal",
         null=True,
         blank=True,
+    )
+    regulatory_package = models.ForeignKey(
+        RegulatoryHuntingpackage,
+        on_delete=models.CASCADE,
+        related_name="sales_confirmation_proposal_regulatory_package",
+        null=True,
     )
     client = models.OneToOneField(
         Entity,
@@ -174,29 +186,6 @@ class SalesConfirmationProposalAdditionalService(models.Model):
         return f"{self.sales_confirmation_proposal} - {self.service or 'No Service'}"
 
 
-# FOOD
-# ALLGERGIES
-# BEVERAGES
-# ALCOHOL
-# SHIRT
-# SPECIAL REQUESTS
-
-
-#  food = models.CharField(
-#         max_length=255, null=True, blank=True, validators=[MaxLengthValidator(255)]
-#     )
-#     allergies = models.CharField(
-#         max_length=255, null=True, blank=True, validators=[MaxLengthValidator(255)]
-#     )
-#     beverages = models.CharField(
-#         max_length=255, null=True, blank=True, validators=[MaxLengthValidator(255)]
-#     )
-#     alcohol = models.CharField(
-#         max_length=255, null=True, blank=True, validators=[MaxLengthValidator(255)]
-#     )
-#     shirt = models.CharField(
-#         max_length=255, null=True, blank=True, validators=[MaxLengthValidator(255)]
-#     )
 class SalesConfirmationProposalClientPreference(models.Model):
     sales_confirmation_proposal = models.ForeignKey(
         SalesConfirmationProposal,

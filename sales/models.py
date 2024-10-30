@@ -295,14 +295,17 @@ class Doctype(models.Model):
 
 
 class Document(models.Model):
-    doc_type = models.ForeignKey(
-        Doctype,
-        on_delete=models.CASCADE,
-        related_name="doc_type_set",
-        null=True,
-        blank=True,
+    doc_type = (
+        ("id_proof", "ID Proof"),
+        ("passport", "Passport"),
+        ("driving_license", "Driving License"),
+        ("visa", "Visa"),
+        ("other", "Other"),
+        ("contract", "Contract"),
+        ("payment_receipt", "Payment Receipt"),
     )
-    enity = models.ForeignKey(
+    doc_type = models.CharField(max_length=100, choices=doc_type, null=True)
+    entity = models.ForeignKey(
         Entity, on_delete=models.CASCADE, related_name="entity_document_set"
     )
     document = models.FileField(upload_to="documents/")
@@ -314,13 +317,7 @@ class Document(models.Model):
         db_table = "documents"
 
     def __str__(self):
-        return (
-            self.enity.user.username
-            + " - "
-            + self.doc_type.name
-            + " - "
-            + self.document.name
-        )
+        return self.entity.user.username
 
 
 class ContactType(models.Model):
