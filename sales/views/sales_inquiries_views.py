@@ -107,6 +107,15 @@ class SalesInquiriesViewSet(viewsets.ModelViewSet):
         categories = EntityCategories.objects.filter(
             name__in=request.data.get("categories")
         )
+        no_companion = 0
+        no_observers = 0
+        companion = request.data.get("no_of_companions", 0)
+
+        if companion:
+            no_companion = companion
+
+        if request.data.get("no_of_observers"):
+            n_observers = request.data.get("no_of_observers")
 
         if not categories.exists():
             return Response(
@@ -145,9 +154,9 @@ class SalesInquiriesViewSet(viewsets.ModelViewSet):
         seles_inquiry_preference_data = {
             "sales_inquiry": None,
             "no_of_hunters": request.data.get("no_of_hunters"),
-            "no_of_companions": request.data.get("no_of_companions"),
+            "no_of_companions": no_companion,
             "no_of_days": request.data.get("no_of_days"),
-            "no_of_observers": request.data.get("no_of_observers"),
+            "no_of_observers": no_observers,
             "preferred_date": preferred_date_str,
         }
         sales_prefered_species_data = {"sales_inquiry": None, "species": None}
@@ -219,9 +228,12 @@ class SalesInquiriesViewSet(viewsets.ModelViewSet):
             if not sales_inquiry_preference_serializer.is_valid():
                 #  we do delete the entity if the sales_inquiry_preference is not valid
                 # i am deleting the entity first because it is not possible to create sales_inquiry_preference without sales_inquiry
-                Entity.objects.get(id=saved_entity.id).delete()
-                SalesInquiry.objects.get(id=saved_sales_inquiry.id).delete()
-                EntityCategory.objects.get(id=saved_category_serializer.id).delete()
+                # Entity.objects.get(id=saved_entity.id).delete()
+                saved_entity.delete()
+                saved_sales_inquiry.delete()
+                saved_category_serializer.delete()
+                # SalesInquiry.objects.get(id=saved_sales_inquiry.id).delete()
+                # EntityCategory.objects.get(id=saved_category_serializer.id).delete()
                 Contacts.objects.filter(entity__id=saved_entity.id).delete()
                 return Response(
                     sales_inquiry_preference_serializer.errors,

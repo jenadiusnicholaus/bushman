@@ -173,9 +173,7 @@ class LicenceRegulatoryHuntingPackageSpecies(viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         quota_id = self.request.query_params.get("quota_id", None)
-        querySet = self.get_queryset().filter(
-            r_hunting_package__quota__id=quota_id,
-        )
+        querySet = self.get_queryset().filter()
         serializer = self.get_serializer(querySet, many=True)
         return Response(serializer.data)
 

@@ -73,6 +73,10 @@ class TrackSpeciesStatus:
                             f"Not enough quantity to reduce for species {species.species.name}. "
                             f"Current: {current_quantity}, Attempted: {species.quantity}"
                         )
+                        raise ValueError(
+                            f"Not enough quantity to reduce for species {species.species.name}. "
+                            f"Current: {current_quantity}, Attempted: {species.quantity}"
+                        )
 
                 # Handle 'confirmed' and 'completed' statuses
                 elif status in ["confirmed", "completed"]:
@@ -103,14 +107,27 @@ class TrackSpeciesStatus:
 
                 # Handle cancellation or decline
                 elif status in ["declined", "cancelled"]:
-                    quota_species.update(
-                        quantity=F("quantity") + species.quantity
-                    )  # Uncomment if it's relevant
-                    print(
-                        f"Increased quantity for species {species.species.name} by {species.quantity}."
+                    species_status = SalesQuotaSpeciesStatus.objects.filter(
+                        sales_proposal_id=sales_confirmation_proposal_id,
+                        species_id=species.species.id,
+                        quota_id=quota_id,
+                        area_id=area_id,
                     )
+
+                    if species_status.exists():
+                        species_status.update(
+                            status=status,  # Update status field
+                            quantity=species.quantity,  # Update quantity field
+                        )
+                    else:
+                        raise ValueError("Species status not found.")
+
+                    quota_species.update(quantity=F("quantity") + species.quantity)
 
                 else:
                     print("No valid status provided. No change in quantity.")
+
+                    raise ValueError(f"Invalid status: {status}")
             else:
                 print(f"No quota found for species: {species.species.name}")
+                raise ValueError("Quota not found.")

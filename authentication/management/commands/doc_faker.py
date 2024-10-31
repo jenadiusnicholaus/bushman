@@ -4,6 +4,10 @@ DocType = [
     {"code": "Visa", "description": "Visa"},
     {"code": "Gun_Permits", "description": "Gun Permits"},
     {"code": "CITES_Documentation", "description": "CITES Documentation"},
+    # SALES_INVOICE
+    {"code": "sales_invoice", "description": "Sales Invoice"},
+    # RECEIPT
+    {"code": "receipt", "description": "Receipt"},
 ]
 
 

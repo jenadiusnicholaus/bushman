@@ -217,9 +217,9 @@ class SalesIquiryPreference(models.Model):
 
     preferred_date = models.DateTimeField(default=timezone.now)
     no_of_hunters = models.IntegerField(default=1)
-    no_of_observers = models.IntegerField(default=0)
+    no_of_observers = models.IntegerField(default=0, blank=True, null=True)
     no_of_days = models.IntegerField(default=0)
-    no_of_companions = models.IntegerField(default=0)
+    no_of_companions = models.IntegerField(default=0, blank=True, null=True)
     special_requests = models.CharField(max_length=100, null=True, blank=True)
     budget_estimation = models.DecimalField(max_digits=10, decimal_places=2, null=True)
     accommodation_type = models.ForeignKey(

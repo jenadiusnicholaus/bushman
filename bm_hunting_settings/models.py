@@ -544,17 +544,19 @@ class HuntingPackageCompanionsHunter(models.Model):
     )
     days = models.IntegerField(default=0)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
+    created_date = models.DateTimeField(default=timezone.now, null=True)
+    updated_date = models.DateTimeField(auto_now=True, null=True)
 
     class Meta:
         verbose_name_plural = "Hunting Package Companions Hunter"
         db_table = "hunting_package_companions_hunter_cost"
+        unique_together = (
+            "hunting_price_list_type_package",
+            "days",
+        )
 
     def __str__(self):
-        return (
-            self.hunting_price_list_type_package.price_list_type.name
-            + " - "
-            + str(self.days)
-        )
+        return str(self.days)
 
 
 class HuntingPackageOberverHunter(models.Model):
