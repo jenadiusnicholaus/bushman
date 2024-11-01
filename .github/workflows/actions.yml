@@ -41,4 +41,4 @@ jobs:
           server: ftp.japango.co.tz
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          server-dir: /
+          server-dir: /public_html/bushman/
