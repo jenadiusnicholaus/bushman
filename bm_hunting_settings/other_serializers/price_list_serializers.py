@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from bm_hunting_settings.models import (
     HuntingPackageCompanionsHunter,
+    HuntingPackageOberverHunter,
     HuntingPackageUpgradeFees,
     HuntingPriceList,
     HuntingPriceListType,
@@ -229,19 +230,19 @@ class UpdateHuntingPackageCompanionsHunterSerializer(serializers.ModelSerializer
 # ---------------------- Hunting package Oberver Cost--------------
 class GetHuntingPackageOberverHunterSerializer(serializers.ModelSerializer):
     class Meta:
-        model = HuntingPackageCompanionsHunter
+        model = HuntingPackageOberverHunter
         fields = "__all__"
 
 
 class CreateHuntingPackageOberverHunterSerializer(serializers.ModelSerializer):
     class Meta:
-        model = HuntingPackageCompanionsHunter
+        model = HuntingPackageOberverHunter
         fields = "__all__"
 
 
 class UpdateHuntingPackageOberverHunterSerializer(serializers.ModelSerializer):
     class Meta:
-        model = HuntingPackageCompanionsHunter
+        model = HuntingPackageOberverHunter
         fields = "__all__"
 
 
