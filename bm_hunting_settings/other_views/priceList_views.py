@@ -157,6 +157,7 @@ class CreatePriceListViewSet(viewsets.ModelViewSet):
                 data=observer_data
             )
             if not oberver_serialiozers.is_valid():
+                print(oberver_serialiozers.errors)
                 # Clean up the previously created objects for data consistency
                 hunting_price_type_package_serializer.save()  # Assuming this can be re-saved or skip deletion
                 price_list_type.delete()  # Delete the previously created price_list_type

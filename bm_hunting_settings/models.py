@@ -550,10 +550,6 @@ class HuntingPackageCompanionsHunter(models.Model):
     class Meta:
         verbose_name_plural = "Hunting Package Companions Hunter"
         db_table = "hunting_package_companions_hunter_cost"
-        unique_together = (
-            "hunting_price_list_type_package",
-            "days",
-        )
 
     def __str__(self):
         return str(self.days)
