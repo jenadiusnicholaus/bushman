@@ -47,9 +47,9 @@ def calculate_total_cost(sales_inquiry_id, package_id):
 
     # Companion cost
     try:
-        companion_cost_instance = HuntingPackageCompanionsHunter.objects.get(
+        companion_cost_instance = HuntingPackageCompanionsHunter.objects.filter(
             hunting_price_list_type_package__id=package.id
-        )
+        ).first()
         companion_cost = companion_cost_instance.amount
     except HuntingPackageCompanionsHunter.DoesNotExist:
         companion_cost = 0
