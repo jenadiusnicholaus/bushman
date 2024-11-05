@@ -38,9 +38,9 @@ class GetSalesConfirmationProposalSerializer(serializers.ModelSerializer):
         # Assuming sales_confirmation_package is a one-to-one field
         try:
             package = obj.sales_confirmation_package
-            package_type = HuntingPriceTypePackage.objects.get(
+            package_type = HuntingPriceTypePackage.objects.filter(
                 sales_package__id=package.package.id
-            )
+            ).first()
             sz1 = GetHuntingPriceTypePackageSerializer(package_type).data
             sz2 = GetSalesConfirmationProposalPackageSerializer(package).data
             if sz1 and sz2:
