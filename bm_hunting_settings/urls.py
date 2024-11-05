@@ -16,6 +16,8 @@ from .views import (
 )
 from .views import country_list, nationalities, contactTypes
 from .other_views.priceList_views import PricesListListView, CreatePriceListViewSet
+from .other_views.sales_package import SalesPackageViewSet
+
 
 router = routers.DefaultRouter()
 router.register(r"species", SpeciesListView)
@@ -40,6 +42,7 @@ router.register(
     LicenceRegulatoryHuntingPackageSpecies,
     basename="licence_regulatory_hunting_package_species",
 )
+router.register(r"sales-package-vset", SalesPackageViewSet, basename="sales_package")
 
 
 urlpatterns = [

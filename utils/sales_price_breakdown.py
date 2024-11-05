@@ -29,7 +29,7 @@ def calculate_total_cost(sales_inquiry_id, package_id):
         )
 
     try:
-        package = HuntingPriceTypePackage.objects.get(sales_package__id=package_id)
+        package = HuntingPriceTypePackage.objects.filter(sales_package__id=package_id).first()
     except HuntingPriceTypePackage.DoesNotExist:
         return Response(
             {"message": "Package not found"}, status=status.HTTP_404_NOT_FOUND
