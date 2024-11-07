@@ -22,6 +22,7 @@ from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from pprint import pprint
 from datetime import datetime
+from utils.pdf import PriceListPDF
 
 current_year = datetime.now().year
 
@@ -238,9 +239,16 @@ class PricesListListView(viewsets.ModelViewSet):
 
         # Always order by create_date in descending order
         queryset = queryset.order_by("-create_date")
-
         serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+
+        response_data = {
+            "data": serializer.data,
+            "pdf": PriceListPDF.generate_pdf(serializer.data, return_type="base64")[
+                "pdf"
+            ],
+        }
+
+        return Response(response_data)
 
         # queryset = self.get_queryset().order_by("-create_date")
         # serializer = self.get_serializer(queryset, many=True)

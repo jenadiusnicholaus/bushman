@@ -16,6 +16,7 @@ from sales_confirmation.models import (
     SalesConfirmationProposalStatus,
     SalesQuotaSpeciesStatus,
 )
+from utils.pdf import SalesConfirmationPDF
 from utils.sales_price_breakdown import calculate_total_cost
 from django.urls import reverse
 
@@ -29,6 +30,7 @@ class GetSalesConfirmationProposalSerializer(serializers.ModelSerializer):
     installments = serializers.SerializerMethodField()
     price_break_down = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
+    # pdf = serializers.SerializerMethodField()
 
     class Meta:
         model = SalesConfirmationProposal

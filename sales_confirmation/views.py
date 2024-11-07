@@ -26,6 +26,7 @@ from rest_framework.views import APIView
 
 from utils.sales_price_breakdown import calculate_total_cost
 from utils.track_species_status import TrackSpeciesStatus
+from utils.pdf import SalesConfirmationPDF
 
 
 class SalesConfirmationViewSet(viewsets.ModelViewSet):
@@ -36,12 +37,20 @@ class SalesConfirmationViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
+
         status_list = request.query_params.get("status_list", None)
         if status_list:
             queryset = queryset.filter(status__status__in=status_list.split(","))
         serializer = self.get_serializer(queryset, many=True)
+        response_data = []
+        for data in serializer.data:
+            #  def get_pdf(self, obj):
+            pdf_file = SalesConfirmationPDF.generate_pdf(data, return_type="base64")
+            data["pdf"] = pdf_file["pdf"]
+            response_data.append(data)
+        return Response(response_data)
 
-        return Response(serializer.data)
+        # return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
         confirmation_proposal_data = {
@@ -123,35 +132,6 @@ class SalesConfirmationViewSet(viewsets.ModelViewSet):
                 )
             saved_installment = installment_serializer.save()
 
-        # Handle multiple additional services
-        # services = request.data.get("services", [])
-        # for service_data in services:
-        #     additional_service_data = {
-        #         "sales_confirmation_proposal": saved_proposal.id,
-        #         "service": service_data.get("service"),
-        #         "quantity": service_data.get("quantity"),
-        #         "price": service_data.get("price"),
-        #     }
-        #     additional_service_serializer = (
-        #         CreateSalesConfirmationProposalAdditionalServiceSerializer(
-        #             data=additional_service_data
-        #         )
-        #     )
-
-        #     if not additional_service_serializer.is_valid():
-        #         saved_proposal.delete()
-        #         saved_package.delete()
-        #         saved_itinerary.delete()
-        #         return Response(
-        #             {
-        #                 "message": "Additional service creation failed",
-        #                 "errors": additional_service_serializer.errors,
-        #             },
-        #             status=status.HTTP_400_BAD_REQUEST,
-        #         )
-
-        #     saved_additional_service = additional_service_serializer.save()
-
         return Response(
             {
                 "message": "Sales Confirmation Proposal Created",
@@ -221,16 +201,13 @@ class SalesConfirmation(viewsets.ModelViewSet):
             "created_at": timezone.now(),
         }
 
-        # update all the species quntity in QuotaHutingAreaSpecies for  all sold species
-        # try:
-
-        # except Exception as e:
-        #     return Response(
-        #         {"message": "Error in updating species status", "error": str(e)},
-        #         status=status.HTTP_400_BAD_REQUEST,
-        #     )
-
-        # with transaction.atomic():/
+        TrackSpeciesStatus.track(
+            request.data.get("sales_confirmation_proposal_id"),
+            request.data.get("status_id"),
+            # quota_id,
+            area_id,
+            status_obj,
+        )
 
         # status_data["document"] = saved_doc.id
         status_serializer = UpdateSalesConfirmationProposalStatusSerializer(
@@ -243,15 +220,10 @@ class SalesConfirmation(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         saved_status = status_serializer.save()
-        TrackSpeciesStatus.track(
-            request.data.get("sales_confirmation_proposal_id"),
-            request.data.get("status_id"),
-            quota_id,
-            area_id,
-        )
+
         return Response(
             {
-                "message": "Sales Confirmation Proposal Status Created",
+                "message": "Sales confirmation changed status",
                 "data": status_serializer.data,
             },
             status=status.HTTP_200_OK,

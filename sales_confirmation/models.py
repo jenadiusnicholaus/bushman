@@ -250,7 +250,10 @@ class SalesQuotaSpeciesStatus(models.Model):
         related_name="species_sales_inquiry_status_set",
     )
     quota = models.ForeignKey(
-        Quota, on_delete=models.CASCADE, related_name="species_sales_quota_status_set"
+        Quota,
+        on_delete=models.CASCADE,
+        related_name="species_sales_quota_status_set",
+        null=True,
     )
     area = models.ForeignKey(
         HuntingArea,

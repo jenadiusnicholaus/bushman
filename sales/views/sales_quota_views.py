@@ -16,6 +16,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.db import transaction
 from django.utils import timezone
+from utils.pdf import QuotaPDF
 
 
 class QuotaViewSets(viewsets.ModelViewSet):
@@ -110,13 +111,17 @@ class QuotaHutingAreaSpeciesViewSets(viewsets.ModelViewSet):
         if area_id == "null":
             area_id = None
 
+        current_quota = None
+
         # If no filtering criteria are provided, filter for quotas that start in the current year
         if not quota_id and not species_id and not area_id:
             querySet = querySet.filter(quota__start_date__year=current_year)
+            current_quota = Quota.objects.filter(start_date__year=current_year).first()
 
         # Filter the queryset based on the provided parameters
         if quota_id not in [None, ""]:
             querySet = querySet.filter(quota_id=quota_id)
+            current_quota = Quota.objects.get(id=quota_id)
 
         if species_id not in [None, ""] and species_id != "all":
             querySet = querySet.filter(species_id=species_id)
@@ -126,7 +131,23 @@ class QuotaHutingAreaSpeciesViewSets(viewsets.ModelViewSet):
 
         # Serialize the resulting queryset
         serializer = self.get_serializer(querySet, many=True)
-        return Response(serializer.data)
+        # generated_pdf = Q
+        pdf_title = (
+            f"Quota report for {current_quota.name}, Start: {current_quota.start_date} End: {current_quota.end_date}"
+            if current_quota
+            else "Quota"
+        )
+        pdf_response = QuotaPDF.generate_pdf(
+            serializer.data, return_type="base64", title=pdf_title
+        )
+
+        # Combine your response data
+        response_data = {
+            "data": serializer.data,
+            "pdf": pdf_response["pdf"],
+        }
+
+        return Response(response_data)
 
     def create(self, request, *args, **kwargs):
         # Prepare data for associated entities

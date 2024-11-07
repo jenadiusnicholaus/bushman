@@ -8,7 +8,7 @@ from sales_confirmation.serializers import UpdateSalesQuotaSpeciesStatusSerializ
 
 class TrackSpeciesStatus:
     @staticmethod
-    def track(sales_confirmation_proposal_id, status, quota_id, area_id):
+    def track(sales_confirmation_proposal_id, status, area_id, status_obj):
         """
         This function updates the available quantity of species in the QuotaHutingAreaSpecies
         based on the sold species quantity from the sales inquiry, depending on the status.
@@ -31,11 +31,12 @@ class TrackSpeciesStatus:
                 species__id=species.species.id,
                 # Uncomment and add filters for area and quota if needed
                 area_id=area_id,
-                quota_id=quota_id,
+                # quota_id=quota_id,
             )
 
             if quota_species.exists():
                 current_quantity = quota_species.first().quantity
+                current_status = status_obj.status
 
                 # Handle 'provision_sales' status
                 if status == "provision_sales":
@@ -46,7 +47,7 @@ class TrackSpeciesStatus:
                             SalesQuotaSpeciesStatus.objects.get_or_create(
                                 sales_proposal_id=sales_confirmation_proposal_id,
                                 species_id=species.species.id,
-                                quota_id=quota_id,
+                                # quota_id=quota_id,
                                 area_id=area_id,
                             )
                         )
@@ -80,12 +81,27 @@ class TrackSpeciesStatus:
 
                 # Handle 'confirmed' and 'completed' statuses
                 elif status in ["confirmed", "completed"]:
-                    print()
+                    if current_status == "pending":
+                        if current_quantity >= species.quantity:
+                            quota_species.update(
+                                quantity=F("quantity") - species.quantity
+                            )
+                        else:
+                            print(
+                                f"Not enough quantity to reduce for species {species.species.name}. "
+                                f"Current: {current_quantity}, Attempted: {species.quantity}"
+                            )
+                            raise ValueError(
+                                f"Not enough quantity to sale for species {species.species.name}. "
+                                f"Current: {current_quantity}, Attempted: {species.quantity}"
+                            )
+                    else:
+                        pass
                     species_status, created = (
                         SalesQuotaSpeciesStatus.objects.get_or_create(
                             sales_proposal_id=sales_confirmation_proposal_id,
                             species_id=species.species.id,
-                            quota_id=quota_id,
+                            # quota_id=quota_id,
                             area_id=area_id,
                         )
                     )
@@ -110,7 +126,7 @@ class TrackSpeciesStatus:
                     species_status = SalesQuotaSpeciesStatus.objects.filter(
                         sales_proposal_id=sales_confirmation_proposal_id,
                         species_id=species.species.id,
-                        quota_id=quota_id,
+                        # quota_id=quota_id,
                         area_id=area_id,
                     )
 

@@ -44,6 +44,7 @@ router.register(
     basename="search_sales_inquiries",
 )
 
+
 urlpatterns = [
     path("", include(router.urls)),
 ]
