@@ -33,6 +33,7 @@ from django.utils import timezone
 
 from django.db.models import Q
 
+from utils.pdf import SalesInquiryPDF
 from utils.utitlities import format_any_date
 
 
@@ -56,7 +57,7 @@ class SalesInquiriesViewSet(viewsets.ModelViewSet):
         # Check if both parameters are None or empty strings
         if not preferred_date and not season_id:
             # No filters applied if both are empty
-            return Response(self.serializer_class(queryset, many=True).data)
+            queryset = self.queryset.filter(Q(sales_confirmation_proposal__status=None))
 
         # Try to format the preferred date
         try:
@@ -84,8 +85,17 @@ class SalesInquiriesViewSet(viewsets.ModelViewSet):
 
         # Serializing the queryset
         serializer = self.serializer_class(queryset, many=True)
+        response_data = []
 
-        return Response(serializer.data)
+        for data in serializer.data:
+            #  def get_pdf(self, obj):
+            pdf_file = SalesInquiryPDF.generate_pdf(data, return_type="base64")
+            print(pdf_file)
+            data["pdf"] = pdf_file["pdf"]
+            response_data.append(data)
+
+        print(response_data)
+        return Response(response_data)
 
     # save the following tables
     # entity

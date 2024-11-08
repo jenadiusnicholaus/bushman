@@ -31,6 +31,10 @@ def format_date(date_str):
         return "Invalid date"
 
 
+def safe_string(value, fallback="Not provided"):
+    return value or fallback
+
+
 class QuotaPDF:
     @staticmethod
     def generate_pdf(data, return_type="file", title="Quota Report"):
@@ -493,6 +497,221 @@ class SalesConfirmationPDF:
         pdf.build(content)
         buffer.seek(0)
         pdf_data = buffer.getvalue()
+
+        if return_type == "base64":
+            return {"pdf": base64.b64encode(pdf_data).decode("utf-8")}
+
+        return HttpResponse(pdf_data, content_type="application/pdf")
+
+
+class SalesInquiryPDF:
+
+    @staticmethod
+    def generate_pdf(item, return_type="file"):
+        # Create a BytesIO buffer
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(
+            buffer,
+            pagesize=A4,
+            rightMargin=40,
+            leftMargin=40,
+            topMargin=60,
+            bottomMargin=50,
+        )
+        styles = getSampleStyleSheet()
+        logo_path = os.path.join(settings.BASE_DIR, "static/images/logo.png")
+
+        # Custom styles
+        header_style = ParagraphStyle(
+            "HeaderStyle",
+            parent=styles["Heading1"],
+            fontSize=20,
+            textColor=colors.white,
+            backColor=colors.HexColor("#8B4513"),
+            alignment=1,
+        )
+        subheader_style = ParagraphStyle(
+            "SubheaderStyle",
+            parent=styles["Heading2"],
+            fontSize=16,
+            textColor=colors.HexColor("#444444"),
+        )
+        section_header_style = ParagraphStyle(
+            "SectionHeaderStyle",
+            parent=styles["Heading2"],
+            fontSize=14,
+            textColor=colors.HexColor("#333333"),
+            spaceAfter=12,
+        )
+
+        # Document content list
+        content = []
+
+        # Logo
+        # Logo and Title
+        logo = Image(logo_path)
+        logo.drawHeight = 50
+        logo.drawWidth = 100
+        content.append(logo)
+        content.append(Spacer(1, 10))  # Reduced space after logo
+
+        # Title
+        content.append(Paragraph("Sales Inquiry Details", header_style))
+        content.append(Spacer(1, 10))
+
+        # Inquiry Code and Created Date
+        content.append(
+            Paragraph(
+                f'Inquiry Code: {safe_string(item["code"])}',
+                subheader_style,
+            )
+        )
+        content.append(
+            Paragraph(
+                f'Created on: {format_date(item["create_date"])}',
+                subheader_style,
+            )
+        )
+        content.append(Spacer(1, 10))  # Reduced space
+
+        # Customer Information
+        content.append(Paragraph("Customer Information", section_header_style))
+        content.append(
+            Paragraph(
+                f'Full Name: {safe_string(item["entity"].get("full_name"))}',
+                styles["Normal"],
+            )
+        )
+        content.append(
+            Paragraph(
+                f'Nationality: {safe_string(item["entity"].get("nationality", {}).get("name"))}',
+                styles["Normal"],
+            )
+        )
+        content.append(
+            Paragraph(
+                f'Country: {safe_string(item["entity"].get("country", {}).get("name"))}',
+                styles["Normal"],
+            )
+        )
+        content.append(Spacer(1, 10))  # Reduced space
+
+        # Contacts
+        content.append(Paragraph("Contacts:", styles["Normal"]))
+        for contact in item.get("entity", {}).get("contacts", []):
+            content.append(Paragraph(f'• {contact.get("contact")}', styles["Normal"]))
+        content.append(Spacer(1, 10))  # Reduced space
+
+        # Preference Information
+        content.append(Paragraph("Preference Information", section_header_style))
+        content.append(
+            Paragraph(
+                f'Preferred Date: {format_date(item.get("preference", {}).get("preferred_date"))}',
+                styles["Normal"],
+            )
+        )
+        content.append(
+            Paragraph(
+                f'Number of Hunters: {safe_string(item.get("preference", {}).get("no_of_hunters"))}',
+                styles["Normal"],
+            )
+        )
+        content.append(
+            Paragraph(
+                f'Number of Companions: {safe_string(item.get("preference", {}).get("no_of_companions"))}',
+                styles["Normal"],
+            )
+        )
+        content.append(
+            Paragraph(
+                f'Number of Days: {safe_string(item.get("preference", {}).get("no_of_days"))}',
+                styles["Normal"],
+            )
+        )
+        content.append(Spacer(1, 10))  # Reduced space
+
+        content.append(Paragraph("Preferred Species", section_header_style))
+        preferred_species = item.get("preferred_species", [])
+
+        if preferred_species:
+            # Prepare data for the table
+            table_data = [["Species Name", "Quantity"]]  # Table Header
+            for species in preferred_species:
+                table_data.append(
+                    [
+                        safe_string(species["species"].get("name")),
+                        safe_string(species.get("quantity")),
+                    ]
+                )
+
+            # Create the table
+            preferred_species_table = Table(table_data, colWidths=[350, 150])
+
+            # Add style to the table
+            preferred_species_table.setStyle(
+                TableStyle(
+                    [
+                        (
+                            "BACKGROUND",
+                            (0, 0),
+                            (-1, 0),
+                            colors.HexColor("#8B4513"),
+                        ),  # Header background color
+                        (
+                            "TEXTCOLOR",
+                            (0, 0),
+                            (-1, 0),
+                            colors.white,
+                        ),  # Header text color
+                        ("ALIGN", (0, 0), (-1, -1), "LEFT"),  # Left align text
+                        ("SIZE", (0, 0), (-1, 0), 12),  # Header font size
+                        ("SIZE", (0, 1), (-1, -1), 10),  # Data font size
+                        ("GRID", (0, 0), (-1, -1), 1, colors.black),  # Grid lines
+                    ]
+                )
+            )
+
+            # Add the table to the content
+            content.append(preferred_species_table)
+        else:
+            content.append(Paragraph("No preferred species listed.", styles["Normal"]))
+
+        content.append(Spacer(1, 10))  # Reduced space
+
+        # Area Information
+        content.append(Paragraph("Area Information", section_header_style))
+        area_info = item.get("area", [])
+        if area_info:
+            for area in area_info:
+                content.append(
+                    Paragraph(
+                        f'Area ID: {safe_string(area.get("id"))}, Area: {safe_string(area.get("area", {}).get("name", "Unnamed"))}',
+                        styles["Normal"],
+                    )
+                )
+        else:
+            content.append(
+                Paragraph("No area information available.", styles["Normal"])
+            )
+        content.append(Spacer(1, 10))  # Reduced space
+
+        # Remarks
+        content.append(Paragraph("Remarks", section_header_style))
+        content.append(
+            Paragraph(
+                safe_string(item.get("remarks"), "No remarks provided."),
+                styles["Normal"],
+            )
+        )
+        content.append(Spacer(1, 10))  # Reduced space
+
+        # Build PDF
+        doc.build(content)
+
+        # Seek to the beginning of the buffer so we can read its content
+        buffer.seek(0)
+        pdf_data = buffer.getvalue()
+        buffer.close()
 
         if return_type == "base64":
             return {"pdf": base64.b64encode(pdf_data).decode("utf-8")}
