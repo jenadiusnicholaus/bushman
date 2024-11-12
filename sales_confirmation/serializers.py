@@ -6,9 +6,18 @@ from bm_hunting_settings.other_serializers.price_list_serializers import (
     GetSalesPackageSerializer,
 )
 from sales.models import Document
-from sales.serializers.sales_inquiries_serializers import GetSalesInquirySerializers
+from sales.serializers.sales_inquiries_serializers import (
+    GetEntitySerializers,
+    GetSalesInquirySerializers,
+)
 from sales_confirmation.models import (
+    EntityContactPermitDates,
+    EntityContractPermit,
+    GameActivity,
+    GameActivityProfessionalHunter,
+    GameKilledActivity,
     Installment,
+    SalesConfirmationContract,
     SalesConfirmationProposal,
     SalesConfirmationProposalAdditionalService,
     SalesConfirmationProposalItinerary,
@@ -257,4 +266,147 @@ class CreateSalesQuotaSpeciesStatusSerializer(serializers.ModelSerializer):
 class UpdateSalesQuotaSpeciesStatusSerializer(serializers.ModelSerializer):
     class Meta:
         model = SalesQuotaSpeciesStatus
+        fields = "__all__"
+
+
+# ------------------Sales Confirmation contract ------------------ #
+
+
+class GetSalesConfirmationContractSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SalesConfirmationContract
+        fields = "__all__"
+
+
+class CreateSalesConfirmationContractSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SalesConfirmationContract
+        fields = "__all__"
+
+
+class UpdateSalesConfirmationContractSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SalesConfirmationContract
+        fields = "__all__"
+
+
+# -------------------- EnityContractPermit -------------------
+
+
+class GetEntityContractPermitSerializer(serializers.ModelSerializer):
+    dates = serializers.SerializerMethodField()
+
+    class Meta:
+        model = EntityContractPermit
+        fields = "__all__"
+
+    def get_dates(self, obj):
+        dates_obj = obj.contact_dates_set.all()
+        if len(dates_obj) > 0:
+            return GetEntityContactPermitDatesSerializer(dates_obj, many=True).data
+        else:
+            return []
+
+
+class CreateEntityContractPermitSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EntityContractPermit
+        fields = "__all__"
+
+
+class UpdateEntityContractPermitSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EntityContractPermit
+        fields = "__all__"
+
+
+# ======================== EntityContactDates ===============
+
+
+class GetEntityContactPermitDatesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EntityContactPermitDates
+        fields = "__all__"
+
+
+class CreateEntityContactPermitDatesCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EntityContactPermitDates
+        fields = "__all__"
+
+
+class UpdateEntityContactPermitDatesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EntityContactPermitDates
+        fields = "__all__"
+
+
+# ------------------ GameActivity serializer - #
+class GetGameActivitySerializer(serializers.ModelSerializer):
+    entity_contract_permit = GetEntityContractPermitSerializer()
+    client = GetEntitySerializers()
+    ph = serializers.SerializerMethodField()
+
+    class Meta:
+        model = GameActivity
+        fields = "__all__"
+
+    def get_ph(self, obj):
+        ph_obj = obj.professional_hunter_set.all()
+        if len(ph_obj) > 0:
+            return GetGameActivityProfessionalHunterSerializer(ph_obj, many=True).data
+        else:
+            return []
+
+
+class CreateGameActivitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GameActivity
+        fields = "__all__"
+
+
+class UpdateGameActivitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GameActivity
+        fields = "__all__"
+
+
+# ----------------- GameKilledActivity serializer - #
+
+
+class GetGameKilledActivitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GameKilledActivity
+        fields = "__all__"
+
+
+class CreateGameKilledActivitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GameKilledActivity
+        fields = "__all__"
+
+
+class UpdateGameKilledActivitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GameKilledActivity
+        fields = "__all__"
+
+
+class GetGameActivityProfessionalHunterSerializer(serializers.ModelSerializer):
+    ph = GetEntitySerializers()
+
+    class Meta:
+        model = GameActivityProfessionalHunter
+        fields = "__all__"
+
+
+class CreateGameActivityProfessionalHunterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GameActivityProfessionalHunter
+        fields = "__all__"
+
+
+class UpdateGameActivityProfessionalHunterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GameActivityProfessionalHunter
         fields = "__all__"

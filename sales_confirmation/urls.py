@@ -8,13 +8,33 @@ from .views import (
     GetCalendaStats,
 )
 
+from .other_views.sales_conf_contract_views import (
+    SalesConfirmationContractviewSet,
+    EntityContractPermitViewset,
+    GameActivityViewset,
+)
+
 router = routers.DefaultRouter()
 router.register(r"sales-confirmation-vset", SalesConfirmationViewSet)
 router.register(
     r"sales-confirmation-status-vset", SalesConfirmation, basename="sales-confirmation"
-
 )
 router.register(r"calendar-stats-vset", GetCalendaStats, basename="calendar-stats")
+router.register(
+    r"sales-confirmation-contract-vset",
+    SalesConfirmationContractviewSet,
+    basename="sales-confirmation-contract",
+)
+router.register(
+    r"entity-contract-permit-vset",
+    EntityContractPermitViewset,
+    basename="entity-contract-permit",
+)
+
+router.register(
+    r"game-activity-vset",
+    GameActivityViewset,
+)
 
 urlpatterns = [
     path("", include(router.urls)),

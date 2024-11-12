@@ -717,3 +717,328 @@ class SalesInquiryPDF:
             return {"pdf": base64.b64encode(pdf_data).decode("utf-8")}
 
         return HttpResponse(pdf_data, content_type="application/pdf")
+
+
+class SalesContractPDF:
+    @staticmethod
+    def generate_pdf(salesData, return_type="file"):
+        # Create a BytesIO buffer
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=A4)
+        styles = getSampleStyleSheet()
+
+        # Custom styles
+        header_style = ParagraphStyle(
+            "HeaderStyle",
+            parent=styles["Heading1"],
+            fontSize=20,
+            textColor=colors.white,
+            backColor=colors.HexColor("#8B4513"),
+            alignment=1,
+        )
+        subheader_style = ParagraphStyle(
+            "SubheaderStyle",
+            parent=styles["Heading2"],
+            fontSize=16,
+            textColor=colors.HexColor("#444444"),
+        )
+
+        # Create a list to hold the content
+        content = []
+
+        # Add a logo if needed
+        # logo_path = os.path.join(settings.BASE_DIR, "static/images/logo.png")
+        # content.append(Image(logo_path, width=100, height=50))  # Uncomment if you want to include the logo
+
+        # Add contract details
+        content.append(Paragraph("Sales Contract", header_style))
+        content.append(Spacer(1, 12))
+
+        content.append(
+            Paragraph(
+                f"Contract Number: {salesData['contract_number']}", subheader_style
+            )
+        )
+        content.append(
+            Paragraph(f"Start Date: {salesData['start_date']}", subheader_style)
+        )
+        content.append(Paragraph(f"End Date: {salesData['end_date']}", subheader_style))
+        content.append(
+            Paragraph(f"Description: {salesData['description']}", subheader_style)
+        )
+        content.append(
+            Paragraph(f"Created At: {salesData['created_at']}", subheader_style)
+        )
+        content.append(
+            Paragraph(f"Updated At: {salesData['updated_at']}", subheader_style)
+        )
+        content.append(Spacer(1, 12))
+
+        content.append(
+            Paragraph(
+                f"Sales Confirmation Proposal ID: {salesData['sales_confirmation_proposal']}",
+                subheader_style,
+            )
+        )
+        content.append(Paragraph(f"Entity ID: {salesData['entity']}", subheader_style))
+
+        # Build the document
+        doc.build(content)
+
+        buffer.seek(0)
+        pdf_data = buffer.getvalue()
+        buffer.close()
+
+        if return_type == "base64":
+            return {"pdf": base64.b64encode(pdf_data).decode("utf-8")}
+
+        return HttpResponse(pdf_data, content_type="application/pdf")
+
+
+class PermitPDF:
+    @staticmethod
+    def generate_pdf(permit_data, return_type="file"):
+        # Create a BytesIO buffer
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=A4)
+        styles = getSampleStyleSheet()
+
+        # Custom styles
+        header_style = ParagraphStyle(
+            "HeaderStyle",
+            parent=styles["Heading1"],
+            fontSize=20,
+            textColor=colors.white,
+            backColor=colors.HexColor("#8B4513"),
+            alignment=1,
+        )
+        subheader_style = ParagraphStyle(
+            "SubheaderStyle",
+            parent=styles["Heading2"],
+            fontSize=16,
+            textColor=colors.HexColor("#444444"),
+        )
+        section_header_style = ParagraphStyle(
+            "SectionHeaderStyle",
+            parent=styles["Heading2"],
+            fontSize=14,
+            textColor=colors.HexColor("#333333"),
+            spaceAfter=12,
+        )
+
+        # Create a list to hold the content
+        content = []
+
+        # Add Permit details
+        content.append(Paragraph("Permit Details", header_style))
+        content.append(Spacer(1, 12))
+
+        content.append(
+            Paragraph(f"Permit Number: {permit_data['permit_number']}", subheader_style)
+        )
+        content.append(
+            Paragraph(f"Issued Date: {permit_data['issued_date']}", subheader_style)
+        )
+        content.append(
+            Paragraph(f"Description: {permit_data['description']}", subheader_style)
+        )
+        content.append(
+            Paragraph(f"Created At: {permit_data['created_at']}", subheader_style)
+        )
+        content.append(
+            Paragraph(f"Updated At: {permit_data['updated_at']}", subheader_style)
+        )
+        content.append(Spacer(1, 12))
+
+        content.append(
+            Paragraph(
+                f"Entity Contract ID: {permit_data['enity_contract']}", subheader_style
+            )
+        )
+        content.append(
+            Paragraph(
+                f"Package Type ID: {permit_data['package_type']}", subheader_style
+            )
+        )
+        content.append(Spacer(1, 12))
+
+        # Add Dates Information
+        content.append(Paragraph("Dates", section_header_style))
+
+        if permit_data.get("dates"):
+            for date_info in permit_data["dates"]:
+                content.append(
+                    Paragraph(
+                        f"Start Date: {date_info['start_date']}", styles["Normal"]
+                    )
+                )
+                content.append(
+                    Paragraph(f"End Date: {date_info['end_date']}", styles["Normal"])
+                )
+                content.append(
+                    Paragraph(
+                        f"Created At: {date_info['created_at']}", styles["Normal"]
+                    )
+                )
+                content.append(
+                    Paragraph(
+                        f"Updated At: {date_info['updated_at']}", styles["Normal"]
+                    )
+                )
+                content.append(
+                    Paragraph(
+                        f"Entity Contract Permit ID: {date_info['entity_contract_permit']}",
+                        styles["Normal"],
+                    )
+                )
+                # Update this part to showcase if amendment is null
+                amendment_text = (
+                    f"Amendment: {date_info['amendment']}"
+                    if date_info["amendment"] is not None
+                    else "Amendment: Not updated"
+                )
+                content.append(Paragraph(amendment_text, styles["Normal"]))
+                content.append(Spacer(1, 12))
+        else:
+            content.append(
+                Paragraph("No date information available.", styles["Normal"])
+            )
+
+        # Build the document
+        doc.build(content)
+
+        # Seek to the beginning of the buffer so we can read its content
+        buffer.seek(0)
+        pdf_data = buffer.getvalue()
+        buffer.close()
+
+        if return_type == "base64":
+            return {"pdf": base64.b64encode(pdf_data).decode("utf-8")}
+
+        return HttpResponse(pdf_data, content_type="application/pdf")
+
+
+class GamePDF:
+
+    @staticmethod
+    def generate_pdf(game_data, return_type="file"):
+        # Create a BytesIO buffer
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=A4)
+        styles = getSampleStyleSheet()
+
+        # Custom styles
+        header_style = ParagraphStyle(
+            "HeaderStyle",
+            parent=styles["Heading1"],
+            fontSize=20,
+            textColor=colors.white,
+            backColor=colors.HexColor("#8B4513"),
+            alignment=1,
+        )
+        subheader_style = ParagraphStyle(
+            "SubheaderStyle",
+            parent=styles["Heading2"],
+            fontSize=16,
+            textColor=colors.HexColor("#444444"),
+        )
+        section_header_style = ParagraphStyle(
+            "SectionHeaderStyle",
+            parent=styles["Heading2"],
+            fontSize=14,
+            textColor=colors.HexColor("#333333"),
+            spaceAfter=12,
+        )
+
+        # Create a list to hold the content
+        content = []
+
+        # Add Game details
+        content.append(Paragraph("Game Details", header_style))
+        content.append(Spacer(1, 12))
+
+        content.append(Paragraph(f"Game ID: {game_data['id']}", subheader_style))
+        content.append(
+            Paragraph(f"Start Date: {game_data['start_date']}", subheader_style)
+        )
+        content.append(Paragraph(f"End Date: {game_data['end_date']}", subheader_style))
+        content.append(Spacer(1, 12))
+
+        # Add Entity Contract Permit Information
+        permit = game_data["entity_contract_permit"]
+        content.append(Paragraph("Permit Information", section_header_style))
+        content.append(
+            Paragraph(f"Permit Number: {permit['permit_number']}", styles["Normal"])
+        )
+        content.append(
+            Paragraph(f"Issued Date: {permit['issued_date']}", styles["Normal"])
+        )
+        content.append(
+            Paragraph(f"Description: {permit['description']}", styles["Normal"])
+        )
+        content.append(Spacer(1, 12))
+
+        # Add Client Information
+        client = game_data["client"]
+        content.append(Paragraph("Client Information", section_header_style))
+        content.append(
+            Paragraph(f"Client Name: {client['full_name']}", styles["Normal"])
+        )
+        content.append(
+            Paragraph(f"Country: {client['country']['name']}", styles["Normal"])
+        )
+
+        # Add Client Contacts
+        content.append(Paragraph("Contacts:", styles["Normal"]))
+        for contact in client["contacts"]:
+            content.append(
+                Paragraph(f"Contact: {contact['contact']}", styles["Normal"])
+            )
+
+        content.append(Spacer(1, 12))
+
+        # Add Player Hand Information
+        # Add Professional Hunters Information
+        if game_data.get("ph"):
+            content.append(
+                Paragraph("Professional Hunters Information", section_header_style)
+            )
+            for player_hand in game_data["ph"]:
+                content.append(
+                    Paragraph(
+                        f"Professional Hunter ID: {player_hand['id']}", styles["Normal"]
+                    )
+                )
+                player_info = player_hand["ph"]
+                content.append(
+                    Paragraph(
+                        f"Professional Hunter Name: {player_info['full_name']}",
+                        styles["Normal"],
+                    )
+                )
+                content.append(
+                    Paragraph(
+                        f"Nationality: {player_info['nationality']['name']}",
+                        styles["Normal"],
+                    )
+                )
+                content.append(Spacer(1, 12))
+        else:
+            content.append(
+                Paragraph(
+                    "No Professional Hunters information available.", styles["Normal"]
+                )
+            )
+
+        # Build the document
+        doc.build(content)
+
+        # Seek to the beginning of the buffer so we can read its content
+        buffer.seek(0)
+        pdf_data = buffer.getvalue()
+        buffer.close()
+
+        if return_type == "base64":
+            return {"pdf": base64.b64encode(pdf_data).decode("utf-8")}
+
+        return HttpResponse(pdf_data, content_type="application/pdf")

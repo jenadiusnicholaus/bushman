@@ -2,6 +2,7 @@ from django.db import models
 
 from bm_hunting_settings.models import (
     HuntingArea,
+    Locations,
     Quota,
     RegulatoryHuntingpackage,
     SalesPackages,
@@ -15,6 +16,8 @@ from django.contrib.auth.models import User
 
 # timezone
 from django.utils import timezone
+import random
+import string
 
 
 class SalesConfirmationProposal(models.Model):
@@ -277,3 +280,216 @@ class SalesQuotaSpeciesStatus(models.Model):
 
     def __str__(self):
         return self.species.name + " - " + self.status
+
+
+class SalesConfirmationContract(models.Model):
+    sales_confirmation_proposal = models.OneToOneField(
+        SalesConfirmationProposal,
+        on_delete=models.CASCADE,
+        related_name="sales_confirmation_contract_set",
+    )
+    entity = models.ForeignKey(
+        Entity,
+        on_delete=models.CASCADE,
+        related_name="contracts",
+        related_query_name="enity_contract_set",
+        null=True,
+        blank=True,
+    )
+    contract_number = models.CharField(max_length=255, null=True, blank=True)
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    description = models.TextField(null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = "Sales Confirmation Contracts"
+        db_table = "enity_contract"
+
+    def __str__(self):
+        return f'{self.sales_confirmation_proposal} - {self.contract_number or "No Contract Number"}'
+
+    def save(self, *args, **kwargs):
+        if not self.contract_number:
+            self.contract_number = self.generate_contract_number()
+
+        super(SalesConfirmationContract, self).save(*args, **kwargs)
+
+    def generate_contract_number(self):
+        # use random 6 digit number with char
+        contract_number = "".join(
+            random.choices(string.ascii_uppercase + string.digits, k=6)
+        )
+        return contract_number
+
+    class Meta:
+        verbose_name_plural = "Sales Confirmation Contracts"
+        db_table = "enity_contract"
+        unique_together = ("sales_confirmation_proposal", "entity")
+
+    def __str__(self):
+        return f'{self.sales_confirmation_proposal} - {self.contract_number or "No Contract Number"}'
+
+
+class EntityContractPermit(models.Model):
+    enity_contract = models.OneToOneField(
+        SalesConfirmationContract,
+        on_delete=models.CASCADE,
+        related_name="permits",
+    )
+    permit_number = models.CharField(max_length=255, null=True, blank=True)
+    issued_date = models.DateField(null=True, blank=True)
+    package_type = models.ForeignKey(
+        RegulatoryHuntingpackage,
+        on_delete=models.CASCADE,
+        related_name="enity_contract_permit_package_type_set",
+        null=True,
+        blank=True,
+    )
+
+    description = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "Enity Contract Permits"
+        db_table = "entity_contract_permit"
+
+    def __str__(self):
+        return f'{self.enity_contract} - {self.permit_number or "No Permit Number"}'
+
+
+class EntityContactPermitDates(models.Model):
+    entity_contract_permit = models.ForeignKey(
+        EntityContractPermit,
+        on_delete=models.CASCADE,
+        related_name="contact_dates_set",
+    )
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+    amendment = models.ForeignKey(
+        "self",  # Reference to the same model
+        on_delete=models.SET_NULL,  # If the amended instance is deleted, keep this instance
+        null=True,
+        blank=True,
+        related_name="amendments",  # Optional: to access all amendments related to a record
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "Enity Contact Dates"
+        db_table = "enity_contact_permit_dates"
+
+    def __str__(self):
+        return f'{self.entity_contract_permit} - {self.start_date or "No Start Date"}'
+
+
+class GameActivity(models.Model):
+    entity_contract_permit = models.ForeignKey(
+        EntityContractPermit,
+        on_delete=models.CASCADE,
+        related_name="game_activity_set",
+    )
+    client = models.ForeignKey(
+        Entity,
+        on_delete=models.CASCADE,
+        related_name="game_activity_client_set",
+        null=True,
+    )
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "Game Activities"
+        db_table = "game_activity"
+        unique_together = ("entity_contract_permit", "client")
+
+    def __str__(self):
+        return f'{self.entity_contract_permit} - {self.start_date or "No Start Date"}'
+
+
+class GameKilledActivity(models.Model):
+    GENDER = (
+        ("M", "Male"),
+        ("F", "Female"),
+    )
+
+    STATUS = (
+        ("KILLED", "Killed"),
+        ("WONDERED", "Wondered"),
+    )
+    game_killed_registration = models.ForeignKey(
+        GameActivity,
+        on_delete=models.CASCADE,
+        related_name="game_killed_activity_set",
+    )
+    species = models.ForeignKey(
+        Species,
+        on_delete=models.CASCADE,
+        related_name="game_killed_activity_species_set",
+    )
+    quantity = models.IntegerField(default=1)
+    location = models.ForeignKey(
+        Locations,
+        on_delete=models.CASCADE,
+        related_name="game_killed_activity_location_set",
+        null=True,
+        blank=True,
+    )
+    description = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="game_killed_activity_Created_by_user_set",
+    )
+    spacies_gender = models.CharField(
+        max_length=255, null=True, blank=True, choices=GENDER
+    )
+
+    status = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        choices=STATUS,
+    )
+
+    class Meta:
+        verbose_name_plural = "Game Killed Activities"
+        db_table = "game_killed_activity"
+
+    def __str__(self):
+        return f'{self.game_killed_registration} - {self.species.name or "No Species"}'
+
+
+class GameActivityProfessionalHunter(models.Model):
+    game_activity = models.ForeignKey(
+        GameActivity,
+        on_delete=models.CASCADE,
+        related_name="professional_hunter_set",
+    )
+    ph = models.ForeignKey(
+        Entity,
+        on_delete=models.CASCADE,
+        related_name="game_activity_professional_hunter_set",
+        null=True,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "Game Activity Professional Hunters"
+        db_table = "game_activity_professional_hunter"
+
+    def __str__(self):
+        return f'{self.game_activity} - {self.ph or "No Hunter"}'

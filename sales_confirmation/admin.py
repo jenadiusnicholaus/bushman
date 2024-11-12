@@ -6,7 +6,9 @@ from .models import (
     SalesConfirmationProposalAdditionalService,
     SalesConfirmationProposalClientPreference,
     Installment,
-    SalesConfirmationProposalStatus
+    SalesConfirmationProposalStatus,
+    GameActivity,
+    EntityContractPermit,
 )
 
 admin.site.register(SalesConfirmationProposal)
@@ -16,3 +18,5 @@ admin.site.register(SalesConfirmationProposalAdditionalService)
 admin.site.register(SalesConfirmationProposalClientPreference)
 admin.site.register(Installment)
 admin.site.register(SalesConfirmationProposalStatus)
+admin.site.register(GameActivity)
+admin.site.register(EntityContractPermit)
