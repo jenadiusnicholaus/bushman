@@ -334,7 +334,7 @@ class SalesConfirmationContract(models.Model):
 
 
 class EntityContractPermit(models.Model):
-    enity_contract = models.OneToOneField(
+    entity_contract = models.OneToOneField(
         SalesConfirmationContract,
         on_delete=models.CASCADE,
         related_name="permits",
@@ -344,7 +344,7 @@ class EntityContractPermit(models.Model):
     package_type = models.ForeignKey(
         RegulatoryHuntingpackage,
         on_delete=models.CASCADE,
-        related_name="enity_contract_permit_package_type_set",
+        related_name="entity_contract_permit_package_type_set",
         null=True,
         blank=True,
     )
@@ -354,11 +354,11 @@ class EntityContractPermit(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name_plural = "Enity Contract Permits"
+        verbose_name_plural = "Entity Contract Permits"
         db_table = "entity_contract_permit"
 
     def __str__(self):
-        return f'{self.enity_contract} - {self.permit_number or "No Permit Number"}'
+        return f'{self.entity_contract} - {self.permit_number or "No Permit Number"}'
 
 
 class EntityContactPermitDates(models.Model):
@@ -423,7 +423,7 @@ class GameKilledActivity(models.Model):
 
     STATUS = (
         ("KILLED", "Killed"),
-        ("WONDERED", "Wondered"),
+        ("WOUNDED", "Wounded"),
     )
     game_killed_registration = models.ForeignKey(
         GameActivity,
@@ -463,6 +463,16 @@ class GameKilledActivity(models.Model):
         blank=True,
         choices=STATUS,
     )
+    date = models.DateField(null=True, blank=True)
+    time = models.TimeField(null=True, blank=True)
+    area = models.ForeignKey(
+        HuntingArea,
+        on_delete=models.CASCADE,
+        related_name="game_killed_activity_area_set",
+        null=True,
+        blank=True,
+    )
+    weapon_used = models.CharField(max_length=255, null=True, blank=True)
 
     class Meta:
         verbose_name_plural = "Game Killed Activities"

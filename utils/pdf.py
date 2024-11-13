@@ -722,72 +722,193 @@ class SalesInquiryPDF:
 class SalesContractPDF:
     @staticmethod
     def generate_pdf(salesData, return_type="file"):
-        # Create a BytesIO buffer
+        if not salesData:
+            return HttpResponse("No data to print", status=400)
+
+        # Log salesData for debugging
+
+        # Paths and initial setup
+        logo_path = os.path.join(settings.BASE_DIR, "static/images/logo.png")
         buffer = BytesIO()
-        doc = SimpleDocTemplate(buffer, pagesize=A4)
+        doc = SimpleDocTemplate(
+            buffer,
+            pagesize=A4,
+            rightMargin=40,
+            leftMargin=40,
+            topMargin=50,
+            bottomMargin=40,
+        )
         styles = getSampleStyleSheet()
 
-        # Custom styles
+        # Define custom styles using the previous color scheme
         header_style = ParagraphStyle(
             "HeaderStyle",
             parent=styles["Heading1"],
-            fontSize=20,
+            fontSize=26,
             textColor=colors.white,
             backColor=colors.HexColor("#8B4513"),
             alignment=1,
+            spaceAfter=12,
         )
+
         subheader_style = ParagraphStyle(
             "SubheaderStyle",
             parent=styles["Heading2"],
             fontSize=16,
-            textColor=colors.HexColor("#444444"),
+            textColor=colors.HexColor("#4B0082"),
+            spaceAfter=6,
         )
 
-        # Create a list to hold the content
+        normal_style = styles["Normal"]
+        normal_style.fontSize = 12
+        normal_style.leading = 14
+
+        # Create content list
         content = []
 
-        # Add a logo if needed
-        # logo_path = os.path.join(settings.BASE_DIR, "static/images/logo.png")
-        # content.append(Image(logo_path, width=100, height=50))  # Uncomment if you want to include the logo
+        # Insert Logo
+        if os.path.exists(logo_path):
+            logo = Image(logo_path)
+            logo.drawHeight = 60
+            logo.drawWidth = 120
+            content.append(logo)
+            content.append(Spacer(1, 12))
 
-        # Add contract details
+        # Title
         content.append(Paragraph("Sales Contract", header_style))
+        content.append(Spacer(1, 20))
+
+        # Contract Details Section
+        content.append(Paragraph("Contract Details", subheader_style))
+        content.append(Spacer(1, 6))
+
+        # Detail Fields
+        fields = [
+            f"Contract Number: <b>{salesData.get('contract_number', 'N/A')}</b>",
+            f"Start Date: <b>{salesData.get('start_date', 'N/A')}</b>",
+            f"End Date: <b>{salesData.get('end_date', 'N/A')}</b>",
+            f"Description: <i>{salesData.get('description', 'N/A')}</i>",
+            f"Created At: {salesData.get('created_at', 'N/A')}",
+            f"Updated At: {salesData.get('updated_at', 'N/A')}",
+        ]
+        for field in fields:
+            content.append(Paragraph(field, normal_style))
         content.append(Spacer(1, 12))
 
+        # Sales Confirmation Proposal ID
+        proposal_id = salesData.get("sales_confirmation_proposal", {}).get("id", "N/A")
         content.append(
             Paragraph(
-                f"Contract Number: {salesData['contract_number']}", subheader_style
+                f"Sales Confirmation Proposal ID: <b>{proposal_id}</b>", normal_style
+            )
+        )
+
+        # Client Information Section
+        content.append(Spacer(1, 12))
+        content.append(Paragraph("Client Information", subheader_style))
+        content.append(Spacer(1, 6))
+
+        # Accessing the entity from the sales proposal
+        entity = (
+            salesData.get("sales_confirmation_proposal", {})
+            .get("sales_inquiry", {})
+            .get("entity", {})
+        )
+
+        content.append(
+            Paragraph(f"Entity ID: <b>{entity.get('id', 'N/A')}</b>", normal_style)
+        )
+        content.append(
+            Paragraph(
+                f"Entity Name: <b>{entity.get('full_name', 'N/A')}</b>", normal_style
             )
         )
         content.append(
-            Paragraph(f"Start Date: {salesData['start_date']}", subheader_style)
-        )
-        content.append(Paragraph(f"End Date: {salesData['end_date']}", subheader_style))
-        content.append(
-            Paragraph(f"Description: {salesData['description']}", subheader_style)
-        )
-        content.append(
-            Paragraph(f"Created At: {salesData['created_at']}", subheader_style)
-        )
-        content.append(
-            Paragraph(f"Updated At: {salesData['updated_at']}", subheader_style)
-        )
-        content.append(Spacer(1, 12))
-
-        content.append(
             Paragraph(
-                f"Sales Confirmation Proposal ID: {salesData['sales_confirmation_proposal']}",
-                subheader_style,
+                f"Nationality: <b>{entity.get('nationality', {}).get('name', 'N/A')}</b>",
+                normal_style,
             )
         )
-        content.append(Paragraph(f"Entity ID: {salesData['entity']}", subheader_style))
+        content.append(
+            Paragraph(
+                f"Country: <b>{entity.get('country', {}).get('name', 'N/A')}</b>",
+                normal_style,
+            )
+        )
+
+        # Contact Details Section
+        content.append(Spacer(1, 12))
+        content.append(Paragraph("Contact Details:", subheader_style))
+        for contact in entity.get("contacts", []):
+            content.append(Paragraph(f"• {contact.get('contact')}", normal_style))
+
+        # Sales Inquiry Details Section
+        sales_inquiry = salesData.get("sales_confirmation_proposal", {}).get(
+            "sales_inquiry", {}
+        )
+        content.append(Spacer(1, 12))
+        content.append(Paragraph("Sales Inquiry Details", subheader_style))
+        content.append(Spacer(1, 6))
+
+        inquiry_fields = [
+            f"Preferred Date: <b>{sales_inquiry.get('preference', {}).get('preferred_date', 'N/A')}</b>",
+            f"No of Hunters: <b>{sales_inquiry.get('preference', {}).get('no_of_hunters', 'N/A')}</b>",
+            f"No of Companions: <b>{sales_inquiry.get('preference', {}).get('no_of_companions', 'N/A')}</b>",
+            (
+                f"Preferred Species: <b>{sales_inquiry.get('preferred_species', [{}])[0].get('species', {}).get('name', 'N/A')}</b>"
+                if sales_inquiry.get("preferred_species")
+                else "None"
+            ),
+        ]
+        for field in inquiry_fields:
+            content.append(Paragraph(field, normal_style))
+
+        # Price Breakdown Section
+        price_breakdown = salesData.get("sales_confirmation_proposal", {}).get(
+            "price_break_down", {}
+        )
+        content.append(Spacer(1, 12))
+        content.append(Paragraph("Price Breakdown", subheader_style))
+        content.append(Spacer(1, 6))
+
+        price_fields = [
+            f"Total Amount: <b>{price_breakdown.get('total_amount', {}).get('currency', {}).get('symbol', '')} "
+            f"{price_breakdown.get('total_amount', {}).get('amount', 'N/A')}</b>",
+        ]
+
+        if "companion_cost_details" in price_breakdown:
+            companion_cost = price_breakdown["companion_cost_details"]
+            number_of_companions = companion_cost.get("number_of_companions", "N/A")
+            cost_per_companion = companion_cost.get("cost_per_companion", {})
+            cost_per_companion_amount = f"{cost_per_companion.get('currency', {}).get('symbol', '')} {cost_per_companion.get('amount', 'N/A')}"
+
+            price_fields.append(f"Number of Companions: <b>{number_of_companions}</b>")
+            price_fields.append(
+                f"Cost per Companion: <b>{cost_per_companion_amount}</b>"
+            )
+        else:
+            price_fields.append("<b>Companion Cost Details: Not Available</b>")
+
+        for field in price_fields:
+            content.append(Paragraph(field, normal_style))
+
+        # Final Touches: Add Footer with Company Details
+        content.append(Spacer(1, 20))
+        content.append(Paragraph("Thank you for choosing us!", normal_style))
+        content.append(
+            Paragraph(
+                "For any inquiries, please contact us at: info@yourcompany.com",
+                normal_style,
+            )
+        )
+        content.append(Paragraph("Company Name | Address | Phone Number", normal_style))
 
         # Build the document
         doc.build(content)
 
+        # Get the PDF binary data from the buffer
         buffer.seek(0)
         pdf_data = buffer.getvalue()
-        buffer.close()
 
         if return_type == "base64":
             return {"pdf": base64.b64encode(pdf_data).decode("utf-8")}
@@ -852,7 +973,7 @@ class PermitPDF:
 
         content.append(
             Paragraph(
-                f"Entity Contract ID: {permit_data['enity_contract']}", subheader_style
+                f"Entity Contract ID: {permit_data['entity_contract']}", subheader_style
             )
         )
         content.append(

@@ -13,6 +13,7 @@ from .views import (
     SeasonsViewSets,
     DocumentTypesViewSets,
     LicenceRegulatoryHuntingPackageSpecies,
+    PHViewSets,
 )
 from .views import country_list, nationalities, contactTypes
 from .other_views.priceList_views import PricesListListView, CreatePriceListViewSet
@@ -43,6 +44,7 @@ router.register(
     basename="licence_regulatory_hunting_package_species",
 )
 router.register(r"sales-package-vset", SalesPackageViewSet, basename="sales_package")
+router.register(r"ph-vset", PHViewSets, basename="ph_vset")
 
 
 urlpatterns = [

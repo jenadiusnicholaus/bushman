@@ -5,6 +5,12 @@ from bm_hunting_settings.other_serializers.price_list_serializers import (
     GetHuntingPriceTypePackageSerializer,
     GetSalesPackageSerializer,
 )
+from bm_hunting_settings.serializers import (
+    GetLocationSerializer,
+    GetRegulatoryHuntingPackageSerializers,
+    HutingAreaSerializers,
+    SpeciesSerializer,
+)
 from sales.models import Document
 from sales.serializers.sales_inquiries_serializers import (
     GetEntitySerializers,
@@ -40,6 +46,7 @@ class GetSalesConfirmationProposalSerializer(serializers.ModelSerializer):
     price_break_down = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
     # pdf = serializers.SerializerMethodField()
+    regulatory_package = GetRegulatoryHuntingPackageSerializers()
 
     class Meta:
         model = SalesConfirmationProposal
@@ -273,6 +280,9 @@ class UpdateSalesQuotaSpeciesStatusSerializer(serializers.ModelSerializer):
 
 
 class GetSalesConfirmationContractSerializer(serializers.ModelSerializer):
+    sales_confirmation_proposal = GetSalesConfirmationProposalSerializer()
+    entity = GetEntitySerializers()
+
     class Meta:
         model = SalesConfirmationContract
         fields = "__all__"
@@ -295,6 +305,8 @@ class UpdateSalesConfirmationContractSerializer(serializers.ModelSerializer):
 
 class GetEntityContractPermitSerializer(serializers.ModelSerializer):
     dates = serializers.SerializerMethodField()
+    entity_contract = GetSalesConfirmationContractSerializer()
+    package_type = GetRegulatoryHuntingPackageSerializers()
 
     class Meta:
         model = EntityContractPermit
@@ -346,6 +358,7 @@ class GetGameActivitySerializer(serializers.ModelSerializer):
     entity_contract_permit = GetEntityContractPermitSerializer()
     client = GetEntitySerializers()
     ph = serializers.SerializerMethodField()
+    game_killed_activity = serializers.SerializerMethodField()
 
     class Meta:
         model = GameActivity
@@ -355,6 +368,15 @@ class GetGameActivitySerializer(serializers.ModelSerializer):
         ph_obj = obj.professional_hunter_set.all()
         if len(ph_obj) > 0:
             return GetGameActivityProfessionalHunterSerializer(ph_obj, many=True).data
+        else:
+            return []
+
+    def get_game_killed_activity(self, obj):
+        game_killed_activity_obj = obj.game_killed_activity_set.all()
+        if len(game_killed_activity_obj) > 0:
+            return GetGameKilledActivitySerializer(
+                game_killed_activity_obj, many=True
+            ).data
         else:
             return []
 
@@ -375,6 +397,10 @@ class UpdateGameActivitySerializer(serializers.ModelSerializer):
 
 
 class GetGameKilledActivitySerializer(serializers.ModelSerializer):
+    species = SpeciesSerializer()
+    location = GetLocationSerializer()
+    area = HutingAreaSerializers()
+
     class Meta:
         model = GameKilledActivity
         fields = "__all__"

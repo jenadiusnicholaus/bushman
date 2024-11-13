@@ -52,7 +52,16 @@ from django.db import transaction
 
 from rest_framework.decorators import api_view
 
-from sales.models import ContactType, Doctype, EntityCategories, PaymentMethod
+from sales.models import (
+    ContactType,
+    Doctype,
+    Entity,
+    EntityCategories,
+    EntityCategory,
+    PaymentMethod,
+)
+from sales.serializers.sales_inquiries_serializers import GetEntitySerializers
+from rest_framework import status
 
 logger = logging.getLogger(__name__)
 
@@ -95,6 +104,26 @@ class HuntingTypesViewSets(viewsets.ModelViewSet):
     queryset = HuntingType.objects.all()
     serializer_class = GetHuntingTypeSerializer
     permission_classes = [IsAuthenticated]
+
+
+class PHViewSets(viewsets.ModelViewSet):
+    queryset = Entity.objects.all()
+    serializer_class = GetEntitySerializers
+
+    def list(self, request, *args, **kwargs):
+        # Filter to get the category with the name "PH"
+        categories = EntityCategory.objects.filter(category__name="PH")
+
+        # Check if any categories were found
+        if not categories.exists():
+            return Response(
+                {"detail": "Category 'PH' not found."}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Filter the queryset based on the retrieved categories
+        queryset = self.get_queryset().filter(entity_category__in=categories)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class PaymentMethodViewSets(viewsets.ModelViewSet):

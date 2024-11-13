@@ -12,6 +12,7 @@ from .other_views.sales_conf_contract_views import (
     SalesConfirmationContractviewSet,
     EntityContractPermitViewset,
     GameActivityViewset,
+    GameActivityRegistrationForWebPlatFormvieSet,
 )
 
 router = routers.DefaultRouter()
@@ -34,6 +35,11 @@ router.register(
 router.register(
     r"game-activity-vset",
     GameActivityViewset,
+)
+router.register(
+    r"game-activity-registration-vset",
+    GameActivityRegistrationForWebPlatFormvieSet,
+    basename="game-activity-registration-for-web-plat-form",
 )
 
 urlpatterns = [
