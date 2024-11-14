@@ -8,7 +8,15 @@ from django.templatetags.static import (
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A1, A4, A3, A2  # Use A1 for the page size
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, Image
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Paragraph,
+    Spacer,
+    Table,
+    TableStyle,
+    Frame,
+    Image,
+)
 import datetime
 import base64
 from io import BytesIO
@@ -1043,123 +1051,241 @@ class GamePDF:
 
     @staticmethod
     def generate_pdf(game_data, return_type="file"):
-        # Create a BytesIO buffer
         buffer = BytesIO()
-        doc = SimpleDocTemplate(buffer, pagesize=A4)
+        # Creating a SimpleDocTemplate with margin settings
+        margin = 50  # Adjust margin as required
+        doc = SimpleDocTemplate(
+            buffer,
+            pagesize=A2,
+            rightMargin=margin,
+            leftMargin=margin,
+            topMargin=margin,
+            bottomMargin=margin,
+        )
         styles = getSampleStyleSheet()
 
-        # Custom styles
-        header_style = ParagraphStyle(
-            "HeaderStyle",
-            parent=styles["Heading1"],
-            fontSize=20,
-            textColor=colors.white,
-            backColor=colors.HexColor("#8B4513"),
-            alignment=1,
-        )
-        subheader_style = ParagraphStyle(
-            "SubheaderStyle",
-            parent=styles["Heading2"],
-            fontSize=16,
-            textColor=colors.HexColor("#444444"),
-        )
-        section_header_style = ParagraphStyle(
-            "SectionHeaderStyle",
-            parent=styles["Heading2"],
-            fontSize=14,
-            textColor=colors.HexColor("#333333"),
-            spaceAfter=12,
-        )
+        # Load the logo for the PDF
+        logo_path = os.path.join(settings.BASE_DIR, "static/images/logo.png")
 
-        # Create a list to hold the content
+        # Custom styles for the PDF
+        header_style = styles["Heading1"]
+        header_style.fontSize = 24
+        header_style.textColor = colors.white
+        header_style.backColor = colors.HexColor("#8B4513")
+        header_style.alignment = 1
+
+        subheader_style = styles["Heading2"]
+        subheader_style.fontSize = 18
+        subheader_style.textColor = colors.HexColor("#444444")
+
+        section_header_style = styles["Heading2"]
+        section_header_style.fontSize = 16
+        section_header_style.textColor = colors.HexColor("#333333")
+        section_header_style.spaceAfter = 12
+
+        # Create content list
         content = []
 
-        # Add Game details
-        content.append(Paragraph("Game Details", header_style))
-        content.append(Spacer(1, 12))
-
-        content.append(Paragraph(f"Game ID: {game_data['id']}", subheader_style))
-        content.append(
-            Paragraph(f"Start Date: {game_data['start_date']}", subheader_style)
-        )
-        content.append(Paragraph(f"End Date: {game_data['end_date']}", subheader_style))
-        content.append(Spacer(1, 12))
-
-        # Add Entity Contract Permit Information
+        # Add Permit Information and Logo
         permit = game_data["entity_contract_permit"]
-        content.append(Paragraph("Permit Information", section_header_style))
-        content.append(
-            Paragraph(f"Permit Number: {permit['permit_number']}", styles["Normal"])
+        permit_info = Paragraph(
+            f"PERMIT NO: {permit['permit_number']}", styles["Normal"]
         )
-        content.append(
-            Paragraph(f"Issued Date: {permit['issued_date']}", styles["Normal"])
-        )
-        content.append(
-            Paragraph(f"Description: {permit['description']}", styles["Normal"])
-        )
+        content.append(permit_info)
         content.append(Spacer(1, 12))
 
-        # Add Client Information
+        # ** Add Logo Next to Permit Information **
+
         client = game_data["client"]
-        content.append(Paragraph("Client Information", section_header_style))
         content.append(
-            Paragraph(f"Client Name: {client['full_name']}", styles["Normal"])
+            Paragraph(f"CLIENT NAME: {client['full_name']}", styles["Normal"])
         )
         content.append(
-            Paragraph(f"Country: {client['country']['name']}", styles["Normal"])
+            Paragraph("COMPANY NAME: BUSHMAN HUNTING SAFARI (T) LTD", styles["Normal"])
         )
 
-        # Add Client Contacts
-        content.append(Paragraph("Contacts:", styles["Normal"]))
-        for contact in client["contacts"]:
+        ph_list = game_data.get("ph", [])
+        if ph_list:
+            ph = ph_list[0]["ph"]  # Use the first PH entry as an example
             content.append(
-                Paragraph(f"Contact: {contact['contact']}", styles["Normal"])
-            )
-
-        content.append(Spacer(1, 12))
-
-        # Add Player Hand Information
-        # Add Professional Hunters Information
-        if game_data.get("ph"):
-            content.append(
-                Paragraph("Professional Hunters Information", section_header_style)
-            )
-            for player_hand in game_data["ph"]:
-                content.append(
-                    Paragraph(
-                        f"Professional Hunter ID: {player_hand['id']}", styles["Normal"]
-                    )
-                )
-                player_info = player_hand["ph"]
-                content.append(
-                    Paragraph(
-                        f"Professional Hunter Name: {player_info['full_name']}",
-                        styles["Normal"],
-                    )
-                )
-                content.append(
-                    Paragraph(
-                        f"Nationality: {player_info['nationality']['name']}",
-                        styles["Normal"],
-                    )
-                )
-                content.append(Spacer(1, 12))
-        else:
+                Paragraph(f"PH NAME: {ph['full_name']}", styles["Normal"])
+            )  # Ensure full_name exists
             content.append(
                 Paragraph(
-                    "No Professional Hunters information available.", styles["Normal"]
+                    f"PH LICENCE NO: {ph.get('licence_number', 'N/A')}",
+                    styles["Normal"],
                 )
             )
+        else:
+            content.append(Paragraph("PH NAME: N/A", styles["Normal"]))
+            content.append(Paragraph("PH LICENCE NO: N/A", styles["Normal"]))
+        content.append(Spacer(1, 12))
 
-        # Build the document
+        # Add Species Table
+        species_data = [
+            [
+                "S/N",
+                "SPECIES",
+                "AREA",
+                "WEAPONS USED",
+                "DATE",
+                "TIME",
+                "SEX",
+                "GPS COORDINATES",
+                "REMARKS",
+            ]
+        ]
+        for entry in game_data.get("game_killed_activity", []):
+            lat = entry["location"]["geo_coordinates"]["coordinates"][0]["lat"]
+            lng = entry["location"]["geo_coordinates"]["coordinates"][0]["lng"]
+            coordinates = f"{lat}, {lng}"
+            species_data.append(
+                [
+                    entry["id"],
+                    entry["species"]["name"],
+                    entry.get("area", {}).get(
+                        "name", "Unknown"
+                    ),  # Assuming area has a 'name'
+                    entry.get("weapon_used", "N/A"),
+                    entry["date"],
+                    entry["time"],
+                    entry.get(
+                        "spacies_gender", "N/A"
+                    ),  # Assuming species gender is represented this way
+                    coordinates,
+                    entry.get("status", "No remarks"),
+                ]
+            )
+
+        # Calculate column widths based on maximum length of each column data
+        col_widths = GamePDF.calculate_column_widths(species_data)
+
+        # Create the table with calculated column widths
+        table = Table(species_data, colWidths=col_widths, hAlign="LEFT")
+        table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), "#8B4513"),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+                    ("ALIGN", (0, 0), (-1, -1), "LEFT"),  # Ensure left alignment
+                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                    ("FONTSIZE", (0, 0), (-1, -1), 10),
+                    ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
+                    ("BACKGROUND", (0, 1), (-1, -1), colors.beige),
+                    ("GRID", (0, 0), (-1, -1), 1, colors.black),
+                ]
+            )
+        )
+
+        content.append(table)
+
+        GamePDF.signature_table(content, doc, styles)
+
+        # declaration
+
+        declaration_text = "We, the above signed persons  hereby daclare  that the register of th animal hunted  including wounded  is a record of all  animals killed or wounded durig the validity of the huntig permit"
+        # append declaration_data to content
+        content.append(Spacer(1, 12))
+        # make bold
+        content.append(Paragraph("DECLARATION", styles["Normal"]))
+
+        content.append(Spacer(1, 12))
+        # not intable
+        # content.append(Table(declaration_data, colWidths=[doc.width/2]))
+        content.append(Paragraph(declaration_text, styles["Normal"]))
+
+        # Add Signatures text below the line of dots
+
+        GamePDF.signature_table(content, doc, styles)
+
+        # Build the PDF document
         doc.build(content)
 
-        # Seek to the beginning of the buffer so we can read its content
+        # Seek to the beginning of the buffer
         buffer.seek(0)
         pdf_data = buffer.getvalue()
         buffer.close()
 
+        # Return the PDF data
         if return_type == "base64":
             return {"pdf": base64.b64encode(pdf_data).decode("utf-8")}
-
         return HttpResponse(pdf_data, content_type="application/pdf")
+
+    @staticmethod
+    def signature_table(content, doc, styles):  # Signature Dotted Lines Table
+        signature_doted_line = [
+            "..................................................................",
+            ".................................................................",
+            "..................................................................",
+        ]
+
+        # Create a table for the dotted lines
+        signature_table = Table(
+            [
+                signature_doted_line
+            ],  # We put the signature_doted_line inside another list to create one row
+            colWidths=[doc.width / 3] * 3,  # Equal width for each column
+        )
+        signature_table.setStyle(
+            TableStyle(
+                [
+                    ("ALIGN", (0, 0), (-1, -1), "LEFT"),  # Center the dotted lines
+                    ("FONTNAME", (0, 0), (-1, -1), "Helvetica-Bold"),
+                    ("FONTSIZE", (0, 0), (-1, -1), 10),
+                    ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
+                    (
+                        "GRID",
+                        (0, 0),
+                        (-1, -1),
+                        0,
+                        colors.transparent,
+                    ),  # No gridlines for dotted lines
+                ]
+            )
+        )
+        content.append(Spacer(1, 20))  # Add some space before the table
+        content.append(signature_table)
+
+        # Prepare Signature Labels Below the Table
+        signature_labels = [
+            "SIGNATURE OF THE HUNTING CLIENT",
+            "SIGNATURE OF PROFESSIONAL HUNTER",
+            "SIGNATURE OF WILDLIFE OFFICER IN CHARGE",
+        ]
+
+        signature_label_data = [
+            [Paragraph(label, styles["Normal"]) for label in signature_labels]
+        ]
+
+        # Create a table for signatures
+        signature_labels_table = Table(
+            signature_label_data,
+            colWidths=[doc.width / 3] * 3,  # Equal width for each column
+        )
+        signature_labels_table.setStyle(
+            TableStyle(
+                [
+                    ("ALIGN", (0, 0), (-1, -1), "CENTER"),  # Center the labels
+                    ("FONTSIZE", (0, 0), (-1, -1), 10),
+                    (
+                        "GRID",
+                        (0, 0),
+                        (-1, -1),
+                        0,
+                        colors.transparent,
+                    ),  # No gridlines for the signature section
+                ]
+            )
+        )
+
+        content.append(signature_labels_table)
+
+    @staticmethod
+    def calculate_column_widths(data):
+        """Calculate column widths based on the maximum content length."""
+        max_lengths = [max(len(str(item)) for item in col) for col in zip(*data)]
+        # Adjust the width (in points) you want for the column based on your preference
+        adjusted_widths = [
+            (length * 7) + 30 for length in max_lengths
+        ]  # 7 is a rough estimate per character
+        return adjusted_widths

@@ -11,6 +11,7 @@ from sales.models import (
     Contacts,
     Entity,
     EntityCategory,
+    EntityIdentity,
     SalesInquiry,
     SalesInquiryArea,
     SalesInquirySpecies,
@@ -77,12 +78,32 @@ class CreateEntityCategorySerializers(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class GetEntityIdentitySerializers(serializers.ModelSerializer):
+    class Meta:
+        model = EntityIdentity
+        fields = "__all__"
+        depth = 1
+
+
+class CreateEntityIdentitySerializers(serializers.ModelSerializer):
+    class Meta:
+        model = EntityIdentity
+        fields = "__all__"
+
+
+class UpdateEntityIdentitySerializers(serializers.ModelSerializer):
+    class Meta:
+        model = EntityIdentity
+        fields = "__all__"
+
+
 # -------------------------- Sales Inquiry Serializers ---------- #
 class GetSalesInquirySerializers(serializers.ModelSerializer):
     entity = GetEntitySerializers()
     preference = serializers.SerializerMethodField()
     preferred_species = serializers.SerializerMethodField()
     area = serializers.SerializerMethodField()
+    enity_identity = serializers.SerializerMethodField()
 
     def get_area(self, obj):
         try:
@@ -120,6 +141,17 @@ class GetSalesInquirySerializers(serializers.ModelSerializer):
             sez = SalesIquiryPreferenceSerializers(preference)
             return sez.data
         else:
+            return None
+
+    def get_enity_identity(self, obj):
+        try:
+            identity = EntityIdentity.objects.get(entity=obj.entity)
+            if identity:
+                sez = GetEntityIdentitySerializers(identity)
+                return sez.data
+            else:
+                return None
+        except:
             return None
 
 

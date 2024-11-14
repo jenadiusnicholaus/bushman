@@ -3,6 +3,7 @@ from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from django.utils.dateparse import parse_date, parse_duration, parse_datetime
 
+from bm_hunting_settings.models import IdentityType
 from bm_hunting_settings.serializers import CreateEntityCategorySerializer
 from sales.helpers import SalesHelper
 from sales.models import (
@@ -16,6 +17,7 @@ from sales.models import (
 from sales.serializers.sales_inquiries_serializers import (
     CreateContactsSerializers,
     CreateEntityCategorySerializers,
+    CreateEntityIdentitySerializers,
     CreateEntitySerializers,
     CreateSalesInquiryAreaSerializer,
     CreateSalesInquirySerializers,
@@ -114,8 +116,8 @@ class SalesInquiriesViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        categories = EntityCategories.objects.filter(
-            name__in=request.data.get("categories")
+        categories, _ = EntityCategories.objects.get_or_create(
+            name=request.data.get("categories")
         )
         no_companion = 0
         no_observers = 0
@@ -125,13 +127,15 @@ class SalesInquiriesViewSet(viewsets.ModelViewSet):
             no_companion = companion
 
         if request.data.get("no_of_observers"):
-            n_observers = request.data.get("no_of_observers")
+            no_observers = request.data.get("no_of_observers")
 
-        if not categories.exists():
-            return Response(
-                {"error": "No valid categories provided"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        # if not categories.exists():
+        #     return Response(
+        #         {"error": "No valid categories provided"},
+        #         status=status.HTTP_400_BAD_REQUEST,
+        #     )
+
+        identity, _ = IdentityType.objects.get_or_create(name="passport_number")
 
         entity_data = {
             "user": request.user.id,
@@ -142,13 +146,20 @@ class SalesInquiriesViewSet(viewsets.ModelViewSet):
 
         category_data = {
             "entity": None,
-            "category": categories.first().id,
+            "category": categories.id,
         }
+
+        print(category_data)
 
         contact_data = {
             "entity": None,
             "contact_type": None,
             "contact": None,
+        }
+        entity_identity_data = {
+            "entity": None,
+            "identity_type": identity.id,
+            "identity_number": request.data.get("identity_number"),
         }
 
         sales_inquiry_data = {
@@ -170,7 +181,7 @@ class SalesInquiriesViewSet(viewsets.ModelViewSet):
             "preferred_date": preferred_date_str,
         }
         sales_prefered_species_data = {"sales_inquiry": None, "species": None}
-
+        # print(request.data)
         # try:
         with transaction.atomic():
             entity_serializer = CreateEntitySerializers(data=entity_data)
@@ -179,10 +190,28 @@ class SalesInquiriesViewSet(viewsets.ModelViewSet):
                     entity_serializer.errors, status=status.HTTP_400_BAD_REQUEST
                 )
             saved_entity = entity_serializer.save()
+
+            # CreateEntityIdentitySerializers
+            entity_identity_data.update({"entity": saved_entity.id})
+            entity_identity_serializer = CreateEntityIdentitySerializers(
+                data=entity_identity_data
+            )
+            if not entity_identity_serializer.is_valid():
+                #  we do delete the entity if the entity_identity is not valid
+                # i am deleting the entity first because it is not possible to create entity_identity without entity
+                Entity.objects.get(id=saved_entity.id).delete()
+                return Response(
+                    entity_identity_serializer.errors,
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            entity_identity_serializer.save()
+
+            # create entity_category
             category_data.update({"entity": saved_entity.id})
             entity_category_serializer = CreateEntityCategorySerializers(
                 data=category_data
             )
+            print(category_data)
             if not entity_category_serializer.is_valid():
                 #  we do delete the entity if the entity_category is not valid
                 # i am deleting the entity first because it is not possible to create entity_category without entity

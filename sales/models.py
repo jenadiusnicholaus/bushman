@@ -5,14 +5,9 @@ from bm_hunting_settings.models import (
     Country,
     Currency,
     HuntingArea,
-    # HuntingBlock,
-    HuntingType,
     IdentityType,
     Nationalities,
-    Quota,
     Seasons,
-    # Package,
-    # SafariPackageType,
     Species,
 )
 from django_countries.fields import CountryField
@@ -149,6 +144,31 @@ class EntityCategory(models.Model):
 
     def __str__(self):
         return self.entity.full_name + " - " + self.category.name
+
+
+class EntityIdentity(models.Model):
+    entity = models.ForeignKey(
+        Entity, on_delete=models.CASCADE, related_name="entity_identity_set"
+    )
+    identity_type = models.ForeignKey(
+        IdentityType, on_delete=models.CASCADE, related_name="entity_identity_type_set"
+    )
+    identity_number = models.CharField(max_length=100)
+    create_date = models.DateTimeField(default=timezone.now)
+    updated_date = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "Entity Identities"
+        db_table = "entity_identities"
+
+    def __str__(self):
+        return (
+            self.entity.full_name
+            + " - "
+            + self.identity_type.name
+            + " - "
+            + self.identity_number
+        )
 
 
 class BankDetails(models.Model):
