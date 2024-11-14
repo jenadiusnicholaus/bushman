@@ -138,7 +138,7 @@ class EntityCategory(models.Model):
         Entity, on_delete=models.CASCADE, related_name="entity_category"
     )
     category = models.ForeignKey(
-        EntityCategories, on_delete=models.CASCADE, related_name="entity_category_set"
+        EntityCategories, on_delete=models.CASCADE, related_name="entity_category"
     )
     create_date = models.DateTimeField(default=timezone.now)
     updated_date = models.DateTimeField(auto_now=True)
