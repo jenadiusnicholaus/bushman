@@ -1126,6 +1126,7 @@ class GamePDF:
             [
                 "S/N",
                 "SPECIES",
+                "QUANTITY",
                 "AREA",
                 "WEAPONS USED",
                 "DATE",
@@ -1143,6 +1144,7 @@ class GamePDF:
                 [
                     entry["id"],
                     entry["species"]["name"],
+                    entry["quantity"],
                     entry.get("area", {}).get(
                         "name", "Unknown"
                     ),  # Assuming area has a 'name'
