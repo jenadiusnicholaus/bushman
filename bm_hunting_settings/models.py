@@ -430,7 +430,7 @@ class SalesPackageSpecies(models.Model):
         related_name="sales_package_species",
     )
     quantity = models.IntegerField(default=0)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     # currency = models.ForeignKey(
     #     Currency, on_delete=models.CASCADE, related_name="sales_package_species"
     # )

@@ -39,7 +39,6 @@ class SalesPackageViewSet(viewsets.ModelViewSet):
                     "sales_package": sales_package.id,
                     "species": species_data.get("id"),
                     "quantity": species_data.get("quantity"),
-                    "amount": species_data.get("amount"),
                 }
                 sales_package_species_serializer = CreateSalesPackageSpeciesSerializer(
                     data=sales_package_species_data
@@ -53,6 +52,8 @@ class SalesPackageViewSet(viewsets.ModelViewSet):
                 sales_package_species_serializer.save()
 
         return Response(
-            "message: Sales package created successfully",
+            {
+                "message": "Sales package created successfully"
+            },  # Fixed key-value structure
             status=status.HTTP_201_CREATED,
         )
