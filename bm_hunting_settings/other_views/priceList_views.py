@@ -55,7 +55,7 @@ class CreatePriceListViewSet(viewsets.ModelViewSet):
             "duration": request.data.get("duration"),
         }
 
-        sales_package_id = request.data.get("sales_package_id")
+        sales_package_ids = request.data.get("sales_package_ids")
         price_list = None
         price_list_type = None
 
@@ -71,7 +71,7 @@ class CreatePriceListViewSet(viewsets.ModelViewSet):
             # sales_package = sales_package_serializer.save()
 
             # Create the Hunting Price List
-            price_list_data["sales_package"] = sales_package_id
+            # price_list_data["sales_package"] = sales_package_id
             price_list_serializer = CreateHuntingPriceListSerializer(
                 data=price_list_data
             )
@@ -100,101 +100,76 @@ class CreatePriceListViewSet(viewsets.ModelViewSet):
             price_list_type = price_list_type_serializer.save()
 
             # Create the Hunting Price Type Package
-            hunting_price_type_package_data = {
-                "price_list_type": price_list_type.id,
-                "sales_package": sales_package_id,
-            }
-            hunting_price_type_package_serializer = (
-                CreateHuntingPriceTypePackageSerializer(
-                    data=hunting_price_type_package_data
-                )
-            )
-
-            if not hunting_price_type_package_serializer.is_valid():
-                price_list_type.delete()  # Delete the previously created price_list_type
-                price_list.delete()  # Delete the previously created price_list
-                # sales_package.delete()  # Delete the previously created sales_package
-                return Response(
-                    hunting_price_type_package_serializer.errors,
-                    status=status.HTTP_400_BAD_REQUEST,
+            for sales_package_id in sales_package_ids:
+                hunting_price_type_package_data = {
+                    "price_list_type": price_list_type.id,
+                    "sales_package": sales_package_id,
+                }
+                hunting_price_type_package_serializer = (
+                    CreateHuntingPriceTypePackageSerializer(
+                        data=hunting_price_type_package_data
+                    )
                 )
 
-            saved_hunting_price_type_package = (
-                hunting_price_type_package_serializer.save()
-            )
+                if not hunting_price_type_package_serializer.is_valid():
+                    price_list_type.delete()  # Delete the previously created price_list_type
+                    price_list.delete()  # Delete the previously created price_list
+                    # sales_package.delete()  # Delete the previously created sales_package
+                    return Response(
+                        hunting_price_type_package_serializer.errors,
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
 
-            # GetHuntingPackageCompanionsHunterSerializer
-            componants_hunter_data = {
-                "hunting_price_list_type_package": saved_hunting_price_type_package.id,
-                # "days": request.data.get("companion_days"),
-                "amount": request.data.get("companion_amount"),
-            }
-            componion_hunter_serializer = (
-                CreateHuntingPackageCompanionsHunterSerializer(
-                    data=componants_hunter_data
-                )
-            )
-            if not componion_hunter_serializer.is_valid():
-                # Clean up the previously created objects for data consistency
-                hunting_price_type_package_serializer.save()  # Assuming this can be re-saved or skip deletion
-                price_list_type.delete()  # Delete the previously created price_list_type
-                price_list.delete()  # Delete the previously created price_list
-                # sales_package.delete()  # Delete the previously created sales_package
-                return Response(
-                    componion_hunter_serializer.errors,
-                    status=status.HTTP_400_BAD_REQUEST,
+                saved_hunting_price_type_package = (
+                    hunting_price_type_package_serializer.save()
                 )
 
-            componion_hunter_serializer.save()
-
-            # create the observer cost
-            observer_data = {
-                "hunting_price_list_type_package": saved_hunting_price_type_package.id,
-                # "days": request.data.get("observer_days"),
-                "amount": request.data.get("observer_amount"),
-            }
-
-            oberver_serialiozers = CreateHuntingPackageOberverHunterSerializer(
-                data=observer_data
-            )
-            if not oberver_serialiozers.is_valid():
-                print(oberver_serialiozers.errors)
-                # Clean up the previously created objects for data consistency
-                hunting_price_type_package_serializer.save()  # Assuming this can be re-saved or skip deletion
-                price_list_type.delete()  # Delete the previously created price_list_type
-                price_list.delete()  # Delete the previously created price_list
-                # sales_package.delete()  # Delete the previously created sales_package
-                return Response(
-                    componion_hunter_serializer.errors,
-                    status=status.HTTP_400_BAD_REQUEST,
+                # GetHuntingPackageCompanionsHunterSerializer
+                componants_hunter_data = {
+                    "hunting_price_list_type_package": saved_hunting_price_type_package.id,
+                    # "days": request.data.get("companion_days"),
+                    "amount": request.data.get("companion_amount"),
+                }
+                componion_hunter_serializer = (
+                    CreateHuntingPackageCompanionsHunterSerializer(
+                        data=componants_hunter_data
+                    )
                 )
-            oberver_serialiozers.save()
+                if not componion_hunter_serializer.is_valid():
+                    # Clean up the previously created objects for data consistency
+                    hunting_price_type_package_serializer.save()  # Assuming this can be re-saved or skip deletion
+                    price_list_type.delete()  # Delete the previously created price_list_type
+                    price_list.delete()  # Delete the previously created price_list
+                    # sales_package.delete()  # Delete the previously created sales_package
+                    return Response(
+                        componion_hunter_serializer.errors,
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
 
-            # Create Sales Package Species Data
-            # species_object_list = request.data.get("species_object_list", [])
+                componion_hunter_serializer.save()
 
-            # for species_data in species_object_list:
-            #     sales_package_species_data = {
-            #         "sales_package": sales_package.id,
-            #         "species": species_data.get("id"),
-            #         "quantity": species_data.get("quantity"),
-            #         "amount": species_data.get("amount"),
-            #     }
-            #     sales_package_species_serializer = CreateSalesPackageSpeciesSerializer(
-            #         data=sales_package_species_data
-            #     )
-            #     if not sales_package_species_serializer.is_valid():
-            #         # Clean up the previously created objects
-            #         hunting_price_type_package_serializer.save()  # Assuming this can be re-saved or skip deletion
-            #         price_list_type.delete()  # Delete the previously created price_list_type
-            #         price_list.delete()  # Delete the previously created price_list
-            #         sales_package.delete()  # Delete the previously created sales_package
-            #         return Response(
-            #             sales_package_species_serializer.errors,
-            #             status=status.HTTP_400_BAD_REQUEST,
-            #         )
+                # create the observer cost
+                observer_data = {
+                    "hunting_price_list_type_package": saved_hunting_price_type_package.id,
+                    # "days": request.data.get("observer_days"),
+                    "amount": request.data.get("observer_amount"),
+                }
 
-            #     sales_package_species_serializer.save()
+                observer_serialiozers = CreateHuntingPackageOberverHunterSerializer(
+                    data=observer_data
+                )
+                if not observer_serialiozers.is_valid():
+                    print(observer_serialiozers.errors)
+                    # Clean up the previously created objects for data consistency
+                    hunting_price_type_package_serializer.save()  # Assuming this can be re-saved or skip deletion
+                    price_list_type.delete()  # Delete the previously created price_list_type
+                    price_list.delete()  # Delete the previously created price_list
+                    # sales_package.delete()  # Delete the previously created sales_package
+                    return Response(
+                        componion_hunter_serializer.errors,
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                observer_serialiozers.save()
 
         return Response(
             {
