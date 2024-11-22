@@ -9,10 +9,12 @@ from .views import (
 )
 
 from .other_views.sales_conf_contract_views import (
+    InitiateClientGameViewSet,
     SalesConfirmationContractviewSet,
     EntityContractPermitViewset,
-    GameActivityViewset,
+    ClientGameActivityViewset,
     GameActivityRegistrationForWebPlatFormvieSet,
+    GameActivitiesViewSet,
 )
 
 router = routers.DefaultRouter()
@@ -34,15 +36,27 @@ router.register(
 
 router.register(
     r"game-activity-vset",
-    GameActivityViewset,
+    ClientGameActivityViewset,
 )
 router.register(
     r"game-activity-registration-vset",
     GameActivityRegistrationForWebPlatFormvieSet,
     basename="game-activity-registration-for-web-plat-form",
 )
+# router.register(
+#     r"create-game-activity-vset",
+#     CreateGameActivityViewSet,
+#     basename="create-game-activity",
+# )
+
+router.register(
+    r"game-activities-vset",
+    GameActivitiesViewSet,
+    basename="game-activities",
+    )
 
 urlpatterns = [
     path("", include(router.urls)),
     path("sales-price-break-down/", CalculateTotalSalesAmount.as_view()),
+    path("create-game-activity-vset/", InitiateClientGameViewSet.as_view()),
 ]

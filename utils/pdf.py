@@ -333,9 +333,11 @@ class SalesConfirmationPDF:
         salesInquiry = salesData.get("sales_inquiry", {})
         salesEntity = salesInquiry.get("entity", {})
         area_name = salesInquiry.get("area", [{}])[0].get("area", {}).get("name", "N/A")
-        email_contact = salesEntity.get("contacts", [{}])[0].get("contact", "N/A")
-        phone_contact = salesEntity.get("contacts", [{}])[1].get("contact", "N/A")
-        address_contact = salesEntity.get("contacts", [{}])[2].get("contact", "N/A")
+
+        contacts = salesEntity.get("contacts", [])
+        email_contact = contacts[0]["contact"] if len(contacts) > 0 else "N/A"
+        phone_contact = contacts[1]["contact"] if len(contacts) > 1 else "N/A"
+        address_contact = contacts[2]["contact"] if len(contacts) > 2 else "N/A"
 
         client_info_data = [
             ["Client Name:", salesEntity.get("full_name", "N/A")],

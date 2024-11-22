@@ -31,7 +31,7 @@ SECRET_KEY = config("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["192.168.0.162", "localhost", "127.0.0.1", "trophyapi.japango.co.tz"]
+ALLOWED_HOSTS = ["192.168.1.181", "localhost", "127.0.0.1", "trophyapi.japango.co.tz"]
 
 
 # Application definition
@@ -86,27 +86,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "settings.wsgi.application"
 
-
-# Database
-# https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.mysql",
-#         "NAME": config("DATABASE_NAME"),
-#         "USER": config("DATABASE_USER"),
-#         "PASSWORD": config("DATABASE_PASSWORD"),
-#         "HOST": config("DATABASE_HOST"),
-#         "PORT": config("DATABASE_PORT"),
-#     }
-# }
 
 DATABASES = {
     "default": {

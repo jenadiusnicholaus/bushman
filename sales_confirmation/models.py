@@ -211,26 +211,36 @@ class SalesConfirmationProposalClientPreference(models.Model):
 
 
 class Installment(models.Model):
-    DUE_LIMIT_CHOICES = (
-        ("prior", "Due Before the Due Date"),
-        ("after", "Due After the Due Date"),
-        ("none", "No Due Date"),
+
+    AMOUNT_DUE_TYPE_CHOICES = (
+        ("PERCENT", "PERCENT"),
+        ("LAPS", "LAPS"),
     )
+
+    DUE_DAYS_TYPE = (
+        ("UPON_SALES_CONFIRMATION", "Upon Sales Confirmation"),
+        ("PRIOR_SAFARI", "Prior to Safari"),
+    )
+
     sales_confirmation_proposal = models.ForeignKey(
         SalesConfirmationProposal,
         on_delete=models.CASCADE,
         related_name="installments",
     )
-    description = models.CharField(max_length=255)
+
+    narration = models.CharField(max_length=255)
     amount_due = models.DecimalField(max_digits=10, decimal_places=2)
-    days = models.IntegerField(null=True, blank=True)
-    due_limit = models.CharField(
-        max_length=255, choices=DUE_LIMIT_CHOICES, default="none"
+    amount_due_type = models.CharField(
+        max_length=255, null=True, blank=True, choices=AMOUNT_DUE_TYPE_CHOICES
+    )
+    due_days = models.IntegerField(null=True, blank=True)
+    due_days_type = models.CharField(
+        max_length=255, null=True, blank=True, choices=DUE_DAYS_TYPE
     )
 
     class Meta:
         verbose_name_plural = "Installments"
-        db_table = "sales_confirmation_installment"
+        db_table = "installment_setups"
 
     def __str__(self):
         return f"{self.sales_confirmation_proposal} - {self.description}"

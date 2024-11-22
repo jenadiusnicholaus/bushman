@@ -114,10 +114,11 @@ class SalesConfirmationViewSet(viewsets.ModelViewSet):
 
             installment_data = {
                 "sales_confirmation_proposal": saved_proposal.id,
-                "description": installment.get("description"),
+                "narration": installment.get("narration"),
                 "amount_due": installment.get("amount"),
-                "days": installment.get("days"),
-                "due_limit": installment.get("due_limit"),
+                "amount_due_type": installment.get("amount_type"),
+                "due_days": installment.get("days"),
+                "due_days_type": installment.get("due_days_type"),
             }
 
             installment_serializer = CreateInstallmentSerializer(data=installment_data)
