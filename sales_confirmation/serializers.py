@@ -95,12 +95,15 @@ class GetSalesConfirmationProposalSerializer(serializers.ModelSerializer):
             return []
 
     def get_price_break_down(self, obj):
-        sales_inquiry_id = obj.sales_inquiry.id
-        package_id = obj.sales_confirmation_package.package.id
-        response_data = calculate_total_cost(
-            sales_inquiry_id=sales_inquiry_id, package_id=package_id
-        )
-        return response_data
+        try:
+            sales_inquiry_id = obj.sales_inquiry.id
+            package_id = obj.sales_confirmation_package.package.id
+            response_data = calculate_total_cost(
+                sales_inquiry_id=sales_inquiry_id, package_id=package_id
+            )
+            return response_data
+        except:
+            return None
 
     def get_status(self, obj):
         try:

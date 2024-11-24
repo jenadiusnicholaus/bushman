@@ -243,7 +243,7 @@ class Installment(models.Model):
         db_table = "installment_setups"
 
     def __str__(self):
-        return f"{self.sales_confirmation_proposal} - {self.description}"
+        return f"{self.sales_confirmation_proposal}"
 
 
 class SalesQuotaSpeciesStatus(models.Model):
