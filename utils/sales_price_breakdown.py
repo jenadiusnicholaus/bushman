@@ -27,7 +27,9 @@ def calculate_total_cost(sales_inquiry_id, package_id):
     except Exception as e:
         raise ValidationError({"message": str(e)})
 
-    package = HuntingPriceTypePackage.objects.filter(id=package_id).first()
+    package = HuntingPriceTypePackage.objects.filter(
+        sales_package__id=package_id
+    ).first()
     if package is None:
         raise NotFound({"message": "Package not found"})
 
