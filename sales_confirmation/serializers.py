@@ -59,13 +59,34 @@ class GetSalesConfirmationProposalSerializer(serializers.ModelSerializer):
             package_type = HuntingPriceTypePackage.objects.filter(
                 sales_package__id=package.package.id
             ).first()
+            if package_type is None:
+                return None
+
+            # Serialize both package type and sales confirmation package
             sz1 = GetHuntingPriceTypePackageSerializer(package_type).data
             sz2 = GetSalesConfirmationProposalPackageSerializer(package).data
+
             if sz1 and sz2:
+                # Combine the serialized data
                 return {**sz1, **sz2}
             return None
-        except:
+        except Exception as e:
+            # Log the error if necessary
+            print(f"Error in get_proposed_package: {e}")
             return None
+
+    def get_all_proposed_packages(self, objects):
+        proposed_packages = []
+        for obj in objects:
+            proposed_package = self.get_proposed_package(obj)
+            if proposed_package is not None:
+                proposed_packages.append(
+                    proposed_package
+                )  # Ensure this is a serializable structure
+        return proposed_packages
+
+    # Usage
+    # proposed_packages = get_all_proposed_packages(your_objects_list)
 
     def get_itinerary(self, obj):
         # Assuming itineraries is a one-to-one field

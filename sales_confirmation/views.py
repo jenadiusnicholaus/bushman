@@ -69,12 +69,12 @@ class SalesConfirmationViewSet(viewsets.ModelViewSet):
             )
         saved_proposal = proposal_serializer.save()
 
-        package_name_data = {
+        bushman_package_data = {
             "sales_confirmation_proposal": saved_proposal.id,
             "package": request.data.get("package_id"),
         }
         package_serializer = CreateSalesConfirmationProposalPackageSerializer(
-            data=package_name_data
+            data=bushman_package_data
         )
 
         if not package_serializer.is_valid():

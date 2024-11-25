@@ -211,7 +211,6 @@ class SalesInquiriesViewSet(viewsets.ModelViewSet):
             entity_category_serializer = CreateEntityCategorySerializers(
                 data=category_data
             )
-            print(category_data)
             if not entity_category_serializer.is_valid():
                 #  we do delete the entity if the entity_category is not valid
                 # i am deleting the entity first because it is not possible to create entity_category without entity

@@ -339,6 +339,15 @@ class SalesConfirmationPDF:
         phone_contact = contacts[1]["contact"] if len(contacts) > 1 else "N/A"
         address_contact = contacts[2]["contact"] if len(contacts) > 2 else "N/A"
 
+        proposed_package = salesData.get("proposed_package", {})
+        hunting_type_name = "N/A"  # Default value
+        if proposed_package and proposed_package.get("price_list_type"):
+            hunting_type_name = (
+                proposed_package["price_list_type"]
+                .get("hunting_type", {})
+                .get("name", "N/A")
+            )
+
         client_info_data = [
             ["Client Name:", salesEntity.get("full_name", "N/A")],
             ["Address:", address_contact],
@@ -353,10 +362,7 @@ class SalesConfirmationPDF:
             ["Email:", email_contact],
             [
                 "Type of Hunting Trip:",
-                salesData.get("proposed_package", {})
-                .get("price_list_type", {})
-                .get("hunting_type", {})
-                .get("name", "N/A"),
+                hunting_type_name,
             ],
             ["Hunting Area:", area_name],
             ["Outfitter:", "Bushman Safari Trackers Limited"],
@@ -418,9 +424,8 @@ class SalesConfirmationPDF:
 
             # Append total row
             installment_data.append(
-                ["Total Amount", total_amount, "", ""]
-            )  # Add total line
-
+                ["Total Amount", total_amount, "", ""]  # Add total line
+            )
         else:
             installment_data = [["No installments available", "", "", ""]]
 
