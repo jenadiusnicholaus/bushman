@@ -8,60 +8,76 @@ from bm_hunting_settings.models import (
 )
 from sales.models import SalesIquiryPreference
 
+from rest_framework.exceptions import NotFound, ValidationError
+
+
+from rest_framework.exceptions import NotFound, ValidationError
+
 
 def calculate_total_cost(sales_inquiry_id, package_id):
-    # sales_inquiry_id = request.query_params.get("sales_inquiry_id")
-    # package_id = request.query_params.get("package_id")
-
     if not sales_inquiry_id or not package_id:
-        return Response(
-            {"message": "Missing sales_inquiry_id or package_id"},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
+        raise ValidationError({"message": "Missing sales_inquiry_id or package_id"})
 
     try:
         sales_inquiry = SalesIquiryPreference.objects.get(
             sales_inquiry__id=sales_inquiry_id
         )
     except SalesIquiryPreference.DoesNotExist:
-        return Response(
-            {"message": "Sales Inquiry not found"}, status=status.HTTP_404_NOT_FOUND
-        )
+        raise NotFound({"message": "Sales Inquiry not found"})
+    except Exception as e:
+        raise ValidationError({"message": str(e)})
 
-    try:
-        package = HuntingPriceTypePackage.objects.filter(id=package_id).first()
-    except HuntingPriceTypePackage.DoesNotExist:
-        return Response(
-            {"message": "Package not found"}, status=status.HTTP_404_NOT_FOUND
-        )
+    package = HuntingPriceTypePackage.objects.filter(id=package_id).first()
+    if package is None:
+        raise NotFound({"message": "Package not found"})
 
-    total_amount = package.price_list_type.amount
+    if package.price_list_type is None:
+        raise ValidationError({"message": "Price list type not found"})
+
+    total_amount = (
+        package.price_list_type.amount
+        if package.price_list_type.amount is not None
+        else 0
+    )
+
+    # Check for valid currency data
+    if package.price_list_type.currency is None:
+        raise ValidationError({"message": "Currency not found"})
+
     currency = {
         "code": package.price_list_type.currency.name,
         "symbol": package.price_list_type.currency.symbol,
     }
+
+    # Validate numbers of companions and observers
     number_of_companions = sales_inquiry.no_of_companions
     number_of_observers = sales_inquiry.no_of_observers
+
+    if not isinstance(number_of_companions, int) or number_of_companions < 0:
+        raise ValidationError({"message": "Invalid number of companions"})
+    if not isinstance(number_of_observers, int) or number_of_observers < 0:
+        raise ValidationError({"message": "Invalid number of observers"})
+
     companion_cost = 0
     observer_cost = 0
 
     # Companion cost
-    try:
-        companion_cost_instance = HuntingPackageCompanionsHunter.objects.filter(
-            hunting_price_list_type_package__id=package.id
-        ).first()
+    companion_cost_instance = HuntingPackageCompanionsHunter.objects.filter(
+        hunting_price_list_type_package__id=package.id
+    ).first()
+    if companion_cost_instance and companion_cost_instance.amount is not None:
         companion_cost = companion_cost_instance.amount
-    except HuntingPackageCompanionsHunter.DoesNotExist:
-        companion_cost = 0
+    else:
+        pass
 
     # Observer cost
-    try:
-        observer_cost_instance = HuntingPackageOberverHunter.objects.get(
-            hunting_price_list_type_package__id=package.id
-        )
+    observer_cost_instance = HuntingPackageOberverHunter.objects.filter(
+        hunting_price_list_type_package__id=package.id
+    ).first()
+    if observer_cost_instance and observer_cost_instance.amount is not None:
         observer_cost = observer_cost_instance.amount
-    except HuntingPackageOberverHunter.DoesNotExist:
-        observer_cost = 0
+    else:
+        pass
 
     # Prepare response data
     companion_cost_detail = {}
