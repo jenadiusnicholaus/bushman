@@ -17,16 +17,19 @@ from sales.serializers.sales_inquiries_serializers import (
     GetSalesInquirySerializers,
 )
 from sales_confirmation.models import (
-    EntityContactPermitDates,
+    EntityContractPermitDates,
     EntityContractPermit,
     GameActivity,
     GameActivityProfessionalHunter,
     GameKilledActivity,
     Installment,
+    SalesConfirmationCompanions,
     SalesConfirmationContract,
     SalesConfirmationProposal,
     SalesConfirmationProposalAdditionalService,
+    SalesConfirmationProposalCompanionItinerary,
     SalesConfirmationProposalItinerary,
+    SalesConfirmationProposalObserver,
     SalesConfirmationProposalPackage,
     SalesConfirmationProposalStatus,
     SalesQuotaSpeciesStatus,
@@ -337,9 +340,9 @@ class GetEntityContractPermitSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def get_dates(self, obj):
-        dates_obj = obj.contact_dates_set.all()
+        dates_obj = obj.contract_dates_set.all()
         if len(dates_obj) > 0:
-            return GetEntityContactPermitDatesSerializer(dates_obj, many=True).data
+            return GetEntityContractPermitDatesSerializer(dates_obj, many=True).data
         else:
             return []
 
@@ -359,21 +362,21 @@ class UpdateEntityContractPermitSerializer(serializers.ModelSerializer):
 # ======================== EntityContactDates ===============
 
 
-class GetEntityContactPermitDatesSerializer(serializers.ModelSerializer):
+class GetEntityContractPermitDatesSerializer(serializers.ModelSerializer):
     class Meta:
-        model = EntityContactPermitDates
+        model = EntityContractPermitDates
         fields = "__all__"
 
 
-class CreateEntityContactPermitDatesCreateSerializer(serializers.ModelSerializer):
+class CreateEntityContractPermitDatesCreateSerializer(serializers.ModelSerializer):
     class Meta:
-        model = EntityContactPermitDates
+        model = EntityContractPermitDates
         fields = "__all__"
 
 
-class UpdateEntityContactPermitDatesSerializer(serializers.ModelSerializer):
+class UpdateEntityContractPermitDatesSerializer(serializers.ModelSerializer):
     class Meta:
-        model = EntityContactPermitDates
+        model = EntityContractPermitDates
         fields = "__all__"
 
 
@@ -417,9 +420,7 @@ class UpdateGameActivitySerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-# ----------------- GameKilledActivity serializer - #
-
-
+# ----------------- GameKilledActivity serializer ----------------- #
 class GetGameKilledActivitySerializer(serializers.ModelSerializer):
     species = SpeciesSerializer()
     location = GetLocationSerializer()
@@ -457,6 +458,77 @@ class CreateGameActivityProfessionalHunterSerializer(serializers.ModelSerializer
 
 
 class UpdateGameActivityProfessionalHunterSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = GameActivityProfessionalHunter
+        fields = "__all__"
+
+
+# ------------------- SalesConfirmationPDF serializer - #
+class GetSalesConfirmationCompanionsSerializer(serializers.ModelSerializer):
+    companion = GetEntitySerializers()
+    regulatory_package = GetRegulatoryHuntingPackageSerializers()
+
+    class Meta:
+        model = SalesConfirmationCompanions
+        fields = "__all__"
+
+
+class CreateSalesConfirmationCompanionsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SalesConfirmationCompanions
+        fields = "__all__"
+
+
+class UpdateSalesConfirmationCompanionsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SalesConfirmationCompanions
+        fields = "__all__"
+
+
+#  ------------------- observer serializer ----------------------
+class GetSalesConfirmationProposalObserverSerializer(serializers.ModelSerializer):
+    observer = GetEntitySerializers()
+
+    class Meta:
+        model = SalesConfirmationProposalObserver
+        fields = "__all__"
+
+
+class CreateSalesConfirmationProposalObserverSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SalesConfirmationProposalObserver
+        fields = "__all__"
+
+
+class UpdateSalesConfirmationProposalObserverSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SalesConfirmationProposalObserver
+        fields = "__all__"
+
+
+# --------------------- companion itinerary serializer - #
+
+
+class GetSalesConfirmationProposalCompanionItinerarySerializer(
+    serializers.ModelSerializer
+):
+    class Meta:
+        model = SalesConfirmationProposalCompanionItinerary
+        fields = "__all__"
+
+
+class CreateSalesConfirmationProposalCompanionItinerarySerializer(
+    serializers.ModelSerializer
+):
+    class Meta:
+        model = SalesConfirmationProposalCompanionItinerary
+        fields = "__all__"
+
+
+class UpdateSalesConfirmationProposalCompanionItinerarySerializer(
+    serializers.ModelSerializer
+):
+    class Meta:
+        model = SalesConfirmationProposalCompanionItinerary
         fields = "__all__"

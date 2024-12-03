@@ -736,11 +736,10 @@ class SalesInquiryPDF:
 
 class SalesContractPDF:
     @staticmethod
+    @staticmethod
     def generate_pdf(salesData, return_type="file"):
         if not salesData:
             return HttpResponse("No data to print", status=400)
-
-        # Log salesData for debugging
 
         # Paths and initial setup
         logo_path = os.path.join(settings.BASE_DIR, "static/images/logo.png")
@@ -755,7 +754,7 @@ class SalesContractPDF:
         )
         styles = getSampleStyleSheet()
 
-        # Define custom styles using the previous color scheme
+        # Define custom styles
         header_style = ParagraphStyle(
             "HeaderStyle",
             parent=styles["Heading1"],
@@ -879,33 +878,50 @@ class SalesContractPDF:
             content.append(Paragraph(field, normal_style))
 
         # Price Breakdown Section
-        price_breakdown = salesData.get("sales_confirmation_proposal", {}).get(
-            "price_break_down", {}
-        )
         content.append(Spacer(1, 12))
         content.append(Paragraph("Price Breakdown", subheader_style))
         content.append(Spacer(1, 6))
 
-        price_fields = [
-            f"Total Amount: <b>{price_breakdown.get('total_amount', {}).get('currency', {}).get('symbol', '')} "
-            f"{price_breakdown.get('total_amount', {}).get('amount', 'N/A')}</b>",
-        ]
+        price_breakdown = salesData.get("sales_confirmation_proposal", {}).get(
+            "price_break_down", {}
+        )
 
-        if "companion_cost_details" in price_breakdown:
-            companion_cost = price_breakdown["companion_cost_details"]
-            number_of_companions = companion_cost.get("number_of_companions", "N/A")
-            cost_per_companion = companion_cost.get("cost_per_companion", {})
-            cost_per_companion_amount = f"{cost_per_companion.get('currency', {}).get('symbol', '')} {cost_per_companion.get('amount', 'N/A')}"
+        if price_breakdown:  # Check if price_breakdown is not None
+            price_fields = []
 
-            price_fields.append(f"Number of Companions: <b>{number_of_companions}</b>")
-            price_fields.append(
-                f"Cost per Companion: <b>{cost_per_companion_amount}</b>"
+            # Get currency symbol and amount safely
+            currency_symbol = (
+                price_breakdown.get("total_amount", {})
+                .get("currency", {})
+                .get("symbol", "")
             )
-        else:
-            price_fields.append("<b>Companion Cost Details: Not Available</b>")
+            amount = price_breakdown.get("total_amount", {}).get("amount", "N/A")
 
-        for field in price_fields:
-            content.append(Paragraph(field, normal_style))
+            # Prepare the price field string
+            price_fields.append(f"Total Amount: <b>{currency_symbol} {amount}</b>")
+
+            if "companion_cost_details" in price_breakdown:
+                companion_cost = price_breakdown["companion_cost_details"]
+                number_of_companions = companion_cost.get("number_of_companions", "N/A")
+                cost_per_companion = companion_cost.get("cost_per_companion", {})
+                cost_per_companion_amount = f"{cost_per_companion.get('currency', {}).get('symbol', '')} {cost_per_companion.get('amount', 'N/A')}"
+
+                price_fields.append(
+                    f"Number of Companions: <b>{number_of_companions}</b>"
+                )
+                price_fields.append(
+                    f"Cost per Companion: <b>{cost_per_companion_amount}</b>"
+                )
+            else:
+                price_fields.append("<b>Companion Cost Details: Not Available</b>")
+
+            for field in price_fields:
+                content.append(Paragraph(field, normal_style))
+        else:
+            # Handle when price_breakdown is missing
+            content.append(
+                Paragraph("<b>Price Breakdown: Not Available</b>", normal_style)
+            )
 
         # Final Touches: Add Footer with Company Details
         content.append(Spacer(1, 20))

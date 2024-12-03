@@ -16,6 +16,10 @@ from .other_views.sales_conf_contract_views import (
     GameActivityRegistrationForWebPlatFormvieSet,
     GameActivitiesViewSet,
 )
+from .other_views.companion_observer_views import (
+    SalesConfirmationCompanionViewSets,
+    SalesConfirmationProposalObserversViewSets,
+)
 
 router = routers.DefaultRouter()
 router.register(r"sales-confirmation-vset", SalesConfirmationViewSet)
@@ -43,17 +47,23 @@ router.register(
     GameActivityRegistrationForWebPlatFormvieSet,
     basename="game-activity-registration-for-web-plat-form",
 )
-# router.register(
-#     r"create-game-activity-vset",
-#     CreateGameActivityViewSet,
-#     basename="create-game-activity",
-# )
 
 router.register(
     r"game-activities-vset",
     GameActivitiesViewSet,
     basename="game-activities",
-    )
+)
+router.register(
+    r"sales-confirmation-companion-vset",
+    SalesConfirmationCompanionViewSets,
+    basename="sales-confirmation-companion",
+)
+
+router.register(
+    r"sales-confirmation-proposal-observers-vset",
+    SalesConfirmationProposalObserversViewSets,
+    basename="sales-confirmation-proposal-observers",
+)
 
 urlpatterns = [
     path("", include(router.urls)),

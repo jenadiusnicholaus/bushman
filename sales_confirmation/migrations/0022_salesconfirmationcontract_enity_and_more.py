@@ -7,51 +7,107 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bm_hunting_settings', '0017_alter_huntingpackagecompanionshunter_days_and_more'),
-        ('sales', '0015_alter_salesiquirypreference_no_of_companions_and_more'),
-        ('sales_confirmation', '0021_alter_salesconfirmationcontract_table'),
+        (
+            "bm_hunting_settings",
+            "0017_alter_huntingpackagecompanionshunter_days_and_more",
+        ),
+        ("sales", "0015_alter_salesiquirypreference_no_of_companions_and_more"),
+        ("sales_confirmation", "0021_alter_salesconfirmationcontract_table"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='salesconfirmationcontract',
-            name='enity',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='contracts', related_query_name='enity_contract_set', to='sales.entity'),
+            model_name="salesconfirmationcontract",
+            name="enity",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="contracts",
+                related_query_name="enity_contract_set",
+                to="sales.entity",
+            ),
         ),
         migrations.AlterField(
-            model_name='salesconfirmationcontract',
-            name='sales_confirmation_proposal',
-            field=models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='sales_confirmation_contract_set', to='sales_confirmation.salesconfirmationproposal'),
+            model_name="salesconfirmationcontract",
+            name="sales_confirmation_proposal",
+            field=models.OneToOneField(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="sales_confirmation_contract_set",
+                to="sales_confirmation.salesconfirmationproposal",
+            ),
         ),
         migrations.CreateModel(
-            name='EnityContractPermit',
+            name="EnityContractPermit",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('permit_number', models.CharField(blank=True, max_length=255, null=True)),
-                ('issued_date', models.DateField(blank=True, null=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('description', models.TextField(blank=True, null=True)),
-                ('enity_contract', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='permits', to='sales_confirmation.salesconfirmationcontract')),
-                ('package_type', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='enity_contract_permit_package_type_set', to='bm_hunting_settings.regulatoryhuntingpackage')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "permit_number",
+                    models.CharField(blank=True, max_length=255, null=True),
+                ),
+                ("issued_date", models.DateField(blank=True, null=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("description", models.TextField(blank=True, null=True)),
+                (
+                    "enity_contract",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="permits",
+                        to="sales_confirmation.salesconfirmationcontract",
+                    ),
+                ),
+                (
+                    "package_type",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="enity_contract_permit_package_type_set",
+                        to="bm_hunting_settings.regulatoryhuntingpackage",
+                    ),
+                ),
             ],
             options={
-                'verbose_name_plural': 'Enity Contract Permits',
-                'db_table': 'enity_contract_permit',
+                "verbose_name_plural": "Enity Contract Permits",
+                "db_table": "enity_contract_permit",
             },
         ),
         migrations.CreateModel(
-            name='EnityContactDates',
+            name="EnityContactDates",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('start_date', models.DateField(blank=True, null=True)),
-                ('end_date', models.DateField(blank=True, null=True)),
-                ('amended_id', models.CharField(blank=True, max_length=255, null=True)),
-                ('entity_contract_permit', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='contact_dates_set', to='sales_confirmation.enitycontractpermit')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("start_date", models.DateField(blank=True, null=True)),
+                ("end_date", models.DateField(blank=True, null=True)),
+                ("amended_id", models.CharField(blank=True, max_length=255, null=True)),
+                (
+                    "entity_contract_permit",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="contract_dates_set",
+                        to="sales_confirmation.enitycontractpermit",
+                    ),
+                ),
             ],
             options={
-                'verbose_name_plural': 'Enity Contact Dates',
-                'db_table': 'enity_contact_dates',
+                "verbose_name_plural": "Enity Contact Dates",
+                "db_table": "enity_contact_dates",
             },
         ),
     ]

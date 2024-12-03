@@ -9,13 +9,13 @@ from sales_confirmation.models import (
     SalesConfirmationContract,
 )
 from sales_confirmation.serializers import (
-    CreateEntityContactPermitDatesCreateSerializer,
+    CreateEntityContractPermitDatesCreateSerializer,
     CreateEntityContractPermitSerializer,
     CreateGameActivityProfessionalHunterSerializer,
     CreateGameActivitySerializer,
     CreateGameKilledActivitySerializer,
     CreateSalesConfirmationContractSerializer,
-    GetEntityContactPermitDatesSerializer,
+    GetEntityContractPermitDatesSerializer,
     GetEntityContractPermitSerializer,
     GetGameActivitySerializer,
     GetGameKilledActivitySerializer,
@@ -114,7 +114,7 @@ class EntityContractPermitViewset(viewsets.ModelViewSet):
                 saved_permit_obj.id
             )  # Set the FK to the saved permit
 
-            permit_dates_serializer = CreateEntityContactPermitDatesCreateSerializer(
+            permit_dates_serializer = CreateEntityContractPermitDatesCreateSerializer(
                 data=permit_dates_data
             )
             if not permit_dates_serializer.is_valid():

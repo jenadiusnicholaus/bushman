@@ -371,11 +371,11 @@ class EntityContractPermit(models.Model):
         return f'{self.entity_contract} - {self.permit_number or "No Permit Number"}'
 
 
-class EntityContactPermitDates(models.Model):
+class EntityContractPermitDates(models.Model):
     entity_contract_permit = models.ForeignKey(
         EntityContractPermit,
         on_delete=models.CASCADE,
-        related_name="contact_dates_set",
+        related_name="contract_dates_set",
     )
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
@@ -392,7 +392,7 @@ class EntityContactPermitDates(models.Model):
 
     class Meta:
         verbose_name_plural = "Enity Contact Dates"
-        db_table = "enity_contact_permit_dates"
+        db_table = "enity_contract_permit_dates"
 
     def __str__(self):
         return f'{self.entity_contract_permit} - {self.start_date or "No Start Date"}'
@@ -513,3 +513,83 @@ class GameActivityProfessionalHunter(models.Model):
 
     def __str__(self):
         return f'{self.game_activity} - {self.ph or "No Hunter"}'
+
+
+class SalesConfirmationCompanions(models.Model):
+    sales_confirmation_proposal = models.ForeignKey(
+        SalesConfirmationProposal,
+        on_delete=models.CASCADE,
+        related_name="companions",
+    )
+    regulatory_package = models.ForeignKey(
+        RegulatoryHuntingpackage,
+        on_delete=models.CASCADE,
+        related_name="sales_confirmation_companions_set",
+        null=True,
+        blank=True,
+    )
+    companion = models.ForeignKey(
+        Entity,
+        on_delete=models.CASCADE,
+        related_name="companions_set",
+        null=True,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "Sales Confirmation Companions"
+        db_table = "sales_confirmation_companions"
+
+    def __str__(self):
+        return (
+            f'{self.sales_confirmation_proposal} - {self.companion or "No Companion"}'
+        )
+
+
+class SalesConfirmationProposalObserver(models.Model):
+    sales_confirmation_proposal = models.ForeignKey(
+        SalesConfirmationProposal,
+        on_delete=models.CASCADE,
+        related_name="observers",
+    )
+
+    observer = models.ForeignKey(
+        Entity,
+        on_delete=models.CASCADE,
+        related_name="sales_confirmation_proposal_observer_set",
+        null=True,
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "Sales Confirmation Proposal Observers"
+        db_table = "sales_confirmation_proposal_observer"
+
+    def __str__(self):
+        return f'{self.sales_confirmation_proposal} - {self.observer or "No Observer"}'
+
+
+class SalesConfirmationProposalCompanionItinerary(models.Model):
+    itinarary = models.ForeignKey(
+        SalesConfirmationProposalItinerary,
+        on_delete=models.CASCADE,
+        related_name="companion_itineraries",
+        null=True,
+        blank=True,
+    )
+    entity = models.ForeignKey(
+        Entity,
+        on_delete=models.CASCADE,
+        related_name="companion_itineraries_set",
+        null=True,
+    )
+
+    class Meta:
+        verbose_name_plural = "Sales Confirmation Companion Itineraries"
+        db_table = "sales_confirmation_companion_itinerary"
+
+    def __str__(self):
+        return f'{self.itinarary} - {self.companion or "No Companion"}'
