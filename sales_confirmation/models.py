@@ -41,7 +41,9 @@ class SalesConfirmationProposal(models.Model):
         null=True,
         blank=True,
     )
-
+    hunting_license = models.CharField(
+        max_length=255, null=True, blank=True, validators=[MaxLengthValidator(255)]
+    )
     confirmation_date = models.DateField(auto_now=True, null=True, blank=True)
     remarks = models.TextField(null=True, blank=True)
     created_date = models.DateTimeField(auto_now_add=True)
