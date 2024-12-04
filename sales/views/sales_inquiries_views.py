@@ -49,7 +49,7 @@ class SalesInquiriesViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         queryset = self.queryset.filter(
             Q(sales_confirmation_proposal__status=None)
-            # | Q(sales_confirmation_proposal__status__status="pending")
+            | Q(sales_confirmation_proposal__status__status="pending")
         )
 
         # Get query parameters
@@ -59,7 +59,10 @@ class SalesInquiriesViewSet(viewsets.ModelViewSet):
         # Check if both parameters are None or empty strings
         if not preferred_date and not season_id:
             # No filters applied if both are empty
-            queryset = self.queryset.filter(Q(sales_confirmation_proposal__status=None))
+            queryset = self.queryset.filter(
+                Q(sales_confirmation_proposal__status=None)
+                | Q(sales_confirmation_proposal__status__status="pending")
+            )
 
         # Try to format the preferred date
         try:
@@ -96,7 +99,6 @@ class SalesInquiriesViewSet(viewsets.ModelViewSet):
             data["pdf"] = pdf_file["pdf"]
             response_data.append(data)
 
-        print(response_data)
         return Response(response_data)
 
     # save the following tables

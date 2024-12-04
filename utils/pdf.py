@@ -368,7 +368,8 @@ class SalesConfirmationPDF:
             ["Outfitter:", "Bushman Safari Trackers Limited"],
             [
                 "Dates:",
-                f"{format_date(salesData.get('itinerary', {}).get('arrival', 'N/A'))} - {format_date(salesData.get('itinerary', {}).get('charter_out', 'N/A'))}",
+                f"{format_date(salesData['itinerary']['arrival']) if salesData and isinstance(salesData, dict) and 'itinerary' in salesData and isinstance(salesData['itinerary'], dict) and 'arrival' in salesData['itinerary'] else 'N/A'} - "
+                f"{format_date(salesData['itinerary']['charter_out']) if salesData and isinstance(salesData, dict) and 'itinerary' in salesData and isinstance(salesData['itinerary'], dict) and 'charter_out' in salesData['itinerary'] else 'N/A'}",
             ],
             ["Details of Trip:", ""],
             ["Price:", ""],
@@ -378,7 +379,7 @@ class SalesConfirmationPDF:
 
         col_widths = [150, 200, 60, 120]
 
-        client_info_table = Table(client_info_data, colWidths=col_widths)
+        client_info_table = Table(client_info_data, colWidths=col_widths, hAlign="LEFT")
         client_info_table.setStyle(
             TableStyle(
                 [
@@ -429,7 +430,9 @@ class SalesConfirmationPDF:
         else:
             installment_data = [["No installments available", "", "", ""]]
 
-        installment_table = Table(installment_data, colWidths=[200, 150, 100, 150])
+        installment_table = Table(
+            installment_data, colWidths=[200, 150, 100, 300], hAlign="LEFT"
+        )
         installment_table.setStyle(
             TableStyle(
                 [
@@ -467,7 +470,9 @@ class SalesConfirmationPDF:
             ["- Trophy handling", ""],
         ]
 
-        includes_excludes_table = Table(includes_excludes_data, colWidths=[470, 300])
+        includes_excludes_table = Table(
+            includes_excludes_data, colWidths=[470, 300], hAlign="LEFT"
+        )
         includes_excludes_table.setStyle(
             TableStyle(
                 [

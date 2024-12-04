@@ -103,7 +103,7 @@ class GetSalesInquirySerializers(serializers.ModelSerializer):
     preference = serializers.SerializerMethodField()
     preferred_species = serializers.SerializerMethodField()
     area = serializers.SerializerMethodField()
-    enity_identity = serializers.SerializerMethodField()
+    entity_identity = serializers.SerializerMethodField()
 
     def get_area(self, obj):
         try:
@@ -143,7 +143,7 @@ class GetSalesInquirySerializers(serializers.ModelSerializer):
         else:
             return None
 
-    def get_enity_identity(self, obj):
+    def get_entity_identity(self, obj):
         try:
             identity = EntityIdentity.objects.get(entity=obj.entity)
             if identity:

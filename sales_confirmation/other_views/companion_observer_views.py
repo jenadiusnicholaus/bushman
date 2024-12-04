@@ -31,14 +31,12 @@ class SalesConfirmationCompanionViewSets(viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
-        sales_confirmation_id = self.request.query_params.get(
-            "sales_confirmation_id", None
-        )
+        sales_inquiry_id = self.request.query_params.get("sales_inquiry_id", None)
         enity_id = self.request.query_params.get("entity_id", None)
-        if sales_confirmation_id is not None and enity_id is not None:
+        if sales_inquiry_id is not None:
             queryset = queryset.filter(
-                sales_confirmation_proposal__id=sales_confirmation_id,
-                companion__id=enity_id,
+                sales_inquiry__id=sales_inquiry_id,
+                # companion__id=enity_id,
             )
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
@@ -55,9 +53,7 @@ class SalesConfirmationCompanionViewSets(viewsets.ModelViewSet):
         }
 
         companion_data = {
-            "sales_confirmation_proposal": request.data.get(
-                "sales_confirmation_proposal_id"
-            ),
+            "sales_inquiry": request.data.get("sales_inquiry_id"),
             "companion": None,
             "regulatory_package": request.data.get("regulatory_package_id"),
         }
@@ -150,14 +146,12 @@ class SalesConfirmationProposalObserversViewSets(viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
-        sales_confirmation_id = self.request.query_params.get(
-            "sales_confirmation_id", None
-        )
+        sales_inquiry_id = self.request.query_params.get("sales_inquiry_id", None)
         entity_id = self.request.query_params.get("entity_id", None)
-        if sales_confirmation_id is not None:
+        if sales_inquiry_id is not None:
             queryset = queryset.filter(
-                sales_confirmation_proposal__id=sales_confirmation_id,
-                observer=entity_id,
+                sales_inquiry__id=sales_inquiry_id,
+                # observer=entity_id,
             )
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
@@ -173,9 +167,7 @@ class SalesConfirmationProposalObserversViewSets(viewsets.ModelViewSet):
             "country": request.data.get("country_id"),
         }
         observer_data = {
-            "sales_confirmation_proposal": request.data.get(
-                "sales_confirmation_proposal_id"
-            ),
+            "sales_inquiry": request.data.get("sales_inquiry_id"),
             "observer": None,
         }
 

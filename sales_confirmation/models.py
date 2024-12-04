@@ -70,7 +70,7 @@ class SalesConfirmationProposalPackage(models.Model):
         blank=True,
     )
 
-    hunting_license = models.CharField(max_length=255, null=True, blank=True)
+    # hunting_license = models.CharField(max_length=255, null=True, blank=True)
     remarks = models.TextField(null=True, blank=True)
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
@@ -516,10 +516,13 @@ class GameActivityProfessionalHunter(models.Model):
 
 
 class SalesConfirmationCompanions(models.Model):
-    sales_confirmation_proposal = models.ForeignKey(
-        SalesConfirmationProposal,
+
+    sales_inquiry = models.ForeignKey(
+        SalesInquiry,
         on_delete=models.CASCADE,
-        related_name="companions",
+        related_name="companions_set",
+        null=True,
+        blank=True,
     )
     regulatory_package = models.ForeignKey(
         RegulatoryHuntingpackage,
@@ -548,10 +551,13 @@ class SalesConfirmationCompanions(models.Model):
 
 
 class SalesConfirmationProposalObserver(models.Model):
-    sales_confirmation_proposal = models.ForeignKey(
-        SalesConfirmationProposal,
+
+    sales_inquiry = models.ForeignKey(
+        SalesInquiry,
         on_delete=models.CASCADE,
-        related_name="observers",
+        related_name="observer_set",
+        null=True,
+        blank=True,
     )
 
     observer = models.ForeignKey(

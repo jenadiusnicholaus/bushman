@@ -39,7 +39,7 @@ class SalesConfirmationViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
 
         status_list = request.query_params.get("status_list", None)
-        if status_list:
+        if status_list is not None:
             queryset = queryset.filter(status__status__in=status_list.split(","))
         serializer = self.get_serializer(queryset, many=True)
         response_data = []
@@ -135,7 +135,8 @@ class SalesConfirmationViewSet(viewsets.ModelViewSet):
 
         return Response(
             {
-                "message": "Sales Confirmation Proposal Created",
+                "message": "Sales Confirmation  Created",
+                "data": proposal_serializer.data,
             },
             status=status.HTTP_201_CREATED,
         )

@@ -2,6 +2,7 @@ from bm_hunting_settings.serializers import (
     CreateGeoLocationsSerializers,
     CreateLocationSerializer,
 )
+from sales.models import Entity
 from sales_confirmation.models import (
     EntityContractPermit,
     GameActivity,
@@ -111,8 +112,8 @@ class EntityContractPermitViewset(viewsets.ModelViewSet):
 
             # 2. Prepare data for the contact dates and validate
             permit_dates_data["entity_contract_permit"] = (
-                saved_permit_obj.id
-            )  # Set the FK to the saved permit
+                saved_permit_obj  # Set the FK to the saved permit
+            )
 
             permit_dates_serializer = CreateEntityContractPermitDatesCreateSerializer(
                 data=permit_dates_data
@@ -313,10 +314,38 @@ class GameActivityRegistrationForWebPlatFormvieSet(viewsets.ModelViewSet):
             #     return Response(
             #         game_activity_serializer.errors, status=status.HTTP_400_BAD_REQUEST
             #     )
+            try:
+                permit_instance = EntityContractPermit.objects.get(
+                    id=request.data.get("entity_contract_permit_id")
+                )
+            except EntityContractPermit.DoesNotExist:
+                return Response(
+                    {"message": "Entity contract permit not found"},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+            try:
+                client_instance = Entity.objects.get(id=request.data.get("client_id"))
+            except permit_instance.client.model.DoesNotExist:
+                return Response(
+                    {"message": "Client not found"},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+            if GameActivity.objects.filter(
+                entity_contract_permit=permit_instance,
+                client=client_instance,
+            ).exists():
+                return Response(
+                    {"message": "Game activity already exists for this client"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
             game_activity, activity_created = GameActivity.objects.get_or_create(
-                entity_contract_permit=request.data.get("entity_contract_permit_id"),
-                client=request.data.get("client_id"),
+                entity_contract_permit=permit_instance,
+                client=client_instance,
                 defaults={
+                    "entity_contract_permit": permit_instance,
+                    "client": client_instance,
                     "start_date": request.data.get("start_date"),
                     "end_date": request.data.get("end_date"),
                 },
