@@ -547,9 +547,7 @@ class SalesConfirmationCompanions(models.Model):
         db_table = "sales_confirmation_companions"
 
     def __str__(self):
-        return (
-            f'{self.sales_confirmation_proposal} - {self.companion or "No Companion"}'
-        )
+        return f'{self.sales_inquiry.code or "No Sales Inquiry"} - {self.companion.full_name or "No Companion"}'
 
 
 class SalesConfirmationProposalObserver(models.Model):
@@ -577,7 +575,7 @@ class SalesConfirmationProposalObserver(models.Model):
         db_table = "sales_confirmation_proposal_observer"
 
     def __str__(self):
-        return f'{self.sales_confirmation_proposal} - {self.observer or "No Observer"}'
+        return f'{self.sales_inquiry.code or "No Sales Inquiry"} - {self.observer.full_name or "No Observer"}'
 
 
 class SalesConfirmationProposalCompanionItinerary(models.Model):
