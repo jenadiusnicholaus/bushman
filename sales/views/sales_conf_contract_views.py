@@ -111,9 +111,7 @@ class EntityContractPermitViewset(viewsets.ModelViewSet):
             saved_permit_obj = permit_serializer.save()
 
             # 2. Prepare data for the contact dates and validate
-            permit_dates_data["entity_contract_permit"] = (
-                saved_permit_obj.id
-            )
+            permit_dates_data["entity_contract_permit"] = saved_permit_obj.id
 
             permit_dates_serializer = CreateEntityContractPermitDatesCreateSerializer(
                 data=permit_dates_data

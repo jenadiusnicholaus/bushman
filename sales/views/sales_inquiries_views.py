@@ -184,150 +184,150 @@ class SalesInquiriesViewSet(viewsets.ModelViewSet):
         }
         sales_prefered_species_data = {"sales_inquiry": None, "species": None}
         # print(request.data)
-        # try:
-        with transaction.atomic():
-            entity_serializer = CreateEntitySerializers(data=entity_data)
-            if not entity_serializer.is_valid():
-                return Response(
-                    entity_serializer.errors, status=status.HTTP_400_BAD_REQUEST
-                )
-            saved_entity = entity_serializer.save()
+        try:
+            with transaction.atomic():
+                entity_serializer = CreateEntitySerializers(data=entity_data)
+                if not entity_serializer.is_valid():
+                    return Response(
+                        entity_serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                    )
+                saved_entity = entity_serializer.save()
 
-            # CreateEntityIdentitySerializers
-            entity_identity_data.update({"entity": saved_entity.id})
-            entity_identity_serializer = CreateEntityIdentitySerializers(
-                data=entity_identity_data
-            )
-            if not entity_identity_serializer.is_valid():
-                #  we do delete the entity if the entity_identity is not valid
-                # i am deleting the entity first because it is not possible to create entity_identity without entity
-                Entity.objects.get(id=saved_entity.id).delete()
-                return Response(
-                    entity_identity_serializer.errors,
-                    status=status.HTTP_400_BAD_REQUEST,
+                # CreateEntityIdentitySerializers
+                entity_identity_data.update({"entity": saved_entity.id})
+                entity_identity_serializer = CreateEntityIdentitySerializers(
+                    data=entity_identity_data
                 )
-            entity_identity_serializer.save()
+                if not entity_identity_serializer.is_valid():
+                    #  we do delete the entity if the entity_identity is not valid
+                    # i am deleting the entity first because it is not possible to create entity_identity without entity
+                    Entity.objects.get(id=saved_entity.id).delete()
+                    return Response(
+                        entity_identity_serializer.errors,
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                entity_identity_serializer.save()
 
-            # create entity_category
-            category_data.update({"entity": saved_entity.id})
-            entity_category_serializer = CreateEntityCategorySerializers(
-                data=category_data
-            )
-            if not entity_category_serializer.is_valid():
-                #  we do delete the entity if the entity_category is not valid
-                # i am deleting the entity first because it is not possible to create entity_category without entity
-                Entity.objects.get(id=saved_entity.id).delete()
-                return Response(
-                    entity_category_serializer.errors,
-                    status=status.HTTP_400_BAD_REQUEST,
+                # create entity_category
+                category_data.update({"entity": saved_entity.id})
+                entity_category_serializer = CreateEntityCategorySerializers(
+                    data=category_data
                 )
-            saved_category_serializer = entity_category_serializer.save()
-            try:
-                SalesHelper.save_contacts(
-                    contacts=request.data.get("contacts"),
-                    contact_request_data=contact_data,
-                    saved_entity_serializer=saved_entity,
-                    category_serializer=saved_category_serializer,
+                if not entity_category_serializer.is_valid():
+                    #  we do delete the entity if the entity_category is not valid
+                    # i am deleting the entity first because it is not possible to create entity_category without entity
+                    Entity.objects.get(id=saved_entity.id).delete()
+                    return Response(
+                        entity_category_serializer.errors,
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                saved_category_serializer = entity_category_serializer.save()
+                try:
+                    SalesHelper.save_contacts(
+                        contacts=request.data.get("contacts"),
+                        contact_request_data=contact_data,
+                        saved_entity_serializer=saved_entity,
+                        category_serializer=saved_category_serializer,
+                    )
+                except Exception as e:
+                    return Response(
+                        {
+                            "message": "Error while saving contacts",
+                            "error": str(e),
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+                sales_inquiry_data.update({"entity": saved_entity.id})
+                sales_inquiry_serializer = CreateSalesInquirySerializers(
+                    data=sales_inquiry_data
                 )
-            except Exception as e:
+                if not sales_inquiry_serializer.is_valid():
+                    #  we do delete the entity if the sales_inquiry is not valid
+                    # i am deleting the entity first because it is not possible to create sales_inquiry without entity
+                    Entity.objects.get(id=saved_entity.id).delete()
+                    EntityCategory.objects.get(id=saved_category_serializer.id).delete()
+                    Contacts.objects.filter(entity__id=saved_entity.id).delete()
+                    return Response(
+                        sales_inquiry_serializer.errors,
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                saved_sales_inquiry = sales_inquiry_serializer.save()
+                seles_inquiry_preference_data.update(
+                    {"sales_inquiry": saved_sales_inquiry.id}
+                )
+                sales_inquiry_areas_of_hunting_data.update(
+                    {"sales_inquiry": saved_sales_inquiry.id}
+                )
+
+                sales_inquiry_preference_serializer = (
+                    CreateSalesIquiryPreferenceSerializers(
+                        data=seles_inquiry_preference_data
+                    )
+                )
+                if not sales_inquiry_preference_serializer.is_valid():
+                    #  we do delete the entity if the sales_inquiry_preference is not valid
+                    # i am deleting the entity first because it is not possible to create sales_inquiry_preference without sales_inquiry
+                    # Entity.objects.get(id=saved_entity.id).delete()
+                    saved_entity.delete()
+                    saved_sales_inquiry.delete()
+                    saved_category_serializer.delete()
+                    # SalesInquiry.objects.get(id=saved_sales_inquiry.id).delete()
+                    # EntityCategory.objects.get(id=saved_category_serializer.id).delete()
+                    Contacts.objects.filter(entity__id=saved_entity.id).delete()
+                    return Response(
+                        sales_inquiry_preference_serializer.errors,
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                sales_inquiry_preference_serializer.save()
+                # sales_prefered_species_data.update(
+                #     {"sales_inquiry": saved_sales_inquiry.id}
+                # )
+                sales_inquiry_area_serializer = CreateSalesInquiryAreaSerializer(
+                    data=sales_inquiry_areas_of_hunting_data
+                )
+                if not sales_inquiry_area_serializer.is_valid():
+                    #  we do delete the entity if the sales_inquiry_area is not valid
+                    # i am deleting the entity first because it is not possible to create sales_inquiry_area without sales_inquiry
+                    Entity.objects.get(id=saved_entity.id).delete()
+                    SalesInquiry.objects.get(id=saved_sales_inquiry.id).delete()
+                    EntityCategory.objects.get(id=saved_category_serializer.id).delete()
+                    Contacts.objects.filter(entity__id=saved_entity.id).delete()
+                    return Response(
+                        sales_inquiry_area_serializer.errors,
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                sales_inquiry_area_serializer.save()
+
+                try:
+                    SalesHelper.savePreferredSpecies(
+                        request=request,
+                        sales_prefered_species_data=sales_prefered_species_data,
+                        saved_sales_inquiry=saved_sales_inquiry,
+                        save_entity_serializer=saved_entity,
+                    )
+                except Exception as e:
+                    return Response(
+                        {
+                            "message": "Error while saving preferred species",
+                            "error": str(e),
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
                 return Response(
                     {
-                        "message": "Error while saving contacts",
-                        "error": str(e),
+                        "message": "Sales Inquiry created successfully",
+                        "entity": entity_serializer.data,
                     },
-                    status=status.HTTP_400_BAD_REQUEST,
+                    status=status.HTTP_201_CREATED,
                 )
 
-            sales_inquiry_data.update({"entity": saved_entity.id})
-            sales_inquiry_serializer = CreateSalesInquirySerializers(
-                data=sales_inquiry_data
-            )
-            if not sales_inquiry_serializer.is_valid():
-                #  we do delete the entity if the sales_inquiry is not valid
-                # i am deleting the entity first because it is not possible to create sales_inquiry without entity
-                Entity.objects.get(id=saved_entity.id).delete()
-                EntityCategory.objects.get(id=saved_category_serializer.id).delete()
-                Contacts.objects.filter(entity__id=saved_entity.id).delete()
-                return Response(
-                    sales_inquiry_serializer.errors,
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            saved_sales_inquiry = sales_inquiry_serializer.save()
-            seles_inquiry_preference_data.update(
-                {"sales_inquiry": saved_sales_inquiry.id}
-            )
-            sales_inquiry_areas_of_hunting_data.update(
-                {"sales_inquiry": saved_sales_inquiry.id}
-            )
-
-            sales_inquiry_preference_serializer = (
-                CreateSalesIquiryPreferenceSerializers(
-                    data=seles_inquiry_preference_data
-                )
-            )
-            if not sales_inquiry_preference_serializer.is_valid():
-                #  we do delete the entity if the sales_inquiry_preference is not valid
-                # i am deleting the entity first because it is not possible to create sales_inquiry_preference without sales_inquiry
-                # Entity.objects.get(id=saved_entity.id).delete()
-                saved_entity.delete()
-                saved_sales_inquiry.delete()
-                saved_category_serializer.delete()
-                # SalesInquiry.objects.get(id=saved_sales_inquiry.id).delete()
-                # EntityCategory.objects.get(id=saved_category_serializer.id).delete()
-                Contacts.objects.filter(entity__id=saved_entity.id).delete()
-                return Response(
-                    sales_inquiry_preference_serializer.errors,
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            sales_inquiry_preference_serializer.save()
-            # sales_prefered_species_data.update(
-            #     {"sales_inquiry": saved_sales_inquiry.id}
-            # )
-            sales_inquiry_area_serializer = CreateSalesInquiryAreaSerializer(
-                data=sales_inquiry_areas_of_hunting_data
-            )
-            if not sales_inquiry_area_serializer.is_valid():
-                #  we do delete the entity if the sales_inquiry_area is not valid
-                # i am deleting the entity first because it is not possible to create sales_inquiry_area without sales_inquiry
-                Entity.objects.get(id=saved_entity.id).delete()
-                SalesInquiry.objects.get(id=saved_sales_inquiry.id).delete()
-                EntityCategory.objects.get(id=saved_category_serializer.id).delete()
-                Contacts.objects.filter(entity__id=saved_entity.id).delete()
-                return Response(
-                    sales_inquiry_area_serializer.errors,
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            sales_inquiry_area_serializer.save()
-
-            try:
-                SalesHelper.savePreferredSpecies(
-                    request=request,
-                    sales_prefered_species_data=sales_prefered_species_data,
-                    saved_sales_inquiry=saved_sales_inquiry,
-                    save_entity_serializer=saved_entity,
-                )
-            except Exception as e:
-                return Response(
-                    {
-                        "message": "Error while saving preferred species",
-                        "error": str(e),
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
+        except Exception as e:
             return Response(
-                {
-                    "message": "Sales Inquiry created successfully",
-                    "entity": entity_serializer.data,
-                },
-                status=status.HTTP_201_CREATED,
+                {"message": "Error while creating entity"},
+                status=status.HTTP_400_BAD_REQUEST,
             )
-
-    # except Exception as e:
-    #     return Response(
-    #         {"message": "Error while creating entity"},
-    #         status=status.HTTP_400_BAD_REQUEST,
-    #     )
 
 
 class SalesInquiriesClientBasicinfosViewSet(viewsets.ModelViewSet):
