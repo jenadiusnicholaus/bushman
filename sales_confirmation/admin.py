@@ -12,6 +12,7 @@ from .models import (
     GameKilledActivity,
     SalesConfirmationCompanions,
     SalesConfirmationProposalObserver,
+    GameActivityProfessionalHunter,
 )
 
 admin.site.register(SalesConfirmationProposal)
@@ -26,3 +27,4 @@ admin.site.register(EntityContractPermit)
 admin.site.register(GameKilledActivity)
 admin.site.register(SalesConfirmationCompanions)
 admin.site.register(SalesConfirmationProposalObserver)
+admin.site.register(GameActivityProfessionalHunter)
