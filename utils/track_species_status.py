@@ -70,10 +70,14 @@ class TrackSpeciesStatus:
                                 f"Failed to update species status: {update_status_serializer.errors}"
                             )
                     else:
-                        print(
-                            f"Not enough quantity to reduce for species {species.species.name}. "
-                            f"Current: {current_quantity}, Attempted: {species.quantity}"
-                        )
+                        #    delete all the species status for this proposal and species, bacause we got an error
+                        SalesQuotaSpeciesStatus.objects.filter(
+                            sales_proposal_id=sales_confirmation_proposal_id,
+                            species_id=species.species.id,
+                            # quota_id=quota_id,
+                            area_id=area_id,
+                        ).delete()
+
                         raise ValueError(
                             f"Not enough quantity to reduce for species {species.species.name}. "
                             f"Current: {current_quantity}, Attempted: {species.quantity}"
@@ -95,8 +99,7 @@ class TrackSpeciesStatus:
                                 f"Not enough quantity to sale for species {species.species.name}. "
                                 f"Current: {current_quantity}, Attempted: {species.quantity}"
                             )
-                    else:
-                        pass
+
                     species_status, created = (
                         SalesQuotaSpeciesStatus.objects.get_or_create(
                             sales_proposal_id=sales_confirmation_proposal_id,

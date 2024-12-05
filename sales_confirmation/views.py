@@ -202,14 +202,20 @@ class SalesConfirmation(viewsets.ModelViewSet):
             "document": None,
             "created_at": timezone.now(),
         }
+        try:
 
-        TrackSpeciesStatus.track(
-            request.data.get("sales_confirmation_proposal_id"),
-            request.data.get("status_id"),
-            # quota_id,
-            area_id,
-            status_obj,
-        )
+            TrackSpeciesStatus.track(
+                request.data.get("sales_confirmation_proposal_id"),
+                request.data.get("status_id"),
+                # quota_id,
+                area_id,
+                status_obj,
+            )
+        except Exception as e:
+            return Response(
+                {"message": f"{e}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         # status_data["document"] = saved_doc.id
         status_serializer = UpdateSalesConfirmationProposalStatusSerializer(
