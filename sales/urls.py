@@ -11,7 +11,7 @@ from sales.views.sales_inquiries_views import (
 )
 from sales.views.sales_quota_views import (
     QuotaViewSets,
-    QuotaHutingAreaSpeciesViewSets,
+    QuotaHuntingAreaSpeciesViewSets,
 )
 
 router = routers.DefaultRouter()
@@ -34,7 +34,7 @@ router.register(
 )
 router.register(
     r"sales-quotas-hunting-area-species-vset",
-    QuotaHutingAreaSpeciesViewSets,
+    QuotaHuntingAreaSpeciesViewSets,
     basename="sales_quotas_huting_area_species",
 )
 

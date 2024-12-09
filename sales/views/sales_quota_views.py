@@ -2,13 +2,13 @@ from bm_hunting_settings.models import (
     HuntingArea,
     HuntingQuatasArea,
     Quota,
-    QuotaHutingAreaSpecies,
+    QuotaHuntingAreaSpecies,
 )
 from sales.serializers.sales_inquiries_serializers import UpdateContactsSerializers
 from sales.serializers.sales_quota_serializers import (
     GetQuotaSerializer,
-    QuotaHutingAreaSpeciesSerializers,
-    CreateQuotaHutingAreaSpeciesSerializers,
+    QuotaHuntingAreaSpeciesSerializers,
+    CreateQuotaHuntingAreaSpeciesSerializers,
     CreateHuntingQuatasAreaSerializers,
 )
 from rest_framework import viewsets
@@ -88,9 +88,9 @@ class QuotaViewSets(viewsets.ModelViewSet):
         return Response({"message": "Quota deleted successfully"}, status=200)
 
 
-class QuotaHutingAreaSpeciesViewSets(viewsets.ModelViewSet):
-    queryset = QuotaHutingAreaSpecies.objects.all()
-    serializer_class = QuotaHutingAreaSpeciesSerializers
+class QuotaHuntingAreaSpeciesViewSets(viewsets.ModelViewSet):
+    queryset = QuotaHuntingAreaSpecies.objects.all()
+    serializer_class = QuotaHuntingAreaSpeciesSerializers
     permission_classes = [IsAuthenticated]
 
     def list(self, request, *args, **kwargs):
@@ -199,7 +199,7 @@ class QuotaHutingAreaSpeciesViewSets(viewsets.ModelViewSet):
 
             # Validate and save each species
             for species_data in species_data_list:
-                species_sz = CreateQuotaHutingAreaSpeciesSerializers(data=species_data)
+                species_sz = CreateQuotaHuntingAreaSpeciesSerializers(data=species_data)
                 if not species_sz.is_valid():
                     # area_instance.delete()  # Rollback area save if species fails
                     return Response(species_sz.errors, status=400)

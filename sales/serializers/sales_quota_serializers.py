@@ -3,7 +3,7 @@ from bm_hunting_settings.models import (
     HuntingArea,
     HuntingQuatasArea,
     Quota,
-    QuotaHutingAreaSpecies,
+    QuotaHuntingAreaSpecies,
 )
 from rest_framework import serializers
 
@@ -55,15 +55,81 @@ class UpdateHuntingQuatasAreaSerializers(serializers.ModelSerializer):
 
 
 # -----------species quota serializers-
-class QuotaHutingAreaSpeciesSerializers(serializers.ModelSerializer):
-    # STATUS = (
-    #     ("pending", "Pending"),
-    #     ("provision_sales", "Provision Sales"),
-    #     ("confirmed", "Confirmed"),
-    #     ("declined", "Declined"),
-    #     ("cancelled", "Cancelled"),
-    #     ("completed", "Completed"),
-    # )
+# class QuotaHuntingAreaSpeciesSerializers(serializers.ModelSerializer):
+#     # STATUS = (
+#     #     ("pending", "Pending"),
+#     #     ("provision_sales", "Provision Sales"),
+#     #     ("confirmed", "Confirmed"),
+#     #     ("declined", "Declined"),
+#     #     ("cancelled", "Cancelled"),
+#     #     ("completed", "Completed"),
+#     # )
+#     provision_quantity = serializers.SerializerMethodField()
+#     confirmed_quantity = serializers.SerializerMethodField()
+#     declined_quantity = serializers.SerializerMethodField()
+#     cancelled_quantity = serializers.SerializerMethodField()
+#     completed_quantity = serializers.SerializerMethodField()
+
+#     class Meta:
+#         model = QuotaHuntingAreaSpecies
+#         fields = "__all__"
+#         depth = 1
+
+#     def get_provision_quantity(self, obj):
+#         quantity = 0
+#         status = obj.species.species_sales_species_status_set.filter(
+#             status="provision_sales"
+
+#         )
+
+#         if status.exists():
+#             for i in status:
+
+#                 quantity += i.quantity
+
+#         return quantity
+
+#     def get_confirmed_quantity(self, obj):
+#         quantity = 0
+#         status = obj.species.species_sales_species_status_set.filter(status="confirmed")
+#         if status.exists():
+#             for i in status:
+
+#                 quantity += i.quantity
+
+#         return quantity
+
+#     def get_declined_quantity(self, obj):
+#         quantity = 0
+#         status = obj.species.species_sales_species_status_set.filter(status="declined")
+#         if status.exists():
+#             for i in status:
+
+#                 quantity += i.quantity
+
+#         return quantity
+
+#     def get_cancelled_quantity(self, obj):
+#         quantity = 0
+#         status = obj.species.species_sales_species_status_set.filter(status="cancelled")
+#         if status.exists():
+#             for i in status:
+
+#                 quantity += i.quantity
+
+#         return quantity
+
+#     def get_completed_quantity(self, obj):
+#         quantity = 0
+#         status = obj.species.species_sales_species_status_set.filter(status="completed")
+#         if status.exists():
+#             for i in status:
+
+#                 quantity += i.quantity
+#         return quantity
+
+
+class QuotaHuntingAreaSpeciesSerializers(serializers.ModelSerializer):
     provision_quantity = serializers.SerializerMethodField()
     confirmed_quantity = serializers.SerializerMethodField()
     declined_quantity = serializers.SerializerMethodField()
@@ -71,70 +137,46 @@ class QuotaHutingAreaSpeciesSerializers(serializers.ModelSerializer):
     completed_quantity = serializers.SerializerMethodField()
 
     class Meta:
-        model = QuotaHutingAreaSpecies
+        model = QuotaHuntingAreaSpecies
         fields = "__all__"
         depth = 1
 
-    def get_provision_quantity(self, obj):
-        quantity = 0
-        status = obj.species.species_sales_species_status_set.filter(
-            status="provision_sales"
+    def get_quantity_by_status(self, obj, status_filter):
+        """Reusable method to calculate quantity based on status and query parameters."""
+
+        # Base queryset filtering by status
+        queryset = obj.species.species_sales_species_status_set.filter(
+            status=status_filter,
+            area__id=obj.area.id,
+            quota__id=obj.quota.id,
         )
 
-        if status.exists():
-            for i in status:
+        # Calculate the quantity
+        return sum(item.quantity for item in queryset)
 
-                quantity += i.quantity
-
-        return quantity
+    def get_provision_quantity(self, obj):
+        return self.get_quantity_by_status(obj, "provision_sales")
 
     def get_confirmed_quantity(self, obj):
-        quantity = 0
-        status = obj.species.species_sales_species_status_set.filter(status="confirmed")
-        if status.exists():
-            for i in status:
-
-                quantity += i.quantity
-
-        return quantity
+        return self.get_quantity_by_status(obj, "confirmed")
 
     def get_declined_quantity(self, obj):
-        quantity = 0
-        status = obj.species.species_sales_species_status_set.filter(status="declined")
-        if status.exists():
-            for i in status:
-
-                quantity += i.quantity
-
-        return quantity
+        return self.get_quantity_by_status(obj, "declined")
 
     def get_cancelled_quantity(self, obj):
-        quantity = 0
-        status = obj.species.species_sales_species_status_set.filter(status="cancelled")
-        if status.exists():
-            for i in status:
-
-                quantity += i.quantity
-
-        return quantity
+        return self.get_quantity_by_status(obj, "cancelled")
 
     def get_completed_quantity(self, obj):
-        quantity = 0
-        status = obj.species.species_sales_species_status_set.filter(status="completed")
-        if status.exists():
-            for i in status:
-
-                quantity += i.quantity
-        return quantity
+        return self.get_quantity_by_status(obj, "completed")
 
 
-class CreateQuotaHutingAreaSpeciesSerializers(serializers.ModelSerializer):
+class CreateQuotaHuntingAreaSpeciesSerializers(serializers.ModelSerializer):
     class Meta:
-        model = QuotaHutingAreaSpecies
+        model = QuotaHuntingAreaSpecies
         fields = "__all__"
 
 
-class UpdateQuotaHutingAreaSpeciesSerializers(serializers.ModelSerializer):
+class UpdateQuotaHuntingAreaSpeciesSerializers(serializers.ModelSerializer):
     class Meta:
-        model = QuotaHutingAreaSpecies
+        model = QuotaHuntingAreaSpecies
         fields = "__all__"

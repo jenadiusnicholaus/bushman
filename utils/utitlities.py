@@ -1,6 +1,8 @@
 from datetime import datetime
 from django.utils import timezone
 
+from bm_hunting_settings.models import Quota
+
 
 def format_any_date(date):
     """
@@ -47,3 +49,8 @@ def format_any_date(date):
 
     else:
         raise ValueError("Unsupported date type. Must be a string or datetime object.")
+
+
+class currentQuuta:
+    current_year = timezone.now().year
+    current_quota = Quota.objects.filter(start_date__year=current_year).first()

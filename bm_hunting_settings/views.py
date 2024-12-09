@@ -16,7 +16,7 @@ from bm_hunting_settings.models import (
     LocationType,
     Locations,
     Nationalities,
-    QuotaHutingAreaSpecies,
+    QuotaHuntingAreaSpecies,
     RegulatoryHuntingPackageSpecies,
     RegulatoryHuntingpackage,
     Seasons,

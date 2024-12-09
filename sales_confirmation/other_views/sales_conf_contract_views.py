@@ -8,6 +8,7 @@ from sales_confirmation.models import (
     GameActivity,
     GameKilledActivity,
     SalesConfirmationContract,
+    SalesConfirmationProposal,
 )
 from sales_confirmation.serializers import (
     CreateEntityContractPermitDatesCreateSerializer,
@@ -29,6 +30,8 @@ from utils.pdf import SalesContractPDF, PermitPDF, GamePDF
 from rest_framework.permissions import IsAuthenticated
 from django.db import transaction
 from rest_framework import generics
+
+from utils.track_species_status import TrackSpeciesStatus
 
 
 class SalesConfirmationContractviewSet(viewsets.ModelViewSet):
@@ -111,9 +114,7 @@ class EntityContractPermitViewset(viewsets.ModelViewSet):
             saved_permit_obj = permit_serializer.save()
 
             # 2. Prepare data for the contact dates and validate
-            permit_dates_data["entity_contract_permit"] = (
-                saved_permit_obj.id
-            )
+            permit_dates_data["entity_contract_permit"] = saved_permit_obj.id
 
             permit_dates_serializer = CreateEntityContractPermitDatesCreateSerializer(
                 data=permit_dates_data
@@ -331,14 +332,14 @@ class GameActivityRegistrationForWebPlatFormvieSet(viewsets.ModelViewSet):
                     {"message": "Client not found"},
                     status=status.HTTP_404_NOT_FOUND,
                 )
-            if GameActivity.objects.filter(
-                entity_contract_permit=permit_instance,
-                client=client_instance,
-            ).exists():
-                return Response(
-                    {"message": "Game activity already exists for this client"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+            # if GameActivity.objects.filter(
+            #     entity_contract_permit=permit_instance,
+            #     client=client_instance,
+            # ).exists():
+            #     return Response(
+            #         {"message": "Game activity already exists for this client"},
+            #         status=status.HTTP_400_BAD_REQUEST,
+            #     )
 
             game_activity, activity_created = GameActivity.objects.get_or_create(
                 entity_contract_permit=permit_instance,
@@ -348,8 +349,12 @@ class GameActivityRegistrationForWebPlatFormvieSet(viewsets.ModelViewSet):
                     "client": client_instance,
                     "start_date": request.data.get("start_date"),
                     "end_date": request.data.get("end_date"),
+                    "status": "INITIATED",
                 },
             )
+            if not activity_created or request.data.get("game_state") is not None:
+                game_activity.status = request.data.get("game_state")
+                game_activity.save()
 
             saved_game_activity_obj = game_activity
 
@@ -426,9 +431,23 @@ class GameActivityRegistrationForWebPlatFormvieSet(viewsets.ModelViewSet):
                             status=status.HTTP_400_BAD_REQUEST,
                         )
 
-                    saved_game_killed_activity_obj = (
-                        game_killed_activity_serializer.save()
-                    )
+                    try:
+                        TrackSpeciesStatus.trackTakenOrSoldSpecies(
+                            sales_confirmation_proposal_id=game_activity.entity_contract_permit.entity_contract.sales_confirmation_proposal.id,
+                            status="completed",
+                            area_id=game.get("area_id"),
+                            species_id=game.get("species_id"),
+                            teken_quantity=game.get("quantity"),
+                            game_state=request.data.get("game_state"),
+                        )
+                        saved_game_killed_activity_obj = (
+                            game_killed_activity_serializer.save()
+                        )
+                    except Exception as e:
+                        return Response(
+                            {"message": f"{e}"},
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
 
             professional_hunters_ids = request.data.get("professional_hunters_ids")
             if len(professional_hunters_ids) > 0 and activity_created:
@@ -481,6 +500,7 @@ class InitiateClientGameViewSet(generics.CreateAPIView):
         game_activity_data = {
             "entity_contract_permit": request.data.get("entity_contract_permit_id"),
             "client": request.data.get("client_id"),
+            "status": "INITIATED",
             "start_date": request.data.get("start_date"),
             "end_date": request.data.get("end_date"),
         }
@@ -608,7 +628,26 @@ class GameActivitiesViewSet(viewsets.ModelViewSet):
                     game_killed_activity_serializer.errors,
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            saved_game_killed_activity_obj = game_killed_activity_serializer.save()
+
+            try:
+
+                TrackSpeciesStatus.trackTakenOrSoldSpecies(
+                    sales_confirmation_proposal_id=request.data.get(
+                        "sales_confirmation_proposal_id"
+                    ),
+                    status="completed",
+                    area_id=request.data.get("area_id"),
+                    species_id=request.data.get("species_id"),
+                    teken_quantity=request.data.get("quantity"),
+                    game_state=request.data.get("game_state"),
+                )
+                saved_game_killed_activity_obj = game_killed_activity_serializer.save()
+
+            except Exception as e:
+                return Response(
+                    {"message": f"{e}"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
             # 4. Return the saved game killed activity data
             return Response(

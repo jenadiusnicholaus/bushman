@@ -196,7 +196,7 @@ class HuntingQuatasArea(models.Model):
         return self.area.name + " - " + self.quota.name
 
 
-class QuotaHutingAreaSpecies(models.Model):
+class QuotaHuntingAreaSpecies(models.Model):
     species = models.ForeignKey(
         Species, on_delete=models.CASCADE, related_name="quota_hunting_species"
     )

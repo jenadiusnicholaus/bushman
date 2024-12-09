@@ -269,6 +269,7 @@ class SalesQuotaSpeciesStatus(models.Model):
         on_delete=models.CASCADE,
         related_name="species_sales_quota_status_set",
         null=True,
+        blank=True,
     )
     area = models.ForeignKey(
         HuntingArea,
@@ -401,6 +402,12 @@ class EntityContractPermitDates(models.Model):
 
 
 class GameActivity(models.Model):
+    STUTAS = (
+        ("CLOSED", "Closed"),
+        ("INITIATED", "In Progress"),
+        ("IN_PROGRESS", "In Progress"),
+        ("NOT_STARTED", "Not Started"),
+    )
     entity_contract_permit = models.ForeignKey(
         EntityContractPermit,
         on_delete=models.CASCADE,
@@ -417,6 +424,9 @@ class GameActivity(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    status = models.CharField(
+        max_length=255, null=True, blank=True, choices=STUTAS, default="NOT_STARTED"
+    )
 
     class Meta:
         verbose_name_plural = "Game Activities"
