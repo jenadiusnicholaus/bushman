@@ -41,6 +41,11 @@ class SalesConfirmationContractviewSet(viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
+        if request.query_params.get("contractor_type") == "MAIN_HUNTER":
+            queryset = queryset.filter(contractor_type="MAIN_HUNTER")
+        elif request.query_params.get("contractor_type") == "COMPANION_HUNTER":
+            queryset = queryset.filter(contractor_type="COMPANION_HUNTER")
+
         serializer = self.get_serializer(queryset, many=True)
         response_data = []
         for data in serializer.data:
@@ -55,6 +60,7 @@ class SalesConfirmationContractviewSet(viewsets.ModelViewSet):
                 "sales_confirmation_proposal_id"
             ),
             "entity": request.data.get("entity_id"),
+            "contractor_type": request.data.get("contractor_type"),
             "start_date": request.data.get("start_date"),
             "end_date": request.data.get("end_date"),
             "description": request.data.get("description"),

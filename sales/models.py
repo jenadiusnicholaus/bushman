@@ -236,6 +236,9 @@ class SalesIquiryPreference(models.Model):
     prev_experience = models.TextField(max_length=500, null=True, blank=True)
 
     preferred_date = models.DateTimeField(default=timezone.now)
+    start_date = models.DateTimeField(null=True, blank=True)
+    end_date = models.DateTimeField(null=True, blank=True)
+    hunting_license = models.CharField(max_length=100, null=True, blank=True)
     no_of_hunters = models.IntegerField(default=1)
     no_of_observers = models.IntegerField(default=0, blank=True, null=True)
     no_of_days = models.IntegerField(default=0)

@@ -12,10 +12,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         current_quota = currentQuuta.current_quota
-        # for doc in DocType:
-        #     Doctype.objects.create(code=doc["code"], name=doc["description"])
-        #     self.stdout.write(self.style.SUCCESS(f"Creating DocType {doc['code']}"))
-        # get all species status with null quota field the update to curent quota value
+
+        # get all species status with null quota field then update to curent quota value
         null_quota_species_status = SalesQuotaSpeciesStatus.objects.filter(quota=None)
         if null_quota_species_status.exists():
 

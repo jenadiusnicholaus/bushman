@@ -296,7 +296,11 @@ class SalesQuotaSpeciesStatus(models.Model):
 
 
 class SalesConfirmationContract(models.Model):
-    sales_confirmation_proposal = models.OneToOneField(
+    CONTRACTOR_TYPE = (
+        ("MAIN_HUNTER", "Main Hunter"),
+        ("COMPANION_HUNTER", "Companion Hunter"),
+    )
+    sales_confirmation_proposal = models.ForeignKey(
         SalesConfirmationProposal,
         on_delete=models.CASCADE,
         related_name="sales_confirmation_contract_set",
@@ -309,6 +313,9 @@ class SalesConfirmationContract(models.Model):
         null=True,
         blank=True,
     )
+    contractor_type = models.CharField(
+        max_length=255, null=True, blank=True, choices=CONTRACTOR_TYPE
+    )
     contract_number = models.CharField(max_length=255, null=True, blank=True)
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
@@ -320,6 +327,7 @@ class SalesConfirmationContract(models.Model):
     class Meta:
         verbose_name_plural = "Sales Confirmation Contracts"
         db_table = "enity_contract"
+        unique_together = ("sales_confirmation_proposal", "entity")
 
     def __str__(self):
         return f'{self.sales_confirmation_proposal} - {self.contract_number or "No Contract Number"}'

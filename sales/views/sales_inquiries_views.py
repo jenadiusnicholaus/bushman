@@ -181,6 +181,8 @@ class SalesInquiriesViewSet(viewsets.ModelViewSet):
             "no_of_days": request.data.get("no_of_days"),
             "no_of_observers": no_observers,
             "preferred_date": preferred_date_str,
+            "start_date": request.data.get("start_date"),
+            "end_date": request.data.get("end_date"),
         }
         sales_prefered_species_data = {"sales_inquiry": None, "species": None}
         # print(request.data)
