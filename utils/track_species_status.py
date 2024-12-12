@@ -3,6 +3,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from bm_hunting_settings.models import Quota, QuotaHuntingAreaSpecies
 from sales.models import SalesInquiry
 from sales_confirmation.models import (
+    GameActivity,
     SalesConfirmationProposalStatus,
     SalesQuotaSpeciesStatus,
 )
@@ -176,6 +177,7 @@ class TrackSpeciesStatus:
         area_id,
         teken_quantity,
         game_state,
+        game,
     ):
         """
         This function updates the available quantity of species in the QuotaHuntingAreaSpecies
@@ -197,6 +199,7 @@ class TrackSpeciesStatus:
             raise ValueError(f"No such a species in confirmed sales")
 
         if status == "completed" and species_status.quantity > 0 and teken_quantity > 0:
+
             # reduce_quantity = quantity
 
             species_status.quantity -= teken_quantity
@@ -224,7 +227,11 @@ class TrackSpeciesStatus:
 
             try:
                 TrackSpeciesStatus.takeSpeciesQuantityBackToQuota(
-                    sales_confirmation_proposal_id, species_id, area_id, game_state
+                    sales_confirmation_proposal_id,
+                    species_id,
+                    area_id,
+                    game_state,
+                    game,
                 )
             except ValueError as e:
                 print(e)
@@ -232,7 +239,7 @@ class TrackSpeciesStatus:
 
         else:
             raise ValueError(
-                f"No Enough quantity to take back for species {species_id} in area {area_id} for status 'comfirmed' and game state {game_state}."
+                f"Error, This may be reasons, 1. Species status is not confirmed, 2. Species quantity is not enough, 3. Game is  closed, 4. Teken quantity is not enough"
             )
 
     @staticmethod
@@ -248,7 +255,7 @@ class TrackSpeciesStatus:
 
     @staticmethod
     def takeSpeciesQuantityBackToQuota(
-        sales_confirmation_proposal_id, species_id, area_id, game_state
+        sales_confirmation_proposal_id, species_id, area_id, game_state, game
     ):
         """
         This function returns the remaining quantity of species in the QuotaHuntingAreaSpecies
@@ -304,6 +311,12 @@ class TrackSpeciesStatus:
                 TrackSpeciesStatus.updateSalesProposalStatus(
                     sales_confirmation_proposal_id, "completed"
                 )
-                raise ValueError(
-                    f"No remaining quantity for species {species_id} in area {area_id} for status 'comfirmed' and game state {game_state}."
-                )
+                print("Game is completed")
+                # update the game status to closed
+                print(game.id)
+                try:
+                    _game = GameActivity.objects.get(id=game.id)
+                    _game.status = "CLOSED"
+                    _game.save()
+                except ObjectDoesNotExist:
+                    print("Game not found")
