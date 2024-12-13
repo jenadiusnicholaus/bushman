@@ -30,6 +30,7 @@ urlpatterns = [
     path(f"api/{API_VERSION}/settings/", include("bm_hunting_settings.urls")),
     path(f"api/{API_VERSION}/sales/", include("sales.urls")),
     path(f"api/{API_VERSION}/sales-confirmation/", include("sales_confirmation.urls")),
+    path(f"api/{API_VERSION}/reportings/", include("reportings.urls")),
 ]
 
 if settings.DEBUG:

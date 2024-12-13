@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     "bm_hunting_settings",
     "sales",
     "sales_confirmation",
+    "reportings",
 ]
 
 MIDDLEWARE = [
