@@ -10,7 +10,7 @@ class GetQuotaStatsSerializer(serializers.ModelSerializer):
     pending = serializers.SerializerMethodField()
     cancelled = serializers.SerializerMethodField()
     taken = serializers.SerializerMethodField()
-    provisoned = serializers.SerializerMethodField()
+    provisioned = serializers.SerializerMethodField()
     # total_qouta_sales = serializers.SerializerMethodField()
     total_quota_balance = serializers.SerializerMethodField()
 
@@ -36,7 +36,7 @@ class GetQuotaStatsSerializer(serializers.ModelSerializer):
     def get_taken(self, obj):
         return self.count_species_status("completed", obj)
 
-    def get_provisoned(self, obj):
+    def get_provisioned(self, obj):
         return self.count_species_status("provision_sales", obj)
 
     def get_total_quota_balance(self, obj):
