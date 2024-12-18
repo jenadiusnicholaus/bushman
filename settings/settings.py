@@ -54,6 +54,8 @@ INSTALLED_APPS = [
     "sales",
     "sales_confirmation",
     "reportings",
+    "requisition",
+    "approval_chain",
 ]
 
 MIDDLEWARE = [

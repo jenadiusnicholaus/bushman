@@ -207,7 +207,6 @@ class SalesConfirmation(viewsets.ModelViewSet):
             TrackSpeciesStatus.track(
                 request.data.get("sales_confirmation_proposal_id"),
                 request.data.get("status_id"),
-                # quota_id,
                 area_id,
                 status_obj,
             )
@@ -222,7 +221,6 @@ class SalesConfirmation(viewsets.ModelViewSet):
             instance=status_obj, data=status_data, partial=True
         )
         if not status_serializer.is_valid():
-            # saved_doc.delete()
             return Response(
                 status_serializer.errors,
                 status=status.HTTP_400_BAD_REQUEST,

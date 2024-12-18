@@ -31,6 +31,8 @@ urlpatterns = [
     path(f"api/{API_VERSION}/sales/", include("sales.urls")),
     path(f"api/{API_VERSION}/sales-confirmation/", include("sales_confirmation.urls")),
     path(f"api/{API_VERSION}/reportings/", include("reportings.urls")),
+    path(f"api/{API_VERSION}/requisition/", include("requisition.urls")),
+    path(f"api/{API_VERSION}/approval-chain/", include("approval_chain.urls")),
 ]
 
 if settings.DEBUG:
