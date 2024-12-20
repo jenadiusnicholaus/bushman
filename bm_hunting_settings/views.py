@@ -19,11 +19,13 @@ from bm_hunting_settings.models import (
     QuotaHuntingAreaSpecies,
     RegulatoryHuntingPackageSpecies,
     RegulatoryHuntingpackage,
+    SalesPackageSpecies,
     Seasons,
     Species,
 )
 from bm_hunting_settings.other_serializers.price_list_serializers import (
     GetHuntingTypeSerializer,
+    GetSalesPackageSpeciesSerializer,
 )
 from bm_hunting_settings.serializers import (
     CountrySerializeers,
@@ -59,6 +61,7 @@ from sales.models import (
     EntityCategories,
     EntityCategory,
     PaymentMethod,
+    SalesInquiryPriceList,
 )
 from sales.serializers.sales_inquiries_serializers import GetEntitySerializers
 from rest_framework import status
@@ -352,3 +355,64 @@ class RegulatoryHuntingPackageViewSets(viewsets.ModelViewSet):
             {"message": "Package created successfully"},
             status=201,
         )
+
+
+class LicenceAreaSpeciesView(viewsets.ModelViewSet):
+    serializer_class = GetRegulatoryHuntingPackageSpeciesSerializers
+    queryset = RegulatoryHuntingPackageSpecies.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def list(self, request, *args, **kwargs):
+        area_id = self.request.query_params.get("area_id", None)
+        licence_id = self.request.query_params.get("licence_id", None)
+        if area_id == "null" or licence_id == "null":
+            return Response(
+                {
+                    "message": "Bad request params, Please provide area_id and licence_id"
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        if area_id is None or licence_id is None:
+            return Response(
+                {"message": "Bad request params,Please provide area_id and licence_id"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        area_species = QuotaHuntingAreaSpecies.objects.filter(
+            area=area_id,
+        )
+        species_ids = [species.species.id for species in area_species]
+
+        lencence_species = self.get_queryset().filter(
+            r_hunting_package__id=licence_id,
+            species__id__in=species_ids,
+        )
+
+        serializer = self.get_serializer(lencence_species, many=True)
+        return Response(serializer.data, status=200)
+
+
+class SalesPackageSpeciesView(viewsets.ModelViewSet):
+    serializer_class = GetSalesPackageSpeciesSerializer
+    queryset = SalesPackageSpecies.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def list(self, request, *args, **kwargs):
+        sales_package_id = self.request.query_params.get("sales_package_id", None)
+        if sales_package_id == "null":
+            return Response(
+                {"message": "Bad request params, Please provide package_id"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        if sales_package_id is None:
+            return Response(
+                {"message": "Bad request params,Please provide package_id"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        package_species = self.get_queryset().filter(
+            sales_package__id=sales_package_id,
+        )
+
+        serializer = self.get_serializer(package_species, many=True)
+        return Response(serializer.data, status=200)

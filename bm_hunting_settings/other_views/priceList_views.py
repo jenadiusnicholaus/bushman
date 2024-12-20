@@ -190,6 +190,7 @@ class PricesListListView(viewsets.ModelViewSet):
         )  # No need for a separate filter, just return the base queryset
 
     def list(self, request, *args, **kwargs):
+
         # Retrieve query parameters; default to None if they are not present
         hunting_type_id = request.query_params.get("hunting_type_id")
         area_id = request.query_params.get("area_id")
@@ -209,11 +210,13 @@ class PricesListListView(viewsets.ModelViewSet):
             filters["sales_package__sales_quota__id"] = quota_id
 
         # Apply filters to the queryset if any filter has been added
-        if filters:
+        print(filters)
+        if filters is None:
             queryset = queryset.filter(**filters)
 
         # Always order by create_date in descending order
         queryset = queryset.order_by("-create_date")
+
         serializer = self.get_serializer(queryset, many=True)
 
         response_data = {

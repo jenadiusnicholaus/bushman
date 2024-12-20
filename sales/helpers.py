@@ -74,7 +74,7 @@ class SalesHelper:
         save_entity_serializer,
     ):
         preferred_species = request.data.get("preferred_species")
-
+        
         if preferred_species:
             for species in preferred_species:
                 # Prepare the data for the serializer

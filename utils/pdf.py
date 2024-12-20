@@ -235,7 +235,7 @@ class PriceListPDF:
                 price_list.get("amount", "N/A"),
                 price_list.get("currency", "N/A"),
                 price_list.get("duration", "N/A"),
-                price_list.get("price_list", {}).get("area", {}).get("name", "N/A"),
+                # price_list.get("price_list", {}).get("area", {}).get("name", "N/A"),
             ]
             table_data.append(row)
 

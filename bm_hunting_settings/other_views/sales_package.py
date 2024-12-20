@@ -11,12 +11,14 @@ from bm_hunting_settings.other_serializers.price_list_serializers import (
 
 
 class SalesPackageViewSet(viewsets.ModelViewSet):
-    queryset = SalesPackages.objects.all()
+    queryset = SalesPackages.objects.filter().order_by("-created_at")
     serializer_class = GetSalesPackageSerializer
 
     def create(self, request, *args, **kwargs):
         sales_package_data = {
             "user": request.user.id,
+            "area": request.data.get("area_id"),
+            "regulatory_package": request.data.get("regulatory_package_id"),
             "name": request.data.get("name"),
             "description": request.data.get("description"),
         }

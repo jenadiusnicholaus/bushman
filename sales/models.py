@@ -5,6 +5,7 @@ from bm_hunting_settings.models import (
     Country,
     Currency,
     HuntingArea,
+    HuntingPriceList,
     IdentityType,
     Nationalities,
     Seasons,
@@ -169,6 +170,30 @@ class EntityIdentity(models.Model):
             + " - "
             + self.identity_number
         )
+
+
+class SalesInquiryPriceList(models.Model):
+    sales_inquiry = models.ForeignKey(
+        SalesInquiry,
+        on_delete=models.CASCADE,
+        related_name="sales_inquiry_price_list_set",
+        null=True,
+    )
+    price_list = models.ForeignKey(
+        HuntingPriceList,
+        on_delete=models.CASCADE,
+        related_name="sales_inquiry_price_list_set",
+        null=True,
+    )
+    create_date = models.DateTimeField(default=timezone.now)
+    updated_date = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "Sales Inquiry Price Lists"
+        db_table = "sales_inquiry_price_lists"
+
+    def __str__(self):
+        return self.sales_inquiry.entity.full_name
 
 
 class BankDetails(models.Model):

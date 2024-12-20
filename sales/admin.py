@@ -13,6 +13,7 @@ from sales.models import (
     SalesInquiryArea,
     Document,
     Doctype,
+    SalesInquiryPriceList
 )
 from sales_confirmation.models import SalesQuotaSpeciesStatus
 
@@ -32,3 +33,4 @@ admin.site.register(SalesInquiryArea)
 admin.site.register(Document)
 admin.site.register(Doctype)
 admin.site.register(SalesQuotaSpeciesStatus)
+admin.site.register(SalesInquiryPriceList)

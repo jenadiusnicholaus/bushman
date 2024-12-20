@@ -285,8 +285,12 @@ class HuntingType(models.Model):
     TYPE_CHOICES = (
         ("1x1", "1x1"),
         ("2x1", "2x1"),
+        ("2x2", "2x2"),
         ("3x1", "3x1"),
+        ("3x2", "3x2"),
         ("4x1", "4x1"),
+        ("4x2", "4x2"),
+        ("5x2", "5x2"),
         ("5x1", "5x1"),
         ("6x1", "6x1"),
         ("7x1", "7x1"),
@@ -313,6 +317,20 @@ class SalesPackages(models.Model):
         related_name="user_sales_packages",
         null=True,
     )
+    area = models.ForeignKey(
+        HuntingArea,
+        on_delete=models.CASCADE,
+        related_name="hunting_area_sales_packages",
+        null=True,
+        blank=True,
+    )
+    regulatory_package = models.ForeignKey(
+        RegulatoryHuntingpackage,
+        on_delete=models.CASCADE,
+        related_name="regulatory_hunting_package_sales_packages",
+        null=True,
+        blank=True,
+    )
     sales_quota = models.ForeignKey(
         Quota,
         on_delete=models.CASCADE,
@@ -321,6 +339,8 @@ class SalesPackages(models.Model):
     )
     name = models.CharField(max_length=100)
     description = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
 
     class meta:
         verbose_name_plural = "Sales Packages"
@@ -331,7 +351,11 @@ class SalesPackages(models.Model):
 
 class HuntingPriceList(models.Model):
     area = models.ForeignKey(
-        HuntingArea, on_delete=models.CASCADE, related_name="hunting_price_list"
+        HuntingArea,
+        on_delete=models.CASCADE,
+        related_name="hunting_price_list",
+        null=True,
+        blank=True,
     )
     user = models.ForeignKey(
         User,

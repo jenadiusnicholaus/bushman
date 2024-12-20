@@ -125,7 +125,7 @@ class GetHuntingPriceTypePackageSerializer(serializers.ModelSerializer):
     sales_package = GetSalesPackageSerializer()
     price_list_type = GetHuntingPriceListTypeSerializer()
     componions_hunter = serializers.SerializerMethodField()
-    oberver = serializers.SerializerMethodField()
+    observer = serializers.SerializerMethodField()
 
     def get_componions_hunter(self, obj):
         componions_hunter = obj.hunting_package_companions_hunter.all()
@@ -136,7 +136,7 @@ class GetHuntingPriceTypePackageSerializer(serializers.ModelSerializer):
         )
         return serializer.data
 
-    def get_oberver(self, obj):
+    def get_observer(self, obj):
         oberver = obj.hunting_package_oberver_hunter.all()
         if len(oberver) == 0:
             return []

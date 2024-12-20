@@ -27,6 +27,7 @@ from sales.serializers.sales_inquiries_serializers import (
     GetSalesInquirySerializers,
     SalesIquiryPreferenceSerializers,
     UpdateEntitySerializers,
+    createSalesInquiryPriceListSerializer,
 )
 from rest_framework.response import Response
 from rest_framework import status
@@ -184,6 +185,10 @@ class SalesInquiriesViewSet(viewsets.ModelViewSet):
             "start_date": request.data.get("start_date"),
             "end_date": request.data.get("end_date"),
         }
+        sales_inquiry_price_list_data = {
+            "sales_inquiry": None,
+            "price_list": request.data.get("price_list_id"),
+        }
         sales_prefered_species_data = {"sales_inquiry": None, "species": None}
         # print(request.data)
         try:
@@ -291,15 +296,37 @@ class SalesInquiriesViewSet(viewsets.ModelViewSet):
                 if not sales_inquiry_area_serializer.is_valid():
                     #  we do delete the entity if the sales_inquiry_area is not valid
                     # i am deleting the entity first because it is not possible to create sales_inquiry_area without sales_inquiry
-                    Entity.objects.get(id=saved_entity.id).delete()
-                    SalesInquiry.objects.get(id=saved_sales_inquiry.id).delete()
-                    EntityCategory.objects.get(id=saved_category_serializer.id).delete()
-                    Contacts.objects.filter(entity__id=saved_entity.id).delete()
+                    saved_entity.delete()
+                    saved_sales_inquiry.delete()
+                    saved_category_serializer.delete()
                     return Response(
                         sales_inquiry_area_serializer.errors,
                         status=status.HTTP_400_BAD_REQUEST,
                     )
                 sales_inquiry_area_serializer.save()
+
+                # sales inquiry price list
+                sales_inquiry_price_list_data.update(
+                    {"sales_inquiry": saved_sales_inquiry.id}
+                )
+                sales_inquiry_price_list_serializer = (
+                    createSalesInquiryPriceListSerializer(
+                        data=sales_inquiry_price_list_data
+                    )
+                )
+                if not sales_inquiry_price_list_serializer.is_valid():
+                    #  we do delete the entity if the sales_inquiry_price_list is not valid
+                    # i am deleting the entity first because it is not possible to create sales_inquiry_price_list without sales_inquiry
+                    saved_entity.delete()
+                    saved_sales_inquiry.delete()
+                    saved_category_serializer.delete()
+
+                    return Response(
+                        sales_inquiry_price_list_serializer.errors,
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+                saved_price_list = sales_inquiry_price_list_serializer.save()
 
                 try:
                     SalesHelper.savePreferredSpecies(

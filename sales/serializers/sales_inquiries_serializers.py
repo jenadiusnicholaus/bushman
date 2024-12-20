@@ -14,6 +14,7 @@ from sales.models import (
     EntityIdentity,
     SalesInquiry,
     SalesInquiryArea,
+    SalesInquiryPriceList,
     SalesInquirySpecies,
     SalesIquiryPreference,
 )
@@ -104,6 +105,7 @@ class GetSalesInquirySerializers(serializers.ModelSerializer):
     preferred_species = serializers.SerializerMethodField()
     area = serializers.SerializerMethodField()
     entity_identity = serializers.SerializerMethodField()
+    price_list = serializers.SerializerMethodField()
 
     def get_area(self, obj):
         try:
@@ -148,6 +150,17 @@ class GetSalesInquirySerializers(serializers.ModelSerializer):
             identity = EntityIdentity.objects.get(entity=obj.entity)
             if identity:
                 sez = GetEntityIdentitySerializers(identity)
+                return sez.data
+            else:
+                return None
+        except:
+            return None
+
+    def get_price_list(self, obj):
+        try:
+            price_list = SalesInquiryPriceList.objects.get(sales_inquiry=obj)
+            if price_list:
+                sez = GetSalesInquiryPriceListSerializer(price_list)
                 return sez.data
             else:
                 return None
@@ -243,4 +256,26 @@ class CreateSalesInquiryAreaSerializer(serializers.ModelSerializer):
 class UpdateSalesInquiryAreaSerializer(serializers.ModelSerializer):
     class Meta:
         model = SalesInquiryArea
+        fields = "__all__"
+
+
+# sales inquiry price list serializer
+
+
+class GetSalesInquiryPriceListSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = SalesInquiryPriceList
+        fields = "__all__"
+
+
+class createSalesInquiryPriceListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SalesInquiryPriceList
+        fields = "__all__"
+
+
+class UpdateSalesInquiryPriceListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SalesInquiryPriceList
         fields = "__all__"
