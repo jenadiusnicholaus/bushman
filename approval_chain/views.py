@@ -1,10 +1,16 @@
 from django.shortcuts import render
 
-from approval_chain.models import ApprovalChain, ApprovalChainModule, ApprovalChainRole
+from approval_chain.models import (
+    ApprovalChain,
+    ApprovalChainLevels,
+    ApprovalChainModule,
+    ApprovalChainRole,
+)
 from approval_chain.serializers import (
     CreateApprovalChainLevelsSerializer,
     CreateApprovalChainModuleSerializer,
     CreateApprovalChainSerializer,
+    GetApprovalChainLevelsSerializer,
     GetApprovalChainModuleSerializer,
     GetApprovalChainRoleSerializer,
     GetApprovalChainSerializer,
@@ -144,5 +150,16 @@ class GetApprovalRoleApiView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class ApprovalChainLevelsViewSet(viewsets.ModelViewSet):
-    serializer_class = GetApprovalChainModuleSerializer
+class ApprovalChainLevelsVset(viewsets.ModelViewSet):
+    serializer_class = GetApprovalChainLevelsSerializer
+    queryset = ApprovalChainLevels.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def list(self, request, *args, **kwargs):
+        chaain_id = self.request.query_params.get("approval_chain_module_id")
+        if chaain_id is not None:
+            queryset = self.get_queryset().filter(approval_chain_module__id=chaain_id)
+        else:
+            queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

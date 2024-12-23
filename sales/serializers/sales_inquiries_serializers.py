@@ -2,6 +2,10 @@ from rest_framework import serializers
 from django_countries.serializer_fields import CountryField
 
 
+from bm_hunting_settings.models import HuntingPriceTypePackage
+from bm_hunting_settings.other_serializers.price_list_serializers import (
+    GetHuntingPriceTypePackageSerializer,
+)
 from bm_hunting_settings.serializers import (
     CountrySerializeers,
     HutingAreaSerializers,
@@ -263,10 +267,22 @@ class UpdateSalesInquiryAreaSerializer(serializers.ModelSerializer):
 
 
 class GetSalesInquiryPriceListSerializer(serializers.ModelSerializer):
+    price_list = serializers.SerializerMethodField()
 
     class Meta:
         model = SalesInquiryPriceList
         fields = "__all__"
+
+    def get_price_list(self, obj):
+        try:
+            price_package = HuntingPriceTypePackage.objects.get(
+                price_list_type__price_list__id=obj.price_list.id
+            )
+        except:
+            return None
+
+        serializer = GetHuntingPriceTypePackageSerializer(price_package)
+        return serializer.data
 
 
 class createSalesInquiryPriceListSerializer(serializers.ModelSerializer):

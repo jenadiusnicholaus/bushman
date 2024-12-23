@@ -9,6 +9,7 @@ router.register(
     r"requisition-item-vset", RequisitionItemViewSet, basename="requisition-item"
 )
 
+
 urlpatterns = [
     path("", include(router.urls)),
 ]

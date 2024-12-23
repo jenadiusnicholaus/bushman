@@ -1,6 +1,7 @@
 from rest_framework import viewsets
 
 from approval_chain.models import ApprovalChainLevels, ApprovalChainModule
+from approval_chain.serializers import GetApprovalChainLevelsSerializer
 from .models import RequestItem, Requisition
 from .serializers import (
     CreateRemarksHistorySerializer,
@@ -22,7 +23,7 @@ from django.db import transaction
 
 class RequisitionVewSet(viewsets.ModelViewSet):
     serializer_class = GetRequisitionSerializer
-    queryset = Requisition.objects.all()
+    queryset = Requisition.objects.filter().order_by("-created_at")
     permission_classes = [IsAuthenticated]
 
     def list(self, request, *args, **kwargs):
@@ -35,12 +36,22 @@ class RequisitionVewSet(viewsets.ModelViewSet):
         # CreateRequisitionSerializer
 
         stattus = "PENDING"
+        level_number = 1
+        level_id = request.data.get("level_id")
+        _db_level_id = None
+
+        if not level_id:
+            try:
+                alevel = ApprovalChainLevels.objects.get(level_number=level_number)
+                level_id = alevel.id
+            except ApprovalChainLevels.DoesNotExist:
+                pass
 
         requistion_data = {
             "user": request.user.id,
             "requested_by": request.user.id,
             "approval_chain_module": request.data.get("approval_chain_module_id"),
-            "level": request.data.get("level_id"),
+            "level": level_id,
             "type": request.data.get("type"),
             "date": request.data.get("date"),
             "required_date": request.data.get("required_date"),
@@ -62,7 +73,6 @@ class RequisitionVewSet(viewsets.ModelViewSet):
                 {"message": "Approval chain module not found"},
                 status=status.HTTP_404_NOT_FOUND,
             )
-        level_id = request.data.get("level_id")
 
         try:
             approval_chain_level = ApprovalChainLevels.objects.get(
@@ -225,7 +235,6 @@ class RequisitionItemViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         # create item items for the requisition
-
         # CreateRequestItemSourceSerializer
         # CreateRequestItemSerializer
         # CreateRequestItemItemsSerializer
@@ -233,7 +242,7 @@ class RequisitionItemViewSet(viewsets.ModelViewSet):
 
         source_data = {
             "requisition": request.data.get("requisition_id"),
-            "type": request.data.get("type"),
+            "type": request.data.get("source_type"),
             "payee": request.data.get("payee"),
             "currency": request.data.get("currency_id"),
             "account": request.data.get("account_id"),

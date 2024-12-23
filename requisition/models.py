@@ -114,7 +114,7 @@ class RequestItemItems(models.Model):
     item = models.ForeignKey(
         RequestItem, on_delete=models.CASCADE, related_name="item_items_set"
     )
-    name = models.CharField(max_length=255, null=True, blank=True)  
+    name = models.CharField(max_length=255, null=True, blank=True)
     currency = models.ForeignKey(Currency, on_delete=models.CASCADE)
     exchange_rate = models.DecimalField(max_digits=10, decimal_places=2)
     unit_of_measurement = models.CharField(max_length=255)

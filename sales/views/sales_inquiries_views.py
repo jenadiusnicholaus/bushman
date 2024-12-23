@@ -96,7 +96,6 @@ class SalesInquiriesViewSet(viewsets.ModelViewSet):
         for data in serializer.data:
             #  def get_pdf(self, obj):
             pdf_file = SalesInquiryPDF.generate_pdf(data, return_type="base64")
-            print(pdf_file)
             data["pdf"] = pdf_file["pdf"]
             response_data.append(data)
 
