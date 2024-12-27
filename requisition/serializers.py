@@ -27,18 +27,27 @@ class GetRequisitionSerializer(serializers.ModelSerializer):
         if obj.status == "APPROVED" or obj.status == "REJECTED":
             return None
         try:
+
             approval_chain = ApprovalChainModule.objects.get(
                 id=obj.approval_chain_module.id
             )
-            next_level = approval_chain.levels.filter(
-                level_number__gt=obj.level.level_number
+            status = RequisitionApprovalStatus.objects.filter(
+                requisition=obj,
             )
-            if not next_level.exists():
 
-                return None
+            status_ids = [status.level.id for status in status]
 
-            next_level = next_level.first()
-            serializer = GetApprovalChainLevelsSerializer(next_level)
+            print(status)
+
+            levels = approval_chain.levels.all()
+            print(levels)
+            # get all levels not yet in status and  fins the next level
+            next_level = levels.exclude(id__in=status_ids)
+
+            print(next_level)
+
+            _next_level = next_level.first()
+            serializer = GetApprovalChainLevelsSerializer(_next_level)
             return serializer.data
         except ApprovalChainModule.DoesNotExist:
             return None

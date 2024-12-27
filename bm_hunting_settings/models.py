@@ -590,7 +590,7 @@ class HuntingPackageCompanionsHunter(models.Model):
         related_name="hunting_package_companions_hunter",
     )
     days = models.IntegerField(default=0, null=True, blank=True)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, null=True)
     created_date = models.DateTimeField(default=timezone.now, null=True)
     updated_date = models.DateTimeField(auto_now=True, null=True)
 
@@ -609,7 +609,7 @@ class HuntingPackageOberverHunter(models.Model):
         related_name="hunting_package_oberver_hunter",
     )
     days = models.IntegerField(default=0, null=True, blank=True)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, null=True)
 
     class Meta:
         verbose_name_plural = "Hunting Package Oberver Hunter"

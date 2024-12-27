@@ -68,9 +68,15 @@ class RequisitionApprovalStatus(models.Model):
         ("APPROVED", "Approved"),
         ("REJECTED", "Rejected"),
     )
-    requisition = models.ForeignKey(Requisition, on_delete=models.CASCADE)
-    level = models.ForeignKey(ApprovalChainLevels, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    requisition = models.ForeignKey(
+        Requisition, on_delete=models.CASCADE, related_name="approval_status_set"
+    )
+    level = models.ForeignKey(
+        ApprovalChainLevels, on_delete=models.CASCADE, related_name="level_status_set"
+    )
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="user_status_set"
+    )
     status = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

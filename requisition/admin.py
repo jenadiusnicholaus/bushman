@@ -8,6 +8,7 @@ from .models import (
     RequestItemAccount,
     RequestItemItems,
     RequestItemSource,
+    RequisitionApprovalStatus,
 )
 
 admin.site.register(Requisition)
@@ -15,4 +16,4 @@ admin.site.register(RequestItem)
 admin.site.register(RequestItemAccount)
 admin.site.register(RequestItemItems)
 admin.site.register(RequestItemSource)
-admin.site.site_header = "Bushman Requisition"
+admin.site.register(RequisitionApprovalStatus)

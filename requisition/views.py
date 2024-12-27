@@ -219,15 +219,11 @@ class RequisitionVewSet(viewsets.ModelViewSet):
             "level": approval_chain_level.id,
             "user": request.user.id,
         }
-        try:
-            status_level = RequisitionApprovalStatus.objects.get(
-                requisition=requisition, level=approval_chain_level
-            )
-        except RequisitionApprovalStatus.DoesNotExist:
-            return Response(
-                {"message": "Requisition level status not found"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+
+        status_level, _ = RequisitionApprovalStatus.objects.get_or_create(
+            requisition=requisition, level=approval_chain_level, user=request.user
+        )
+
         with transaction.atomic():
 
             update_sz = UpdateRequisitionSerializer(
@@ -275,7 +271,7 @@ class RequisitionVewSet(viewsets.ModelViewSet):
             if provided_level_position >= _max:
                 return Response(
                     {"message": f"Reuistion {_status} successfully"},
-                    status=status.HTTP_400_BAD_REQUEST,
+                    status=status.HTTP_200_OK,
                 )
             else:
 
