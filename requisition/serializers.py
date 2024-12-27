@@ -10,6 +10,7 @@ from requisition.models import (
     RequestItemItems,
     RequestItemSource,
     Requisition,
+    RequisitionApprovalStatus,
 )
 
 
@@ -17,6 +18,7 @@ from requisition.models import (
 class GetRequisitionSerializer(serializers.ModelSerializer):
     level = GetApprovalChainLevelsSerializer()
     next_level = serializers.SerializerMethodField()
+    current_level_status = serializers.SerializerMethodField()
     requested_by = GetUserSerializer()
     type = serializers.CharField(source="get_type_display")
 
@@ -39,6 +41,18 @@ class GetRequisitionSerializer(serializers.ModelSerializer):
             serializer = GetApprovalChainLevelsSerializer(next_level)
             return serializer.data
         except ApprovalChainModule.DoesNotExist:
+            return None
+
+    def get_current_level_status(self, obj):
+        # get the current level status of the requisition
+        # GetRequisitionApprovalStatusSerializer
+        try:
+            level_status = RequisitionApprovalStatus.objects.get(
+                requisition=obj, level=obj.level
+            )
+            serializer = GetRequisitionApprovalStatusSerializer(level_status)
+            return serializer.data
+        except RequisitionApprovalStatus.DoesNotExist:
             return None
 
     class Meta:
@@ -156,4 +170,24 @@ class CreateRemarksHistorySerializer(serializers.ModelSerializer):
 class UpdateRemarksHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = RemarksHistory
+        fields = "__all__"
+
+
+class GetRequisitionApprovalStatusSerializer(serializers.ModelSerializer):
+    level = GetApprovalChainLevelsSerializer()
+
+    class Meta:
+        model = RequisitionApprovalStatus
+        fields = "__all__"
+
+
+class CreateRequisitionApprovalStatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RequisitionApprovalStatus
+        fields = "__all__"
+
+
+class UpdateRequisitionApprovalStatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RequisitionApprovalStatus
         fields = "__all__"

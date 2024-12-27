@@ -22,6 +22,7 @@ from bm_hunting_settings.models import (
     SalesPackageSpecies,
     Seasons,
     Species,
+    UnitOfMeasurements,
 )
 from bm_hunting_settings.other_serializers.price_list_serializers import (
     GetHuntingTypeSerializer,
@@ -46,6 +47,7 @@ from bm_hunting_settings.serializers import (
     HutingAreaSerializers,
     NationalitiesSerializeers,
     SpeciesSerializer,
+    UnitOfMeasurementsSerializer,
 )
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -106,6 +108,11 @@ class CurrencyViewSets(viewsets.ModelViewSet):
 class HuntingTypesViewSets(viewsets.ModelViewSet):
     queryset = HuntingType.objects.all()
     serializer_class = GetHuntingTypeSerializer
+    permission_classes = [IsAuthenticated]
+
+class UnitsViewsSet(viewsets.ModelViewSet):
+    queryset = UnitOfMeasurements.objects.all()
+    serializer_class = UnitOfMeasurementsSerializer
     permission_classes = [IsAuthenticated]
 
 

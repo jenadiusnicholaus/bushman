@@ -1,6 +1,8 @@
 from rest_framework import status
 from rest_framework.response import Response
 from django.db import transaction
+
+from utils.utitlities import currentQuuta
 from ..other_serializers.price_list_serializers import (
     CreateHuntingPackageCompanionsHunterSerializer,
     CreateHuntingPackageOberverHunterSerializer,
@@ -42,11 +44,12 @@ class CreatePriceListViewSet(viewsets.ModelViewSet):
         #     "description": request.data.get("description"),
         #     "sales_quota": request.data.get("sales_quota_id"),
         # }
+
         price_list_data = {
             "area": request.data.get("area"),
             "user": request.user.id,
-            "start_date": request.data.get("start_date", None),
-            "end_date": request.data.get("end_date", None),
+            "start_date": currentQuuta.current_quota.start_date,
+            "end_date": currentQuuta.current_quota.end_date,
         }
         price_list_type_data = {
             "amount": request.data.get("amount"),

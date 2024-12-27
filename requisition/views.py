@@ -2,16 +2,18 @@ from rest_framework import viewsets
 
 from approval_chain.models import ApprovalChainLevels, ApprovalChainModule
 from approval_chain.serializers import GetApprovalChainLevelsSerializer
-from .models import RequestItem, Requisition
+from .models import RequestItem, Requisition, RequisitionApprovalStatus
 from .serializers import (
     CreateRemarksHistorySerializer,
     CreateRequestItemAccountsSerializer,
     CreateRequestItemItemsSerializer,
     CreateRequestItemSerializer,
     CreateRequestItemSourceSerializer,
+    CreateRequisitionApprovalStatusSerializer,
     CreateRequisitionSerializer,
     GetRequestItemSerializer,
     GetRequisitionSerializer,
+    UpdateRequisitionApprovalStatusSerializer,
     UpdateRequisitionSerializer,
 )
 from rest_framework.response import Response
@@ -40,7 +42,7 @@ class RequisitionVewSet(viewsets.ModelViewSet):
         level_id = request.data.get("level_id")
         _db_level_id = None
 
-        if not level_id:
+        if level_id is None:
             try:
                 alevel = ApprovalChainLevels.objects.get(level_number=level_number)
                 level_id = alevel.id
@@ -58,6 +60,7 @@ class RequisitionVewSet(viewsets.ModelViewSet):
             "status": stattus,
             "remarks": request.data.get("remarks"),
         }
+
         # get number of  approval chain present for approval_chain_module_id,
         #  and check the level number provided if number provided is the highest level number present in the approval chain,
         # then save requuistion approved else make it pending and send notification to the next approver.
@@ -84,11 +87,11 @@ class RequisitionVewSet(viewsets.ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        # the level number are in order of number like 1,2, 3, 4 etc
-        #  which means the highest number mean the  requistion is approved
-        # check the position of the numer in the list of level from [approval_chain_module] based on the  provided level_id
-        # if the position of the level_id is the last one, then save the requistion as approved else make it pending and send notification to the next approver.
-        #  then create the requisition, else return error message
+        # The level numbers are sequential, such as 1, 2, 3, 4, etc.
+        # A higher number indicates that the requisition has been approved.
+        # We need to determine the position of the number in the list of levels from [approval_chain_module] using the given level_id.
+        # If the level_id is at the last position, we will mark the requisition as approved; otherwise, we will set it to pending and notify the next approver.
+        # Then, we will create the requisition; if not, we will return an error message.
 
         levels = approval_chain_module.levels.all()
         if len(levels) == 0:
@@ -108,11 +111,43 @@ class RequisitionVewSet(viewsets.ModelViewSet):
             stattus = "PENDING"
 
         requistion_data["status"] = stattus
-        serializer = CreateRequisitionSerializer(data=requistion_data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        level_status_data = {
+            "requisition": None,
+            "level": level_id,
+            "status": stattus,
+            "user": request.user.id,
+        }
+
+        with transaction.atomic():
+            r_serializer = CreateRequisitionSerializer(data=requistion_data)
+
+            if not r_serializer.is_valid():
+                return Response(r_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            saved_requisition = r_serializer.save()
+
+            level_status_data["requisition"] = saved_requisition.id
+            level_status_sz = CreateRequisitionApprovalStatusSerializer(
+                data=level_status_data
+            )
+            if not level_status_sz.is_valid():
+                return Response(
+                    level_status_sz.errors, status=status.HTTP_400_BAD_REQUEST
+                )
+
+            level_status_sz.save()
+
+            return Response(
+                {
+                    "message": "Requisition created successfully",
+                    "data": {
+                        "requisition": saved_requisition.id,
+                        "level_status": level_status_sz.data,
+                    },
+                },
+                status=status.HTTP_201_CREATED,
+            )
 
     def put(self, request, *args, **kwargs):
         # update the requisition
@@ -168,52 +203,86 @@ class RequisitionVewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        main_status = None
+        if _status == "APPROVED" or _status == "REJECTED":
+            main_status = _status
+        else:
+            main_status = "PENDING"
+
         requistion_data = {
-            "status": _status,
+            "status": main_status,
             "level": approval_chain_level.id,
         }
-        update_sz = UpdateRequisitionSerializer(
-            instance=requisition, data=requistion_data, partial=True
-        )
-        if not update_sz.is_valid():
-            return Response(update_sz.errors, status=status.HTTP_400_BAD_REQUEST)
-
-        update_sz.save()
-
-        remarks = CreateRemarksHistorySerializer(
-            data={
-                "requisition": requisition.id,
-                "user": request.user.id,
-                "remarks": remarks,
-            }
-        )
-        if not remarks.is_valid():
-            return Response(remarks.errors, status=status.HTTP_400_BAD_REQUEST)
-        remarks.save()
-
-        levels = approval_chain_module.levels.all()
-        if len(levels) == 0:
+        requisition_level_status_data = {
+            "requisition": requisition.id,
+            "status": _status,
+            "level": approval_chain_level.id,
+            "user": request.user.id,
+        }
+        try:
+            status_level = RequisitionApprovalStatus.objects.get(
+                requisition=requisition, level=approval_chain_level
+            )
+        except RequisitionApprovalStatus.DoesNotExist:
             return Response(
-                {"message": "Approval chain not found"},
+                {"message": "Requisition level status not found"},
                 status=status.HTTP_404_NOT_FOUND,
             )
+        with transaction.atomic():
 
-        provided_level_position = approval_chain_level.level_number
-
-        # if the provode numer is greater than or equal all the available level number in the approval chain, then status is Aprrove coz it is the highest level number
-        # get the highest level number in the approval chain
-        _max = levels.aggregate(Max("level_number"))["level_number__max"]
-        if provided_level_position >= _max:
-            return Response(
-                {"message": f"Reuistion {_status} successfully"},
-                status=status.HTTP_400_BAD_REQUEST,
+            update_sz = UpdateRequisitionSerializer(
+                instance=requisition, data=requistion_data, partial=True
             )
-        else:
+            if not update_sz.is_valid():
+                return Response(update_sz.errors, status=status.HTTP_400_BAD_REQUEST)
 
-            return Response(
-                {"message": "Requisition updated successfully"},
-                status=status.HTTP_200_OK,
+            updated_requisition = update_sz.save()
+
+            requisition_level_status_sz = UpdateRequisitionApprovalStatusSerializer(
+                instance=status_level, data=requisition_level_status_data, partial=True
             )
+            if not requisition_level_status_sz.is_valid():
+                return Response(
+                    requisition_level_status_sz.errors,
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            requisition_level_status_sz.save()
+
+            remarks = CreateRemarksHistorySerializer(
+                data={
+                    "requisition": requisition.id,
+                    "user": request.user.id,
+                    "remarks": remarks,
+                }
+            )
+            if not remarks.is_valid():
+                return Response(remarks.errors, status=status.HTTP_400_BAD_REQUEST)
+            remarks.save()
+
+            levels = approval_chain_module.levels.all()
+            if len(levels) == 0:
+                return Response(
+                    {"message": "Approval chain not found"},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+            provided_level_position = approval_chain_level.level_number
+
+            # if the provode numer is greater than or equal all the available level number in the approval chain, then status is Aprrove coz it is the highest level number
+            # get the highest level number in the approval chain
+            _max = levels.aggregate(Max("level_number"))["level_number__max"]
+            if provided_level_position >= _max:
+                return Response(
+                    {"message": f"Reuistion {_status} successfully"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            else:
+
+                return Response(
+                    {"message": "Requisition updated successfully"},
+                    status=status.HTTP_200_OK,
+                )
 
 
 class RequisitionItemViewSet(viewsets.ModelViewSet):

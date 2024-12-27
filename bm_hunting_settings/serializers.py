@@ -11,6 +11,7 @@ from bm_hunting_settings.models import (
     RegulatoryHuntingpackage,
     Seasons,
     Species,
+    UnitOfMeasurements,
 )
 from sales.models import (
     ContactType,
@@ -213,4 +214,11 @@ class UpdateSeasonsSerializer(serializers.ModelSerializer):
 class GetDoctypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Doctype
+        fields = "__all__"
+
+
+#  -----------------units ------------------
+class UnitOfMeasurementsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UnitOfMeasurements
         fields = "__all__"

@@ -373,6 +373,16 @@ class HuntingPriceList(models.Model):
         verbose_name_plural = "Hunting Price List"
         db_table = "hunting_price_list"
 
+    def is_valid(self):
+        if self.start_date <= timezone.now().date() <= self.end_date:
+            return True
+        else:
+            return False
+
+    def save(self, *args, **kwargs):
+        self.is_active = self.is_valid()
+        super(HuntingPriceList, self).save(*args, **kwargs)
+
 
 class HuntingPriceListType(models.Model):
     price_list = models.ForeignKey(
@@ -405,6 +415,19 @@ class HuntingPriceListType(models.Model):
             return self.name
         else:
             return self.hunting_type.name
+
+
+class UnitOfMeasurements(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    unit = models.CharField(max_length=20, null=True, blank=True)
+    descriptions = models.CharField(max_length=200, null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = "Unit of Measurements"
+        db_table = "unit_of_measurements"
+
+    def __str__(self):
+        return self.name
 
 
 class HuntingPriceTypePackage(models.Model):

@@ -82,7 +82,7 @@ class SalesConfirmationProposalPackage(models.Model):
         db_table = "sales_confirmation_package"
 
     def __str__(self):
-        return f"{self.sales_confirmation_proposal} - {self.hunting_license}"
+        return f"{self.sales_confirmation_proposal} - {self.package.name}"
 
 
 class SalesConfirmationProposalStatus(models.Model):

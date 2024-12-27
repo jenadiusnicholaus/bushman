@@ -39,6 +39,8 @@ class ApprovalChainRole(models.Model):
 class ApprovalChainLevels(models.Model):
     STATUS = (
         ("PENDING", "Pending"),
+        ("IN_PROGRESS", "In Progress"),
+        ("VISITED", "Completed"),
         ("APPROVED", "Approved"),
         ("REJECTED", "Rejected"),
     )
@@ -49,7 +51,9 @@ class ApprovalChainLevels(models.Model):
     position = models.CharField(max_length=255, null=True, blank=True)
     level_number = models.IntegerField(null=True, blank=True, default=1)
     approval_chain_role = models.ForeignKey(ApprovalChainRole, on_delete=models.CASCADE)
-    status = models.CharField(max_length=255, choices=STATUS, null=True, blank=True)
+    status = models.CharField(
+        max_length=255, choices=STATUS, null=True, blank=True, default="PENDING"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 
 from approval_chain.models import ApprovalChainLevels, ApprovalChainModule
-from bm_hunting_settings.models import Currency
+from bm_hunting_settings.models import Currency, UnitOfMeasurements
 
 # approval_chain_modules(id,name,descriptions,active)
 # approval_chains(id,approval_chain_module_id,user_id,approval_chain_level_id)
@@ -25,6 +25,9 @@ class Requisition(models.Model):
         ("PENDING", "Pending"),
         ("APPROVED", "Approved"),
         ("REJECTED", "Rejected"),
+        ("CANCELLED", "Cancelled"),
+        ("VIEWED", "Viewed"),
+        ("IN_PROGRESS", "In Progress"),
     )
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -54,6 +57,30 @@ class Requisition(models.Model):
 
     def __str__(self):
         return self.type
+
+
+class RequisitionApprovalStatus(models.Model):
+    STATAUS = (
+        ("PENDING", "Pending"),
+        ("IN_PROGRESS", "In Progress"),
+        ("COMPLETED", "Completed"),
+        ("VIEWED", "Viewed"),
+        ("APPROVED", "Approved"),
+        ("REJECTED", "Rejected"),
+    )
+    requisition = models.ForeignKey(Requisition, on_delete=models.CASCADE)
+    level = models.ForeignKey(ApprovalChainLevels, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    status = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "Requisition Approval Status"
+        db_table = "requisition_approval_status"
+
+    def __str__(self):
+        return self.requisition.type
 
 
 class RemarksHistory(models.Model):
@@ -115,9 +142,13 @@ class RequestItemItems(models.Model):
         RequestItem, on_delete=models.CASCADE, related_name="item_items_set"
     )
     name = models.CharField(max_length=255, null=True, blank=True)
-    currency = models.ForeignKey(Currency, on_delete=models.CASCADE)
+    currency = models.ForeignKey(
+        Currency, on_delete=models.CASCADE, null=True, blank=True
+    )
     exchange_rate = models.DecimalField(max_digits=10, decimal_places=2)
-    unit_of_measurement = models.CharField(max_length=255)
+    unit_of_measurement = models.ForeignKey(
+        UnitOfMeasurements, on_delete=models.CASCADE, null=True, blank=True
+    )
     quantity = models.DecimalField(max_digits=10, decimal_places=2)
     rate = models.DecimalField(max_digits=10, decimal_places=2)
     descriptions = models.TextField(null=True, blank=True)
@@ -149,4 +180,4 @@ class RequestItemAccount(models.Model):
         db_table = "requisition_item_accounts"
 
     def __str__(self):
-        return self.requisition_item.item.requisition.type
+        return self.requisition_item.requisition.type
