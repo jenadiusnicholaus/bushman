@@ -72,7 +72,7 @@ class GetHuntingPriceListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = HuntingPriceList
-        fields = ["area"]
+        fields = "__all__"
 
 
 class CreateHuntingPriceListSerializer(serializers.ModelSerializer):

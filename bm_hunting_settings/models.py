@@ -57,6 +57,14 @@ class AccommodationType(models.Model):
 
 # hunting settings
 class Species(models.Model):
+    TYPE = (
+        ("MAIN", "Main Species"),
+        ("NORMAL", "Normal Species"),
+    )
+
+    type = models.CharField(
+        max_length=100, null=True, blank=True, choices=TYPE, default="NORMAL"
+    )
     name = models.CharField(max_length=100, unique=True)
     scientific_name = models.CharField(max_length=100, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
@@ -455,6 +463,8 @@ class HuntingPriceTypePackage(models.Model):
 
 class Seasons(models.Model):
     name = models.CharField(max_length=100, unique=True)
+    start_at = models.DateField(null=True, blank=True)
+    end_at = models.DateField(null=True, blank=True)
     description = models.TextField()
 
     class Meta:
@@ -462,7 +472,7 @@ class Seasons(models.Model):
         db_table = "seasons"
 
     def __str__(self):
-        return self.name
+        return f"{self.name}" + f"({self.start_at} - {self.end_at})"
 
 
 class SalesPackageSpecies(models.Model):

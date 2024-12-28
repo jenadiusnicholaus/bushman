@@ -35,6 +35,7 @@ from bm_hunting_settings.serializers import (
     CreateLocationSerializer,
     CreateRegulatoryHuntingPackageSerializers,
     CreateRegulatoryHuntingPackageSpeciesSerializers,
+    CreateSeasonsSerializer,
     EntityCategoriesSerializer,
     GetAccommodationTypeSerializer,
     GetContactTypeSerializer,
@@ -68,7 +69,10 @@ from sales.models import (
 from sales.serializers.sales_inquiries_serializers import GetEntitySerializers
 from rest_framework import status
 
+from utils.handler_season_creations import SeasonCreationHandler
+
 logger = logging.getLogger(__name__)
+from django.db.models import Case, When, IntegerField
 
 
 @api_view(["GET"])
@@ -110,6 +114,7 @@ class HuntingTypesViewSets(viewsets.ModelViewSet):
     serializer_class = GetHuntingTypeSerializer
     permission_classes = [IsAuthenticated]
 
+
 class UnitsViewsSet(viewsets.ModelViewSet):
     queryset = UnitOfMeasurements.objects.all()
     serializer_class = UnitOfMeasurementsSerializer
@@ -146,6 +151,19 @@ class SeasonsViewSets(viewsets.ModelViewSet):
     queryset = Seasons.objects.all()
     permission_classes = [IsAuthenticated]
 
+    def list(self, request, *args, **kwargs):
+        try:
+            seasons = SeasonCreationHandler.create_seasons(self, request)
+        except Exception as e:
+            return Response(
+                {"detail": f"Error creating seasons: {e}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
 
 class DocumentTypesViewSets(viewsets.ModelViewSet):
     queryset = Doctype.objects.all()
@@ -168,7 +186,18 @@ class SpeciesListView(viewsets.ModelViewSet):
 
     def list(self, request):
         area_id = self.request.query_params.get("area_id", None)
-        queryset = Species.objects.all()
+
+        # Get queryset while prioritizing Type 'MAIN'
+        queryset = Species.objects.annotate(
+            sort_order=Case(
+                When(type="MAIN", then=0),  # Assign highest priority to 'MAIN'
+                When(type="NORMAL", then=1),  # Assign lower priority to 'NORMAL'
+                output_field=IntegerField(),
+            )
+        ).order_by(
+            "sort_order"
+        )  # Sort by the custom sort order
+
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
@@ -372,6 +401,7 @@ class LicenceAreaSpeciesView(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         area_id = self.request.query_params.get("area_id", None)
         licence_id = self.request.query_params.get("licence_id", None)
+
         if area_id == "null" or licence_id == "null":
             return Response(
                 {
@@ -390,9 +420,25 @@ class LicenceAreaSpeciesView(viewsets.ModelViewSet):
         )
         species_ids = [species.species.id for species in area_species]
 
-        lencence_species = self.get_queryset().filter(
-            r_hunting_package__id=licence_id,
-            species__id__in=species_ids,
+        # Update lencence_species to prioritize Type 'MAIN'
+        lencence_species = (
+            self.get_queryset()
+            .filter(
+                r_hunting_package__id=licence_id,
+                species__id__in=species_ids,
+            )
+            .annotate(
+                sort_order=Case(
+                    When(
+                        species__type="MAIN", then=0
+                    ),  # Assign highest priority to 'MAIN'
+                    When(
+                        species__type="NORMAL", then=1
+                    ),  # Assign lower priority to 'NORMAL'
+                    output_field=IntegerField(),
+                )
+            )
+            .order_by("sort_order")
         )
 
         serializer = self.get_serializer(lencence_species, many=True)

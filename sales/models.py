@@ -83,7 +83,7 @@ class SalesInquiry(models.Model):
 
     create_date = models.DateTimeField(default=timezone.now)
     code = models.CharField(max_length=100, unique=True, null=True, blank=True)
-    season = models.ForeignKey(Seasons, on_delete=models.CASCADE, null=True)
+    season = models.ForeignKey(Seasons, on_delete=models.SET_NULL, null=True)
     remarks = models.TextField(max_length=500, null=True, blank=True)
     updated_date = models.DateTimeField(auto_now=True)
     created_date = models.DateTimeField(default=timezone.now)

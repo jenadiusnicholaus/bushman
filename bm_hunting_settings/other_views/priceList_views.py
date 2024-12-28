@@ -18,6 +18,7 @@ from ..other_serializers.price_list_serializers import (
 from ..models import (
     HuntingPriceList,
     HuntingPriceTypePackage,
+    Seasons,
 )
 
 from rest_framework import viewsets
@@ -44,12 +45,19 @@ class CreatePriceListViewSet(viewsets.ModelViewSet):
         #     "description": request.data.get("description"),
         #     "sales_quota": request.data.get("sales_quota_id"),
         # }
+        season_id = request.data.get("season_id")
+        try:
+            seasons = Seasons.objects.get(id=season_id)
+        except Seasons.DoesNotExist:
+            return Response(
+                {"message": "Season does not exist"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         price_list_data = {
             "area": request.data.get("area"),
             "user": request.user.id,
-            "start_date": currentQuuta.current_quota.start_date,
-            "end_date": currentQuuta.current_quota.end_date,
+            "start_date": seasons.start_at,
+            "end_date": seasons.end_at,
         }
         price_list_type_data = {
             "amount": request.data.get("amount"),
