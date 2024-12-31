@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from bm_hunting_settings.models import (
-    AccommodationType,
     Country,
     Currency,
     GeoLocationCoordinates,
@@ -9,6 +8,7 @@ from bm_hunting_settings.models import (
     Nationalities,
     RegulatoryHuntingPackageSpecies,
     RegulatoryHuntingpackage,
+    SafaryExtras,
     Seasons,
     Species,
     UnitOfMeasurements,
@@ -20,6 +20,7 @@ from sales.models import (
     EntityCategory,
     PaymentMethod,
 )
+from sales_confirmation.models import AccommodationType
 
 
 class GetCurrencySerializer(serializers.ModelSerializer):
@@ -221,4 +222,24 @@ class GetDoctypeSerializer(serializers.ModelSerializer):
 class UnitOfMeasurementsSerializer(serializers.ModelSerializer):
     class Meta:
         model = UnitOfMeasurements
+        fields = "__all__"
+
+
+class GetSafaryExtrasSerializer(serializers.ModelSerializer):
+    currency = GetCurrencySerializer()
+
+    class Meta:
+        model = SafaryExtras
+        fields = "__all__"
+
+
+class CreateSafaryExtrasSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SafaryExtras
+        fields = "__all__"
+
+
+class UpdateSafaryExtrasSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SafaryExtras
         fields = "__all__"

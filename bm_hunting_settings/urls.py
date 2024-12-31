@@ -4,6 +4,7 @@ from django.urls import include
 from .views import (
     EntityCateriesView,
     HutingAreaViewSets,
+    SafaryExtrasViewSets,
     SpeciesListView,
     AccommodationTypeViewSets,
     PaymentMethodViewSets,
@@ -17,6 +18,7 @@ from .views import (
     LicenceAreaSpeciesView,
     SalesPackageSpeciesView,
     UnitsViewsSet,
+    entityBySalesEquiry,
 )
 from .views import country_list, nationalities, contactTypes
 from .other_views.priceList_views import PricesListListView, CreatePriceListViewSet
@@ -60,6 +62,7 @@ router.register(
 )
 
 router.register(r"units", UnitsViewsSet, basename="units")
+router.register(r"safari-extras-vset", SafaryExtrasViewSets, basename="safary-extras")
 
 
 urlpatterns = [
@@ -67,4 +70,5 @@ urlpatterns = [
     path("countries/", country_list, name="country-list"),
     path("nationalities/", nationalities, name="nationalities"),
     path("contact-types/", contactTypes, name="contact_types"),
+    path("sales-inquiry-entity/", entityBySalesEquiry, name="species_list"),
 ]

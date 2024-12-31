@@ -95,63 +95,6 @@ class QuotaHuntingAreaSpeciesViewSets(viewsets.ModelViewSet):
     serializer_class = QuotaHuntingAreaSpeciesSerializers
     permission_classes = [IsAuthenticated]
 
-    # def list(self, request, *args, **kwargs):
-    #     current_year = timezone.now().year
-    #     quota_id = request.query_params.get("quota_id")
-    #     species_id = request.query_params.get("species_id")
-    #     area_id = request.query_params.get("area_id")
-
-    #     # Initialize the queryset with all species
-    #     querySet = self.get_queryset()
-
-    #     # Handle 'null' strings and convert them to None
-    #     quota_id = None if quota_id == "null" else quota_id
-    #     species_id = None if species_id == "null" else species_id
-    #     area_id = None if area_id == "null" else area_id
-
-    #     current_quota = None
-
-    #     # If no filtering criteria are provided, filter for quotas that start in the current year
-    #     if not quota_id and not species_id and not area_id:
-    #         querySet = querySet.filter(quota__start_date__year=current_year)
-    #         current_quota = Quota.objects.filter(start_date__year=current_year).first()
-
-    #     # Apply quota_id filter if provided
-    #     if quota_id not in [None, ""]:
-    #         querySet = querySet.filter(quota_id=quota_id)
-    #         current_quota = Quota.objects.filter(id=quota_id).first()
-
-    #     # Apply species_id filter if it is not "all" and not None or empty
-    #     if species_id not in [None, ""] and species_id != "all":
-    #         querySet = querySet.filter(species_id=species_id)
-
-    #     # Apply area_id filter if it is not "all" and not None or empty
-    #     if area_id not in [None, ""] and area_id != "all":
-    #         querySet = querySet.filter(area_id=area_id)
-
-    #     # Serialize the resulting queryset
-    #     serializer = self.get_serializer(querySet, many=True)
-
-    #     # Generate PDF title
-    #     pdf_title = (
-    #         f"Quota report for {current_quota.name}, Start: {current_quota.start_date} End: {current_quota.end_date}"
-    #         if current_quota
-    #         else "Quota"
-    #     )
-    #     pdf_response = QuotaPDF.generate_pdf(
-    #         serializer.data, return_type="base64", title=pdf_title
-    #     )
-
-    #     # print(pdf_response)
-
-    #     # Combine response data
-    #     response_data = {
-    #         "data": serializer.data,
-    #         "pdf": pdf_response.get("pdf"),
-    #     }
-
-    #     return Response(response_data, status=status.HTTP_200_OK)
-
     def list(self, request, *args, **kwargs):
         current_year = timezone.now().year
         quota_id = request.query_params.get("quota_id")

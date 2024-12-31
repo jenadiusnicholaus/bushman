@@ -2,15 +2,24 @@ from rest_framework import viewsets
 
 
 from sales_confirmation.models import (
+    SalesConfirmationAccommodation,
     SalesConfirmationProposal,
+    SalesConfirmationProposalSafaryExtras,
     SalesConfirmationProposalStatus,
     SalesQuotaSpeciesStatus,
 )
 from sales_confirmation.serializers import (
+    CreateAccommodationAddressSerializer,
+    CreateAccommodationCostSerializer,
+    CreateAccommodationTypeSerializer,
     CreateInstallmentSerializer,
+    CreateSalesConfirmationAccommodationSerializer,
     CreateSalesConfirmationProposalItinerarySerializer,
     CreateSalesConfirmationProposalPackageSerializer,
+    CreateSalesConfirmationProposalSafaryExtrasSerializer,
     CreateSalesConfirmationProposalSerializer,
+    GetSalesConfirmationAccommodationSerializer,
+    GetSalesConfirmationProposalSafaryExtrasSerializer,
     GetSalesConfirmationProposalSerializer,
     GetSalesConfirmationProposalStatusSerializer,
     GetSalesQuotaSpeciesStatusSerializer,
@@ -171,7 +180,7 @@ class SalesConfirmation(viewsets.ModelViewSet):
 
         if payment_doc is not None and payment_doc != "undefined":
             documents.append({"type": "payment_receipt", "file": payment_doc})
-
+        saved_doc = None
         if len(documents) > 0:
             for doc in documents:
                 doc_data = {
@@ -211,6 +220,7 @@ class SalesConfirmation(viewsets.ModelViewSet):
                 status_obj,
             )
         except Exception as e:
+            saved_doc.delete()
             return Response(
                 {"message": f"{e}"},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -240,3 +250,143 @@ class GetCalendaStats(viewsets.ModelViewSet):
     queryset = SalesQuotaSpeciesStatus.objects.all()
     permission_classes = [IsAuthenticated]
     serializer_class = GetSalesQuotaSpeciesStatusSerializer
+
+
+class SalesConfirmationProposalSafaryExtrasViewSets(viewsets.ModelViewSet):
+    queryset = SalesConfirmationProposalSafaryExtras.objects.all()
+    serializer_class = GetSalesConfirmationProposalSafaryExtrasSerializer
+    permission_classes = [IsAuthenticated]
+
+    def list(self, request, *args, **kwargs):
+        sales_inquiry_id = request.query_params.get("sales_inquiry_id")
+        # get all huting areas
+        querySet = self.get_queryset()
+
+        if sales_inquiry_id is not None:
+            querySet = querySet.filter(sales_inquiry__id=sales_inquiry_id)
+        serializer = self.get_serializer(querySet, many=True)
+        return Response(serializer.data)
+
+    def create(self, request, *args, **kwargs):
+
+        extras = request.data.get("safary_extras")
+        if extras is None:
+            return Response(
+                {"message": "Safary extras is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        with transaction.atomic():
+            for extra in extras:
+
+                data = {
+                    "safari_extras": extra.get("safari_extras_id"),
+                    "sales_inquiry": extra.get("sales_inquiry_id"),
+                    "account": extra.get("account_id"),
+                }
+
+                create_proposal_sz = (
+                    CreateSalesConfirmationProposalSafaryExtrasSerializer(data=data)
+                )
+                if not create_proposal_sz.is_valid():
+                    # delete all created proposal if any error occur
+
+                    return Response(
+                        create_proposal_sz.errors, status=status.HTTP_400_BAD_REQUEST
+                    )
+
+                proposal = create_proposal_sz.save()
+
+            return Response(
+                {"message": "Safari extras created successfully"},
+                status=status.HTTP_201_CREATED,
+            )
+
+
+class SalesConfirmationAccommodationViewSets(viewsets.ModelViewSet):
+    queryset = SalesConfirmationAccommodation.objects.all()
+    serializer_class = GetSalesConfirmationAccommodationSerializer
+    permission_classes = [IsAuthenticated]
+
+    def list(self, request, *args, **kwargs):
+        sales_inquiry_id = request.query_params.get("sales_inquiry_id")
+        # get all huting areas
+        querySet = self.get_queryset()
+        if sales_inquiry_id is not None:
+            querySet = querySet.filter(sales_inquiry__id=sales_inquiry_id)
+        serializer = self.get_serializer(querySet, many=True)
+        return Response(serializer.data)
+
+    def create(self, request, *args, **kwargs):
+        sales_inquiry_id = request.data.get("sales_inquiry_id")
+
+        type_data = {
+            "name": request.data.get("type_name"),
+        }
+
+        address_data = {
+            "street": request.data.get("address_street"),
+            "city": request.data.get("address_city"),
+            "zipcode": request.data.get("address_zipcode"),
+        }
+
+        accommodation_data = {
+            "sales_inquiry": sales_inquiry_id,
+            "entity": request.data.get("entity_id"),
+            "type": None,
+            "address": None,
+            "booking_number": request.data.get("booking_number"),
+            "check_in": request.data.get("check_in"),
+            "check_out": request.data.get("check_out"),
+        }
+
+        cost_data = {
+            "accommodation": None,
+            "account": request.data.get("account_id"),
+            "amount": request.data.get("amount"),
+            "currency": request.data.get("currency"),
+        }
+
+        with transaction.atomic():
+            type_serializer = CreateAccommodationTypeSerializer(data=type_data)
+            if not type_serializer.is_valid():
+                return Response(
+                    type_serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                )
+
+            type_obj = type_serializer.save()
+            address_serializer = CreateAccommodationAddressSerializer(data=address_data)
+            if not address_serializer.is_valid():
+                type_obj.delete()
+                return Response(
+                    address_serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                )
+
+            address_obj = address_serializer.save()
+            accommodation_data["type"] = type_obj.id
+            accommodation_data["address"] = address_obj.id
+            accommodation_serializer = CreateSalesConfirmationAccommodationSerializer(
+                data=accommodation_data
+            )
+            if not accommodation_serializer.is_valid():
+                address_obj.delete()
+                type_obj.delete()
+                return Response(
+                    accommodation_serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                )
+
+            accommodation_obj = accommodation_serializer.save()
+            cost_data["accommodation"] = accommodation_obj.id
+            cost_serializer = CreateAccommodationCostSerializer(data=cost_data)
+            if not cost_serializer.is_valid():
+                accommodation_obj.delete()
+                address_obj.delete()
+                type_obj.delete()
+                return Response(
+                    cost_serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                )
+
+            cost_obj = cost_serializer.save()
+            return Response(
+                {"message": "Accommodation created successfully"},
+                status=status.HTTP_201_CREATED,
+            )

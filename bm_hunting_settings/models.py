@@ -43,16 +43,16 @@ class Quota(models.Model):
         return self.name
 
 
-class AccommodationType(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-    description = models.TextField(null=True, blank=True)
+# class AccommodationType(models.Model):
+#     name = models.CharField(max_length=100, unique=True)
+#     description = models.TextField(null=True, blank=True)
 
-    class Meta:
-        verbose_name_plural = "Accommodation Types"
-        db_table = "accommodation_types"
+#     class Meta:
+#         verbose_name_plural = "Accommodation Types"
+#         db_table = "accommodation_types"
 
-    def __str__(self):
-        return self.name
+#     def __str__(self):
+#         return self.name
 
 
 # hunting settings
@@ -695,6 +695,67 @@ class Country(models.Model):
     class Meta:
         verbose_name_plural = "Countries"
         db_table = "countries"
+
+    def __str__(self) -> str:
+        return self.name
+
+
+class SafaryExtras(models.Model):
+    PER_CHOICES = (
+        ("PER_HOUR", "Per Hour"),
+        ("PER_DAY", "Per Day"),
+        ("PER_PERSON", "Per Person"),
+        ("PER_ROUND", "Per Round"),
+    )
+    name = models.CharField(max_length=100, unique=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    currency = models.ForeignKey(
+        Currency,
+        on_delete=models.CASCADE,
+        related_name="safary_extras_currency_set",
+        null=True,
+        blank=True,
+    )
+    season = models.ForeignKey(
+        Seasons,
+        related_name="safary_extras_season_set",
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+    )
+    charges_per = models.CharField(
+        max_length=255, null=True, blank=True, choices=PER_CHOICES
+    )
+    description = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
+
+    class Meta:
+        verbose_name_plural = "Safary Extras"
+        db_table = "safary_extras"
+
+    def __str__(self) -> str:
+        return self.name
+
+
+class SalesItineraryPriceList(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    currency = models.ForeignKey(
+        Currency,
+        on_delete=models.CASCADE,
+        related_name="salestinerary_price_list_currency_set",
+    )
+    season = models.ManyToManyField(
+        Seasons, related_name="salestinerary_price_list_season_set"
+    )
+    description = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
+
+    class Meta:
+        verbose_name_plural = "Sales Itinary"
+        db_table = "sales_itinary"
 
     def __str__(self) -> str:
         return self.name

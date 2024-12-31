@@ -92,7 +92,7 @@ class TrackSpeciesStatus:
 
                         raise ValueError(
                             f"Not enough quantity to reduce for species {species.species.name}. "
-                            f"Current: {current_quantity}, Attempted: {species.quantity}"
+                            f"Current: {current_quantity}"
                         )
 
                 # Handle 'confirmed' and 'completed' statuses

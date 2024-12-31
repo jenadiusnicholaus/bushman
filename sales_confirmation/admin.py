@@ -13,7 +13,12 @@ from .models import (
     SalesConfirmationCompanions,
     SalesConfirmationProposalObserver,
     GameActivityProfessionalHunter,
-    SalesConfirmationContract
+    SalesConfirmationContract,
+    SalesConfirmationProposalSafaryExtras,
+    AccommodationType,
+    AccommodationAddress,
+    SalesConfirmationAccommodation,
+    AccommodationCost,
 )
 
 admin.site.register(SalesConfirmationProposal)
@@ -30,3 +35,8 @@ admin.site.register(SalesConfirmationCompanions)
 admin.site.register(SalesConfirmationProposalObserver)
 admin.site.register(GameActivityProfessionalHunter)
 admin.site.register(SalesConfirmationContract)
+admin.site.register(SalesConfirmationProposalSafaryExtras)
+admin.site.register(AccommodationType)
+admin.site.register(AccommodationAddress)
+admin.site.register(SalesConfirmationAccommodation)
+admin.site.register(AccommodationCost)

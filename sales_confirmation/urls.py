@@ -2,10 +2,12 @@ from django.urls import path
 from rest_framework import routers
 from django.urls import include
 from .views import (
+    SalesConfirmationProposalSafaryExtrasViewSets,
     SalesConfirmationViewSet,
     CalculateTotalSalesAmount,
     SalesConfirmation,
     GetCalendaStats,
+    SalesConfirmationAccommodationViewSets,
 )
 
 from .other_views.sales_conf_contract_views import (
@@ -63,6 +65,15 @@ router.register(
     r"sales-confirmation-proposal-observers-vset",
     SalesConfirmationProposalObserversViewSets,
     basename="sales-confirmation-proposal-observers",
+)
+
+router.register(
+    r"client-safari-extras-vset",
+    SalesConfirmationProposalSafaryExtrasViewSets,
+    basename="initiate-client-game",
+)
+router.register(
+    r"sales-confirmation-accommodation-vset", SalesConfirmationAccommodationViewSets
 )
 
 urlpatterns = [

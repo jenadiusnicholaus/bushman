@@ -7,7 +7,6 @@ from rest_framework import viewsets
 
 from authentication.permissions import IsAdmin
 from bm_hunting_settings.models import (
-    AccommodationType,
     Country,
     Currency,
     GeoLocationCoordinates,
@@ -19,6 +18,7 @@ from bm_hunting_settings.models import (
     QuotaHuntingAreaSpecies,
     RegulatoryHuntingPackageSpecies,
     RegulatoryHuntingpackage,
+    SafaryExtras,
     SalesPackageSpecies,
     Seasons,
     Species,
@@ -35,6 +35,7 @@ from bm_hunting_settings.serializers import (
     CreateLocationSerializer,
     CreateRegulatoryHuntingPackageSerializers,
     CreateRegulatoryHuntingPackageSpeciesSerializers,
+    CreateSafaryExtrasSerializer,
     CreateSeasonsSerializer,
     EntityCategoriesSerializer,
     GetAccommodationTypeSerializer,
@@ -44,6 +45,7 @@ from bm_hunting_settings.serializers import (
     GetPaymentMethodSerializer,
     GetRegulatoryHuntingPackageSerializers,
     GetRegulatoryHuntingPackageSpeciesSerializers,
+    GetSafaryExtrasSerializer,
     GetSeasonsSerializer,
     HutingAreaSerializers,
     NationalitiesSerializeers,
@@ -69,6 +71,10 @@ from sales.models import (
 from sales.serializers.sales_inquiries_serializers import GetEntitySerializers
 from rest_framework import status
 
+from sales_confirmation.models import (
+    AccommodationType,
+    SalesConfirmationProposalSafaryExtras,
+)
 from utils.handler_season_creations import SeasonCreationHandler
 
 logger = logging.getLogger(__name__)
@@ -95,6 +101,39 @@ def contactTypes(request):
     serializers = GetContactTypeSerializer(contact_types, many=True)
 
     return Response(serializers.data)
+
+
+# from rest_framework.decorators import api_view
+# from rest_framework.response import Response
+# from .models import Entity
+# from .serializers import GetEntitySerializers
+
+
+@api_view(["GET"])
+def entityBySalesEquiry(request):
+    sales_inquiry_id = request.query_params.get("sales_inquiry_id", None)
+
+    if sales_inquiry_id is None:
+        return Response({"error": "sales_inquiry_id is required"}, status=400)
+
+    # Filter entities based on the provided sales_inquiry_id
+    observers = Entity.objects.filter(
+        sales_confirmation_proposal_observer_set__sales_inquiry__id=sales_inquiry_id
+    )
+    companionns = Entity.objects.filter(
+        companions_set__sales_inquiry__id=sales_inquiry_id
+    )
+    main_hunter = Entity.objects.filter(sales_inquiry_entity_set__id=sales_inquiry_id)
+
+    # Combine the QuerySets using the union operator
+    combined_entities = (
+        observers | companionns | main_hunter
+    )  # Merge all three QuerySets
+
+    # Serialize the combined results
+    serializer = GetEntitySerializers(combined_entities, many=True)
+
+    return Response(serializer.data)
 
 
 class AccommodationTypeViewSets(viewsets.ModelViewSet):
@@ -469,3 +508,36 @@ class SalesPackageSpeciesView(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(package_species, many=True)
         return Response(serializer.data, status=200)
+
+
+class SafaryExtrasViewSets(viewsets.ModelViewSet):
+    queryset = SafaryExtras.objects.filter().order_by("-created_at")
+    serializer_class = GetSafaryExtrasSerializer
+    permission_classes = [IsAuthenticated]
+
+    def list(self, request, *args, **kwargs):
+        # get all huting areas
+        querySet = self.get_queryset()
+        serializer = self.get_serializer(querySet, many=True)
+        return Response(serializer.data)
+
+    def create(self, request, *args, **kwargs):
+        data = {
+            "name": request.data.get("name"),
+            "amount": request.data.get("amount"),
+            "season": request.data.get("season_id"),
+            "currency": request.data.get("currency_id"),
+            "charges_per": request.data.get("charges_per"),
+            "description": request.data.get("description"),
+        }
+
+        create_extras_sz = CreateSafaryExtrasSerializer(data=data)
+        if not create_extras_sz.is_valid():
+            return Response(create_extras_sz.errors, status=400)
+
+        extras = create_extras_sz.save()
+
+        return Response(
+            {"message": "Safary extras created successfully"},
+            status=status.HTTP_201_CREATED,
+        )

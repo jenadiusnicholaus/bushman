@@ -8,6 +8,7 @@ from bm_hunting_settings.other_serializers.price_list_serializers import (
 from bm_hunting_settings.serializers import (
     GetLocationSerializer,
     GetRegulatoryHuntingPackageSerializers,
+    GetSafaryExtrasSerializer,
     HutingAreaSerializers,
     SpeciesSerializer,
 )
@@ -17,12 +18,16 @@ from sales.serializers.sales_inquiries_serializers import (
     GetSalesInquirySerializers,
 )
 from sales_confirmation.models import (
+    AccommodationAddress,
+    AccommodationCost,
+    AccommodationType,
     EntityContractPermitDates,
     EntityContractPermit,
     GameActivity,
     GameActivityProfessionalHunter,
     GameKilledActivity,
     Installment,
+    SalesConfirmationAccommodation,
     SalesConfirmationCompanions,
     SalesConfirmationContract,
     SalesConfirmationProposal,
@@ -31,6 +36,7 @@ from sales_confirmation.models import (
     SalesConfirmationProposalItinerary,
     SalesConfirmationProposalObserver,
     SalesConfirmationProposalPackage,
+    SalesConfirmationProposalSafaryExtras,
     SalesConfirmationProposalStatus,
     SalesQuotaSpeciesStatus,
 )
@@ -508,8 +514,6 @@ class UpdateSalesConfirmationProposalObserverSerializer(serializers.ModelSeriali
 
 
 # --------------------- companion itinerary serializer - #
-
-
 class GetSalesConfirmationProposalCompanionItinerarySerializer(
     serializers.ModelSerializer
 ):
@@ -531,4 +535,113 @@ class UpdateSalesConfirmationProposalCompanionItinerarySerializer(
 ):
     class Meta:
         model = SalesConfirmationProposalCompanionItinerary
+        fields = "__all__"
+
+
+class GetSalesConfirmationProposalSafaryExtrasSerializer(serializers.ModelSerializer):
+    safari_extras = GetSafaryExtrasSerializer()
+
+    class Meta:
+        model = SalesConfirmationProposalSafaryExtras
+        fields = "__all__"
+
+
+class CreateSalesConfirmationProposalSafaryExtrasSerializer(
+    serializers.ModelSerializer
+):
+    class Meta:
+        model = SalesConfirmationProposalSafaryExtras
+        fields = "__all__"
+
+
+class UpdateSalesConfirmationProposalSafaryExtrasSerializer(
+    serializers.ModelSerializer
+):
+    class Meta:
+        model = SalesConfirmationProposalSafaryExtras
+        fields = "__all__"
+
+
+# - AccommodationType- #
+class GetAccommodationTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AccommodationType
+        fields = "__all__"
+
+
+class CreateAccommodationTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AccommodationType
+        fields = "__all__"
+
+
+class UpdateAccommodationTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AccommodationType
+        fields = "__all__"
+
+
+class GetAccommodationAddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AccommodationAddress
+        fields = "__all__"
+
+
+class CreateAccommodationAddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AccommodationAddress
+        fields = "__all__"
+
+
+class UpdateAccommodationAddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AccommodationAddress
+        fields = "__all__"
+
+
+class GetSalesConfirmationAccommodationSerializer(serializers.ModelSerializer):
+    entity = GetEntitySerializers()
+    type = GetAccommodationTypeSerializer()
+    address = GetAccommodationAddressSerializer()
+    cost = serializers.SerializerMethodField()
+
+    def get_cost(self, obj):
+        cost_obj = obj.accommodation_cost_set.all()
+        if len(cost_obj) > 0:
+            return GetAccommodationCostSerializer(cost_obj, many=True).data
+        else:
+            return []
+
+    class Meta:
+        model = SalesConfirmationAccommodation
+        fields = "__all__"
+
+
+class CreateSalesConfirmationAccommodationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SalesConfirmationAccommodation
+        fields = "__all__"
+
+
+class UpdateSalesConfirmationAccommodationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SalesConfirmationAccommodation
+        fields = "__all__"
+
+
+class GetAccommodationCostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AccommodationCost
+        fields = "__all__"
+
+
+class CreateAccommodationCostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AccommodationCost
+        fields = "__all__"
+
+
+class UpdateAccommodationCostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AccommodationCost
         fields = "__all__"

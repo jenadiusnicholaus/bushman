@@ -1,7 +1,7 @@
+import os
 from django.db import models
 from django.utils import timezone
 from bm_hunting_settings.models import (
-    AccommodationType,
     Country,
     Currency,
     HuntingArea,
@@ -270,9 +270,7 @@ class SalesIquiryPreference(models.Model):
     no_of_companions = models.IntegerField(default=0, blank=True, null=True)
     special_requests = models.CharField(max_length=100, null=True, blank=True)
     budget_estimation = models.DecimalField(max_digits=10, decimal_places=2, null=True)
-    accommodation_type = models.ForeignKey(
-        AccommodationType, on_delete=models.CASCADE, null=True, blank=True
-    )
+
     create_date = models.DateTimeField(default=timezone.now)
     updated_date = models.DateTimeField(auto_now=True)
 
@@ -342,6 +340,18 @@ class Doctype(models.Model):
         return self.name
 
 
+def document_upload_to(instance, filename):
+    """
+    Generate the upload path for the document in the format:
+    doc_type/user_name/files/<filename>
+    """
+    # Access doc_type and user_name from the instance
+    doc_type = instance.doc_type
+    user_name = instance.entity.full_name  # Assuming `Entity` has a `user` field
+    # Construct the path
+    return os.path.join(doc_type, user_name, filename)
+
+
 class Document(models.Model):
     doc_type = (
         ("id_proof", "ID Proof"),
@@ -356,7 +366,7 @@ class Document(models.Model):
     entity = models.ForeignKey(
         Entity, on_delete=models.CASCADE, related_name="entity_document_set"
     )
-    document = models.FileField(upload_to="documents/")
+    document = models.FileField(upload_to=document_upload_to, null=True, blank=True)
     uploaded_at = models.DateTimeField(auto_now_add=True, null=True)
     updated_at = models.DateTimeField(auto_now=True, null=True)
 

@@ -55,7 +55,10 @@ class SalesConfirmationCompanionViewSets(viewsets.ModelViewSet):
         companion_data = {
             "sales_inquiry": request.data.get("sales_inquiry_id"),
             "companion": None,
+            "charter_in": request.data.get("charter_in"),
+            "charter_out": request.data.get("charter_out"),
             "regulatory_package": request.data.get("regulatory_package_id"),
+            "arrival_airport": request.data.get("arrival_airport"),
         }
 
         with transaction.atomic():
@@ -169,6 +172,9 @@ class SalesConfirmationProposalObserversViewSets(viewsets.ModelViewSet):
         observer_data = {
             "sales_inquiry": request.data.get("sales_inquiry_id"),
             "observer": None,
+            "charter_in": request.data.get("charter_in"),
+            "charter_out": request.data.get("charter_out"),
+            "arrival_airport": request.data.get("arrival_airport"),
         }
 
         with transaction.atomic():

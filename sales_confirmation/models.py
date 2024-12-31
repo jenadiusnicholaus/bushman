@@ -1,10 +1,12 @@
 from django.db import models
 
 from bm_hunting_settings.models import (
+    Currency,
     HuntingArea,
     Locations,
     Quota,
     RegulatoryHuntingpackage,
+    SafaryExtras,
     SalesPackages,
     Species,
 )
@@ -557,6 +559,10 @@ class SalesConfirmationCompanions(models.Model):
         related_name="companions_set",
         null=True,
     )
+    charter_in = models.DateTimeField(null=True, blank=True)
+    charter_out = models.DateTimeField(null=True, blank=True)
+    arrival_airport = models.DateTimeField(null=True, blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -584,7 +590,9 @@ class SalesConfirmationProposalObserver(models.Model):
         related_name="sales_confirmation_proposal_observer_set",
         null=True,
     )
-
+    charter_in = models.DateTimeField(null=True, blank=True)
+    charter_out = models.DateTimeField(null=True, blank=True)
+    arrival_airport = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -617,3 +625,112 @@ class SalesConfirmationProposalCompanionItinerary(models.Model):
 
     def __str__(self):
         return f'{self.itinarary} - {self.companion or "No Companion"}'
+
+
+class SalesConfirmationProposalSafaryExtras(models.Model):
+
+    safari_extras = models.ForeignKey(
+        SafaryExtras,
+        on_delete=models.SET_NULL,
+        related_name="extras_set",
+        null=True,
+        blank=True,
+    )
+    sales_inquiry = models.ForeignKey(
+        SalesInquiry,
+        on_delete=models.SET_NULL,
+        related_name="safary_extras_set",
+        null=True,
+        blank=True,
+    )
+    account = models.CharField(max_length=255, null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "Sales Confirmation Safary Extras"
+        db_table = "sales_confirmation_safary_extras"
+        unique_together = ("safari_extras", "sales_inquiry")
+
+    def __str__(self):
+        return f'{self.safari_extras.name or "No Extras"} '
+
+
+class AccommodationType(models.Model):
+    name = models.CharField(max_length=255)
+
+    class Meta:
+        verbose_name_plural = "Accommodation Types"
+        db_table = "accommodation_type"
+
+    def __str__(self):
+        return self.name
+
+
+class AccommodationAddress(models.Model):
+    street = models.CharField(max_length=255, null=True, blank=True)
+    city = models.CharField(max_length=255, null=True, blank=True)
+    state = models.CharField(max_length=255, null=True, blank=True)
+    zipcode = models.CharField(max_length=255, null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = "Accommodation Addresses"
+        db_table = "accommodation_address"
+
+    def __str__(self):
+        return f"{self.street}, {self.city}, {self.state}, {self.zipcode}"
+
+
+class SalesConfirmationAccommodation(models.Model):
+    sales_inquiry = models.ForeignKey(
+        SalesInquiry,
+        on_delete=models.CASCADE,
+        related_name="accommodation_set",
+    )
+    entity = models.ForeignKey(
+        Entity,
+        on_delete=models.CASCADE,
+        related_name="accommodation_set",
+    )
+
+    type = models.ForeignKey(
+        AccommodationType, on_delete=models.SET_NULL, null=True, blank=True
+    )
+    address = models.ForeignKey(
+        AccommodationAddress, on_delete=models.SET_NULL, null=True, blank=True
+    )
+    booking_number = models.CharField(max_length=255, null=True, blank=True)
+
+    check_in = models.DateTimeField(null=True, blank=True)
+    check_out = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "Sales Confirmation Accommodations"
+        db_table = "sales_confirmation_accommodation"
+
+    def __str__(self):
+        return f"{self.sales_inquiry}"
+
+
+class AccommodationCost(models.Model):
+    accommodation = models.ForeignKey(
+        SalesConfirmationAccommodation,
+        on_delete=models.CASCADE,
+        related_name="accommodation_cost_set",
+        null=True,
+        blank=True,
+    )
+
+    account = models.CharField(max_length=255, null=True, blank=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    currency = models.ForeignKey(
+        Currency, on_delete=models.CASCADE, null=True, blank=True
+    )
+    created_at = models.DateTimeField(auto_created=True, auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.name} - {self.cost} {self.currency}"
