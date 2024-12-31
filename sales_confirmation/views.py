@@ -3,6 +3,7 @@ from rest_framework import viewsets
 
 from sales_confirmation.models import (
     SalesConfirmationAccommodation,
+    SalesConfirmationChartersPriceList,
     SalesConfirmationProposal,
     SalesConfirmationProposalSafaryExtras,
     SalesConfirmationProposalStatus,
@@ -14,11 +15,13 @@ from sales_confirmation.serializers import (
     CreateAccommodationTypeSerializer,
     CreateInstallmentSerializer,
     CreateSalesConfirmationAccommodationSerializer,
+    CreateSalesConfirmationChartersPriceListSerializer,
     CreateSalesConfirmationProposalItinerarySerializer,
     CreateSalesConfirmationProposalPackageSerializer,
     CreateSalesConfirmationProposalSafaryExtrasSerializer,
     CreateSalesConfirmationProposalSerializer,
     GetSalesConfirmationAccommodationSerializer,
+    GetSalesConfirmationChartersPriceListSerializer,
     GetSalesConfirmationProposalSafaryExtrasSerializer,
     GetSalesConfirmationProposalSerializer,
     GetSalesConfirmationProposalStatusSerializer,
@@ -319,9 +322,9 @@ class SalesConfirmationAccommodationViewSets(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         sales_inquiry_id = request.data.get("sales_inquiry_id")
 
-        type_data = {
-            "name": request.data.get("type_name"),
-        }
+        # type_data = {
+        #     "name": request.data.get("type_name"),
+        # }
 
         address_data = {
             "street": request.data.get("address_street"),
@@ -332,7 +335,7 @@ class SalesConfirmationAccommodationViewSets(viewsets.ModelViewSet):
         accommodation_data = {
             "sales_inquiry": sales_inquiry_id,
             "entity": request.data.get("entity_id"),
-            "type": None,
+            "type": request.data.get("type_id"),
             "address": None,
             "booking_number": request.data.get("booking_number"),
             "check_in": request.data.get("check_in"),
@@ -347,29 +350,21 @@ class SalesConfirmationAccommodationViewSets(viewsets.ModelViewSet):
         }
 
         with transaction.atomic():
-            type_serializer = CreateAccommodationTypeSerializer(data=type_data)
-            if not type_serializer.is_valid():
-                return Response(
-                    type_serializer.errors, status=status.HTTP_400_BAD_REQUEST
-                )
 
-            type_obj = type_serializer.save()
+            # type_obj = type_serializer.save()
             address_serializer = CreateAccommodationAddressSerializer(data=address_data)
             if not address_serializer.is_valid():
-                type_obj.delete()
                 return Response(
                     address_serializer.errors, status=status.HTTP_400_BAD_REQUEST
                 )
 
             address_obj = address_serializer.save()
-            accommodation_data["type"] = type_obj.id
             accommodation_data["address"] = address_obj.id
             accommodation_serializer = CreateSalesConfirmationAccommodationSerializer(
                 data=accommodation_data
             )
             if not accommodation_serializer.is_valid():
                 address_obj.delete()
-                type_obj.delete()
                 return Response(
                     accommodation_serializer.errors, status=status.HTTP_400_BAD_REQUEST
                 )
@@ -380,7 +375,6 @@ class SalesConfirmationAccommodationViewSets(viewsets.ModelViewSet):
             if not cost_serializer.is_valid():
                 accommodation_obj.delete()
                 address_obj.delete()
-                type_obj.delete()
                 return Response(
                     cost_serializer.errors, status=status.HTTP_400_BAD_REQUEST
                 )
@@ -390,3 +384,37 @@ class SalesConfirmationAccommodationViewSets(viewsets.ModelViewSet):
                 {"message": "Accommodation created successfully"},
                 status=status.HTTP_201_CREATED,
             )
+
+
+class SalesConfirmationChartersPriceViewSet(viewsets.ModelViewSet):
+    queryset = SalesConfirmationChartersPriceList.objects.all()
+    serializer_class = GetSalesConfirmationChartersPriceListSerializer
+    permission_classes = [IsAuthenticated]
+
+    def list(self, request, *args, **kwargs):
+        sales_inquiry_id = request.query_params.get("sales_inquiry_id")
+        # get all huting areas
+        querySet = self.get_queryset()
+        if sales_inquiry_id is not None:
+            querySet = querySet.filter(sales_inquiry__id=sales_inquiry_id)
+        serializer = self.get_serializer(querySet, many=True)
+        return Response(serializer.data)
+
+    def create(self, request, *args, **kwargs):
+        sales_inquiry_id = request.data.get("sales_inquiry_id")
+
+        data = {
+            "charters_price_list": request.data.get("charters_price_list_id"),
+            "sales_inquiry": sales_inquiry_id,
+            "entity": request.data.get("entity_id"),
+        }
+
+        sz = CreateSalesConfirmationChartersPriceListSerializer(data=data)
+        if not sz.is_valid():
+            return Response(sz.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        obj = sz.save()
+        return Response(
+            {"message": "Charters price list created successfully"},
+            status=status.HTTP_201_CREATED,
+        )

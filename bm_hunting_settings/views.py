@@ -19,6 +19,7 @@ from bm_hunting_settings.models import (
     RegulatoryHuntingPackageSpecies,
     RegulatoryHuntingpackage,
     SafaryExtras,
+    SalesChartersPriceList,
     SalesPackageSpecies,
     Seasons,
     Species,
@@ -36,9 +37,9 @@ from bm_hunting_settings.serializers import (
     CreateRegulatoryHuntingPackageSerializers,
     CreateRegulatoryHuntingPackageSpeciesSerializers,
     CreateSafaryExtrasSerializer,
+    CreateSalesChartersPriceListSerializer,
     CreateSeasonsSerializer,
     EntityCategoriesSerializer,
-    GetAccommodationTypeSerializer,
     GetContactTypeSerializer,
     GetCurrencySerializer,
     GetDoctypeSerializer,
@@ -46,6 +47,7 @@ from bm_hunting_settings.serializers import (
     GetRegulatoryHuntingPackageSerializers,
     GetRegulatoryHuntingPackageSpeciesSerializers,
     GetSafaryExtrasSerializer,
+    GetSalesChartersPriceListSerializer,
     GetSeasonsSerializer,
     HutingAreaSerializers,
     NationalitiesSerializeers,
@@ -74,6 +76,10 @@ from rest_framework import status
 from sales_confirmation.models import (
     AccommodationType,
     SalesConfirmationProposalSafaryExtras,
+)
+from sales_confirmation.serializers import (
+    CreateAccommodationTypeSerializer,
+    GetAccommodationTypeSerializer,
 )
 from utils.handler_season_creations import SeasonCreationHandler
 
@@ -137,9 +143,29 @@ def entityBySalesEquiry(request):
 
 
 class AccommodationTypeViewSets(viewsets.ModelViewSet):
-    queryset = AccommodationType.objects.all()
+    queryset = AccommodationType.objects.filter().order_by("-id")
     serializer_class = GetAccommodationTypeSerializer
     permission_classes = [IsAuthenticated]
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def create(self, request, *args, **kwargs):
+        serializer = CreateAccommodationTypeSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        serializer.save()
+        return Response(
+            {
+                "message": "Accommodation type created successfully",
+            },
+            status=status.HTTP_201_CREATED,
+        )
 
 
 class CurrencyViewSets(viewsets.ModelViewSet):
@@ -202,6 +228,29 @@ class SeasonsViewSets(viewsets.ModelViewSet):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+
+class SalesChartersPriceListViewSet(viewsets.ModelViewSet):
+    serializer_class = GetSalesChartersPriceListSerializer
+    queryset = SalesChartersPriceList.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        data = {
+            "name": request.data.get("name", None),
+            "amount": request.data.get("amount", None),
+            "currency": request.data.get("currency_id", None),
+            "season": request.data.get("season_id", None),
+            "description": request.data.get("description", None),
+        }
+        serrializers = CreateSalesChartersPriceListSerializer(data=data)
+        if not serrializers.is_valid():
+            return Response(serrializers.errors, status=status.HTTP_400_BAD_REQUEST)
+        serrializers.save()
+        return Response(
+            {"message": "Price list created successfully"},
+            status=status.HTTP_201_CREATED,
+        )
 
 
 class DocumentTypesViewSets(viewsets.ModelViewSet):

@@ -738,16 +738,20 @@ class SafaryExtras(models.Model):
         return self.name
 
 
-class SalesItineraryPriceList(models.Model):
+class SalesChartersPriceList(models.Model):
     name = models.CharField(max_length=100, unique=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     currency = models.ForeignKey(
         Currency,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         related_name="salestinerary_price_list_currency_set",
+        null=True,
     )
-    season = models.ManyToManyField(
-        Seasons, related_name="salestinerary_price_list_season_set"
+    season = models.ForeignKey(
+        Seasons,
+        related_name="salestinerary_price_list_season_set",
+        on_delete=models.SET_NULL,
+        null=True,
     )
     description = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True)
@@ -755,7 +759,7 @@ class SalesItineraryPriceList(models.Model):
 
     class Meta:
         verbose_name_plural = "Sales Itinary"
-        db_table = "sales_itinary"
+        db_table = "sales_charters_price_list"
 
     def __str__(self) -> str:
         return self.name

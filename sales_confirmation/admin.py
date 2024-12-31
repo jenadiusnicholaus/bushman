@@ -19,6 +19,7 @@ from .models import (
     AccommodationAddress,
     SalesConfirmationAccommodation,
     AccommodationCost,
+    SalesConfirmationChartersPriceList,
 )
 
 admin.site.register(SalesConfirmationProposal)
@@ -40,3 +41,4 @@ admin.site.register(AccommodationType)
 admin.site.register(AccommodationAddress)
 admin.site.register(SalesConfirmationAccommodation)
 admin.site.register(AccommodationCost)
+admin.site.register(SalesConfirmationChartersPriceList)

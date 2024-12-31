@@ -7,6 +7,7 @@ from bm_hunting_settings.models import (
     Quota,
     RegulatoryHuntingpackage,
     SafaryExtras,
+    SalesChartersPriceList,
     SalesPackages,
     Species,
 )
@@ -734,3 +735,35 @@ class AccommodationCost(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.cost} {self.currency}"
+
+
+class SalesConfirmationChartersPriceList(models.Model):
+    charters_price_list = models.ForeignKey(
+        SalesChartersPriceList,
+        on_delete=models.SET_NULL,
+        related_name="charters_price_list_set",
+        null=True,
+        blank=True,
+    )
+    sales_inquiry = models.ForeignKey(
+        SalesInquiry,
+        on_delete=models.SET_NULL,
+        related_name="charters_price_list_set",
+        null=True,
+    )
+    entity = models.ForeignKey(
+        Entity,
+        on_delete=models.SET_NULL,
+        related_name="charters_price_list_set",
+        null=True,
+    )
+
+    created_at = models.DateTimeField(auto_created=True, auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "Sales Confirmation Accommodation Charters Price List"
+        db_table = "sales_confirmation_charters_price"
+
+    def __str__(self):
+        return f"{self.sales_inquiry} - {self.charters_price_list}"

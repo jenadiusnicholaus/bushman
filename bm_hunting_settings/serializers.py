@@ -9,6 +9,7 @@ from bm_hunting_settings.models import (
     RegulatoryHuntingPackageSpecies,
     RegulatoryHuntingpackage,
     SafaryExtras,
+    SalesChartersPriceList,
     Seasons,
     Species,
     UnitOfMeasurements,
@@ -69,10 +70,10 @@ class GetContactTypeSerializer(serializers.ModelSerializer):
 # --- accommodation  types---
 
 
-class GetAccommodationTypeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = AccommodationType
-        fields = "__all__"
+# class GetAccommodationTypeSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = AccommodationType
+#         fields = "__all__"
 
 
 class GetPaymentMethodSerializer(serializers.ModelSerializer):
@@ -242,4 +243,25 @@ class CreateSafaryExtrasSerializer(serializers.ModelSerializer):
 class UpdateSafaryExtrasSerializer(serializers.ModelSerializer):
     class Meta:
         model = SafaryExtras
+        fields = "__all__"
+
+
+# SalesChartersPriceList
+class GetSalesChartersPriceListSerializer(serializers.ModelSerializer):
+    currency = GetCurrencySerializer()
+
+    class Meta:
+        model = SalesChartersPriceList
+        fields = "__all__"
+
+
+class CreateSalesChartersPriceListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SalesChartersPriceList
+        fields = "__all__"
+
+
+class UpdateSalesChartersPriceListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SalesChartersPriceList
         fields = "__all__"

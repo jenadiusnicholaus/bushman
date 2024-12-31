@@ -9,6 +9,7 @@ from bm_hunting_settings.serializers import (
     GetLocationSerializer,
     GetRegulatoryHuntingPackageSerializers,
     GetSafaryExtrasSerializer,
+    GetSalesChartersPriceListSerializer,
     HutingAreaSerializers,
     SpeciesSerializer,
 )
@@ -28,6 +29,7 @@ from sales_confirmation.models import (
     GameKilledActivity,
     Installment,
     SalesConfirmationAccommodation,
+    SalesConfirmationChartersPriceList,
     SalesConfirmationCompanions,
     SalesConfirmationContract,
     SalesConfirmationProposal,
@@ -644,4 +646,24 @@ class CreateAccommodationCostSerializer(serializers.ModelSerializer):
 class UpdateAccommodationCostSerializer(serializers.ModelSerializer):
     class Meta:
         model = AccommodationCost
+        fields = "__all__"
+
+
+class GetSalesConfirmationChartersPriceListSerializer(serializers.ModelSerializer):
+    charters_price_list = GetSalesChartersPriceListSerializer()
+
+    class Meta:
+        model = SalesConfirmationChartersPriceList
+        fields = "__all__"
+
+
+class CreateSalesConfirmationChartersPriceListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SalesConfirmationChartersPriceList
+        fields = "__all__"
+
+
+class UpdateSalesConfirmationChartersPriceListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SalesConfirmationChartersPriceList
         fields = "__all__"

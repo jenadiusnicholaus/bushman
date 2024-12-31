@@ -8,6 +8,7 @@ from .views import (
     SalesConfirmation,
     GetCalendaStats,
     SalesConfirmationAccommodationViewSets,
+    SalesConfirmationChartersPriceViewSet,
 )
 
 from .other_views.sales_conf_contract_views import (
@@ -74,6 +75,12 @@ router.register(
 )
 router.register(
     r"sales-confirmation-accommodation-vset", SalesConfirmationAccommodationViewSets
+)
+
+router.register(
+    r"sales-charters-price-vset",
+    SalesConfirmationChartersPriceViewSet,
+    basename="get-sales-confirmation-charters-price",
 )
 
 urlpatterns = [

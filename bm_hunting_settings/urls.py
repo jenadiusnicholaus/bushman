@@ -18,9 +18,10 @@ from .views import (
     LicenceAreaSpeciesView,
     SalesPackageSpeciesView,
     UnitsViewsSet,
-    entityBySalesEquiry,
+    AccommodationTypeViewSets,
+    SalesChartersPriceListViewSet,
 )
-from .views import country_list, nationalities, contactTypes
+from .views import country_list, nationalities, contactTypes, entityBySalesEquiry
 from .other_views.priceList_views import PricesListListView, CreatePriceListViewSet
 from .other_views.sales_package import SalesPackageViewSet
 
@@ -63,6 +64,11 @@ router.register(
 
 router.register(r"units", UnitsViewsSet, basename="units")
 router.register(r"safari-extras-vset", SafaryExtrasViewSets, basename="safary-extras")
+router.register(
+    r"sales-charters-price-list",
+    SalesChartersPriceListViewSet,
+    basename="sales_charters_price_list",
+)
 
 
 urlpatterns = [
