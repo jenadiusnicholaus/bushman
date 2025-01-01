@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework import viewsets
 
 from bm_hunting_settings.models import Quota
-from utils.utitlities import currentQuuta
+from utils.utitlities import CurrentQuota
 from .serializers import GetQuotaStatsSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -10,7 +10,7 @@ from rest_framework.response import Response
 
 # Create your views here.
 
-current_quota = currentQuuta.current_quota
+current_quota = CurrentQuota.current_quota
 
 
 class QuotaStatsViewSets(viewsets.ModelViewSet):

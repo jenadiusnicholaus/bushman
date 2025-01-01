@@ -51,6 +51,44 @@ def format_any_date(date):
         raise ValueError("Unsupported date type. Must be a string or datetime object.")
 
 
-class currentQuuta:
-    current_year = timezone.now().year
-    current_quota = Quota.objects.filter(start_date__year=current_year).first()
+# from django.utils import timezone
+# from datetime import datetime, timedelta
+# from your_app.models import Quota  # Replace 'your_app' with your actual app name
+
+
+class CurrentQuota:
+    current_date = timezone.now().date()
+
+    # Fetch the current valid quota
+    current_quota = None
+    quotas = Quota.objects.all()
+
+    for q in quotas:
+        if q.end_date >= current_date:  # Check if the quota is still valid
+            current_quota = q
+            break
+
+    # If no valid quota exists, create one
+    if not current_quota:
+        # Define the start and end dates for the new quota
+        current_year = current_date.year
+        start_date = datetime(current_year, 7, 1)  # July 1 of the current year
+        end_date = datetime(current_year + 1, 6, 30)  # June 30 of the next year
+
+        # Check if a quota for this period already exists
+        existing_quota = Quota.objects.filter(
+            start_date=start_date, end_date=end_date
+        ).exists()
+
+        if not existing_quota:
+            # Create the new quota
+            current_quota = Quota.objects.create(
+                start_date=start_date,
+                end_date=end_date,
+                name=f"Quota for {current_year}",
+            )
+            print(f"Created a new quota: {current_quota}")
+        else:
+            print("Quota for the next year already exists.")
+    else:
+        print(f"Current valid quota: {current_quota}")

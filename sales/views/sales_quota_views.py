@@ -20,6 +20,10 @@ from utils.pdf import QuotaPDF
 from rest_framework import status
 from django.db.models import Case, When, IntegerField
 
+from utils.utitlities import CurrentQuota
+
+current_quota = CurrentQuota.current_quota
+
 
 class QuotaViewSets(viewsets.ModelViewSet):
     serializer_class = GetQuotaSerializer
@@ -109,17 +113,15 @@ class QuotaHuntingAreaSpeciesViewSets(viewsets.ModelViewSet):
         species_id = None if species_id == "null" else species_id
         area_id = None if area_id == "null" else area_id
 
-        current_quota = None
-
         # If no filtering criteria are provided, filter for quotas that start in the current year
         if not quota_id and not species_id and not area_id:
-            querySet = querySet.filter(quota__start_date__year=current_year)
-            current_quota = Quota.objects.filter(start_date__year=current_year).first()
+            querySet = querySet.filter(quota__id=current_quota.id)
+            # current_quota = Quota.objects.filter(start_date__year=current_year).first()
 
         # Apply quota_id filter if provided
         if quota_id not in [None, ""]:
             querySet = querySet.filter(quota_id=quota_id)
-            current_quota = Quota.objects.filter(id=quota_id).first()
+            # current_quota = Quota.objects.filter(id=quota_id).first()
 
         # Apply species_id filter if it is not "all" and not None or empty
         if species_id not in [None, ""] and species_id != "all":

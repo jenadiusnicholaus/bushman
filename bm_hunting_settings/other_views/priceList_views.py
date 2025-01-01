@@ -2,7 +2,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from django.db import transaction
 
-from utils.utitlities import currentQuuta
+from utils.utitlities import CurrentQuota
 from ..other_serializers.price_list_serializers import (
     CreateHuntingPackageCompanionsHunterSerializer,
     CreateHuntingPackageOberverHunterSerializer,
