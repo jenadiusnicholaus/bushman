@@ -13,7 +13,6 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # Get all records where quantity is less than 5
         qs = QuotaHuntingAreaSpecies.objects.filter(quantity__lt=5)
-        print(len(qs))
         if len(qs) == 0:
             self.stdout.write(
                 self.style.WARNING("No records found with quantity less than 5")

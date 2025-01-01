@@ -36,15 +36,16 @@ class GetRequisitionSerializer(serializers.ModelSerializer):
             )
 
             status_ids = [status.level.id for status in status]
-
-            print(status)
+            print("++++++++++++status_ids==++=====")
+            print(status_ids)
 
             levels = approval_chain.levels.all()
-            print(levels)
+
+            levels_ids = [level.id for level in levels]
             # get all levels not yet in status and  fins the next level
             next_level = levels.exclude(id__in=status_ids)
-
-            print(next_level)
+            print("++++++++++++next_level_ids==++=====")
+            print(levels_ids)
 
             _next_level = next_level.first()
             serializer = GetApprovalChainLevelsSerializer(_next_level)
