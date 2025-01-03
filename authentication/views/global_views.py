@@ -136,6 +136,12 @@ class UserProfileViewSet(viewsets.ModelViewSet):
                 "message": "Your profile has been deleted successfully"
             },
             status=status.HTTP_200_OK)
+    
+class UsersViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    permission_classes = (IsAuthenticated,)
+    serializer_class = GetUserSerializer
+    
 
 
 

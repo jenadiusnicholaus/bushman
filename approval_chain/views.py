@@ -45,12 +45,6 @@ class ApprovalChainModuleViewSet(viewsets.ModelViewSet):
         # CreateApprovalChainLevelsSerializer
         # CreateApprovalChainSerializer
 
-        approval_chain_module_data = {
-            "name": request.data.get("name"),
-            "description": request.data.get("description"),
-            "active": request.data.get("active"),
-        }
-
         aproval_chain_objects = request.data.get("approval_chain_levels")
         if not aproval_chain_objects:
             return Response(

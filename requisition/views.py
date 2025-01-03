@@ -320,12 +320,12 @@ class RequisitionItemViewSet(viewsets.ModelViewSet):
             "remarks": request.data.get("remarks"),
         }
 
-        RequestItemAccount = {
-            "item": None,
-            "account": request.data.get("account_id"),
-            "currency": request.data.get("currency_id"),
-            "amount": request.data.get("amount"),
-        }
+        # requestItemAccount = {
+        #     "item": None,
+        #     "account": request.data.get("account_id"),
+        #     "currency": request.data.get("currency_id"),
+        #     "amount": request.data.get("amount"),
+        # }
 
         with transaction.atomic():
             serializer = CreateRequestItemSourceSerializer(data=source_data)

@@ -3,6 +3,11 @@ from rest_framework import serializers
 from approval_chain.models import ApprovalChainModule
 from approval_chain.serializers import GetApprovalChainLevelsSerializer
 from authentication.serialisers.profile_serializers import GetUserSerializer
+from bm_hunting_settings.models import UnitOfMeasurements
+from bm_hunting_settings.serializers import (
+    GetCurrencySerializer,
+    UnitOfMeasurementsSerializer,
+)
 from requisition.models import (
     RemarksHistory,
     RequestItem,
@@ -31,21 +36,14 @@ class GetRequisitionSerializer(serializers.ModelSerializer):
             approval_chain = ApprovalChainModule.objects.get(
                 id=obj.approval_chain_module.id
             )
-            status = RequisitionApprovalStatus.objects.filter(
+            status = RequisitionApprovalStatus.objects.get(
                 requisition=obj,
             )
 
-            status_ids = [status.level.id for status in status]
-            print("++++++++++++status_ids==++=====")
-            print(status_ids)
-
             levels = approval_chain.levels.all()
-
-            levels_ids = [level.id for level in levels]
             # get all levels not yet in status and  fins the next level
-            next_level = levels.exclude(id__in=status_ids)
-            print("++++++++++++next_level_ids==++=====")
-            print(levels_ids)
+            next_level = levels.exclude(id__in=[status.level.id])
+            excluded_ids = next_level.values_list("id", flat=True)
 
             _next_level = next_level.first()
             serializer = GetApprovalChainLevelsSerializer(_next_level)
@@ -104,6 +102,15 @@ class UpdateRequestItemSourceSerializer(serializers.ModelSerializer):
 # ---------- End of Serializers for RequestItemSource ----------
 class GetRequestItemSerializer(serializers.ModelSerializer):
     items = serializers.SerializerMethodField()
+    accounts = serializers.SerializerMethodField()
+
+    def get_accounts(self, obj):
+        try:
+            accounts = RequestItemAccount.objects.get(requisition_item=obj)
+        except RequestItemAccount.DoesNotExist:
+            return None
+        serializer = GetRequestItemAccountsSerializer(accounts)
+        return serializer.data
 
     def get_items(self, obj):
         items = obj.item_items_set.all()
@@ -129,6 +136,19 @@ class UpdateRequestItemSerializer(serializers.ModelSerializer):
 
 # ---------- End of Serializers for RequestItem ----------
 class GetRequestItemItemsSerializer(serializers.ModelSerializer):
+    unit_of_measurement = serializers.SerializerMethodField()
+    currency = GetCurrencySerializer()
+
+    def get_unit_of_measurement(self, obj):
+        try:
+            unit_of_measurement = UnitOfMeasurements.objects.get(
+                id=obj.unit_of_measurement.id
+            )
+        except UnitOfMeasurements.DoesNotExist:
+            return None
+        serializer = UnitOfMeasurementsSerializer(unit_of_measurement)
+        return serializer.data
+
     class Meta:
         model = RequestItemItems
         fields = "__all__"
@@ -147,6 +167,8 @@ class UpdateRequestItemItemsSerializer(serializers.ModelSerializer):
 
 
 class GetRequestItemAccountsSerializer(serializers.ModelSerializer):
+    currency = GetCurrencySerializer()
+
     class Meta:
         model = RequestItemAccount
         fields = "__all__"

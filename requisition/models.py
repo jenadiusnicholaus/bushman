@@ -69,7 +69,7 @@ class RequisitionApprovalStatus(models.Model):
         ("REJECTED", "Rejected"),
     )
     requisition = models.ForeignKey(
-        Requisition, on_delete=models.CASCADE, related_name="approval_status_set"
+        Requisition, on_delete=models.CASCADE, related_name="approval_level_status_set"
     )
     level = models.ForeignKey(
         ApprovalChainLevels, on_delete=models.CASCADE, related_name="level_status_set"
