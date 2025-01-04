@@ -19,8 +19,6 @@ from django.utils import timezone
 from utils.pdf import QuotaPDF
 from rest_framework import status
 from django.db.models import Case, When, IntegerField
-from utils.utitlities import CurrentQuota
-
 
 
 class QuotaViewSets(viewsets.ModelViewSet):
@@ -93,11 +91,14 @@ class QuotaViewSets(viewsets.ModelViewSet):
 
 
 class QuotaHuntingAreaSpeciesViewSets(viewsets.ModelViewSet):
+
     queryset = QuotaHuntingAreaSpecies.objects.all()
     serializer_class = QuotaHuntingAreaSpeciesSerializers
     permission_classes = [IsAuthenticated]
 
     def list(self, request, *args, **kwargs):
+        from utils.utitlities import CurrentQuota
+
         current_quota = CurrentQuota.current_quota
 
         current_year = timezone.now().year
