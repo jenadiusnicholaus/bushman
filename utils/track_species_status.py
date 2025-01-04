@@ -10,8 +10,6 @@ from sales_confirmation.models import (
 from sales_confirmation.serializers import UpdateSalesQuotaSpeciesStatusSerializer
 from django.utils import timezone
 
-from utils.utitlities import CurrentQuota
-
 
 class TrackSpeciesStatus:
 
@@ -21,6 +19,8 @@ class TrackSpeciesStatus:
         This function updates the available quantity of species in the QuotaHuntingAreaSpecies
         based on the sold species quantity from the sales inquiry, depending on the status.
         """
+        from utils.utitlities import CurrentQuota
+
         current_quota = CurrentQuota.current_quota
 
         try:
@@ -261,6 +261,8 @@ class TrackSpeciesStatus:
         This function returns the remaining quantity of species in the QuotaHuntingAreaSpecies
         based on the sold species quantity from the sales inquiry, depending on the status.
         """
+        from utils.utitlities import CurrentQuota
+
         current_quota = CurrentQuota.current_quota
 
         # if game_state == "completed":
