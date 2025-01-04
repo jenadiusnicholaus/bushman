@@ -19,7 +19,6 @@ from django.utils import timezone
 from utils.pdf import QuotaPDF
 from rest_framework import status
 from django.db.models import Case, When, IntegerField
-
 from utils.utitlities import CurrentQuota
 
 

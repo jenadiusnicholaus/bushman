@@ -1,8 +1,6 @@
 from datetime import datetime
 from django.utils import timezone
 
-from bm_hunting_settings.models import Quota
-
 
 def format_any_date(date):
     """
@@ -57,6 +55,8 @@ def format_any_date(date):
 
 
 class CurrentQuota:
+    from bm_hunting_settings.models import Quota
+
     current_date = timezone.now().date()
 
     # Fetch the current valid quota
