@@ -37,7 +37,6 @@ from django.utils import timezone
 from django.db.models import Q
 
 from utils.pdf import SalesInquiryPDF
-from utils.utitlities import format_any_date
 
 
 class SalesInquiriesViewSet(viewsets.ModelViewSet):
@@ -48,6 +47,8 @@ class SalesInquiriesViewSet(viewsets.ModelViewSet):
     from django.db.models import Q
 
     def list(self, request, *args, **kwargs):
+        from utils.utitlities import format_any_date
+
         queryset = self.queryset.filter(
             Q(sales_confirmation_proposal__status=None)
             | Q(sales_confirmation_proposal__status__status="pending")
@@ -110,6 +111,8 @@ class SalesInquiriesViewSet(viewsets.ModelViewSet):
     # species preference
 
     def create(self, request, *args, **kwargs):
+        from utils.utitlities import format_any_date
+
         try:
             preferred_date_str = format_any_date(request.data.get("preferred_date"))
         except ValueError as e:
