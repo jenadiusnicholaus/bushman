@@ -31,7 +31,13 @@ SECRET_KEY = config("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["192.168.1.181", "localhost", "127.0.0.1", "trophyapi.japango.co.tz"]
+ALLOWED_HOSTS = [
+    "192.168.1.181",
+    "localhost",
+    "127.0.0.1",
+    "trophyapi.japango.co.tz",
+    "66.29.152.197",
+]
 
 
 # Application definition
