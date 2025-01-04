@@ -22,7 +22,6 @@ from django.db.models import Case, When, IntegerField
 
 from utils.utitlities import CurrentQuota
 
-current_quota = CurrentQuota.current_quota
 
 
 class QuotaViewSets(viewsets.ModelViewSet):
@@ -100,6 +99,8 @@ class QuotaHuntingAreaSpeciesViewSets(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def list(self, request, *args, **kwargs):
+        current_quota = CurrentQuota.current_quota
+
         current_year = timezone.now().year
         quota_id = request.query_params.get("quota_id")
         species_id = request.query_params.get("species_id")
