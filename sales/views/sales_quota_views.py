@@ -23,7 +23,7 @@ from django.db.models import Case, When, IntegerField
 
 class QuotaViewSets(viewsets.ModelViewSet):
     serializer_class = GetQuotaSerializer
-    queryset = Quota.objects.filter().order_by("end_date")
+    queryset = Quota.objects.filter().order_by("-create_at")
     permission_classes = [IsAuthenticated]
 
     def list(self, request, *args, **kwargs):
@@ -40,7 +40,7 @@ class QuotaViewSets(viewsets.ModelViewSet):
                 return Response({"error": "Quota not found"}, status=404)
 
         serializer = self.get_serializer(
-            self.get_queryset().order_by("end_date"), many=True
+            self.get_queryset().order_by("create_at"), many=True
         )
         return Response(serializer.data)
 
