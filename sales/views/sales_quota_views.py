@@ -23,7 +23,7 @@ from django.db.models import Case, When, IntegerField
 
 class QuotaViewSets(viewsets.ModelViewSet):
     serializer_class = GetQuotaSerializer
-    queryset = Quota.objects.filter().order_by("-create_at")
+    queryset = Quota.objects.filter().order_by("end_date")
     permission_classes = [IsAuthenticated]
 
     def list(self, request, *args, **kwargs):
@@ -39,7 +39,9 @@ class QuotaViewSets(viewsets.ModelViewSet):
             except Quota.DoesNotExist:
                 return Response({"error": "Quota not found"}, status=404)
 
-        serializer = self.get_serializer(self.get_queryset().order_by("id"), many=True)
+        serializer = self.get_serializer(
+            self.get_queryset().order_by("end_date"), many=True
+        )
         return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
@@ -108,6 +110,7 @@ class QuotaHuntingAreaSpeciesViewSets(viewsets.ModelViewSet):
 
         # Initialize the queryset with all species
         querySet = self.get_queryset()
+        print(current_quota.name)
 
         # Handle 'null' strings and convert them to None
         quota_id = None if quota_id == "null" else quota_id
