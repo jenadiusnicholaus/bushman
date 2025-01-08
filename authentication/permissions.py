@@ -27,17 +27,17 @@ class IsOwnerOrAdmin(permissions.BasePermission):
     def has_permission(self, request, *args, **kwargs):
         if (
             request.user.is_staff
-            and request.user.groups.filter(name="admin").exists()
-            and request.user.groups.filter(name="director").exists()
+            and request.user.groups.filter(name="admins").exists()
+            and request.user.groups.filter(name="directors").exists()
         ):
             return True
         elif (
-            request.user.is_staff and request.user.groups.filter(name="admin").exists()
+            request.user.is_staff and request.user.groups.filter(name="admins").exists()
         ):
             return True
         elif (
             request.user.is_staff
-            and request.user.groups.filter(name="director").exists()
+            and request.user.groups.filter(name="directors").exists()
         ):
             return True
         else:
@@ -52,7 +52,7 @@ class IsDirector(permissions.BasePermission):
     def has_permission(self, request, *args, **kwargs):
         if (
             request.user.is_staff
-            and request.user.groups.filter(name="director").exists()
+            and request.user.groups.filter(name="directors").exists()
         ):
             return True
         else:
@@ -67,22 +67,22 @@ class IsOwnerOrAdminOrAccountant(permissions.BasePermission):
     def has_permission(self, request, *args, **kwargs):
         if (
             request.user.is_staff
-            and request.user.groups.filter(name="admin").exists()
-            and request.user.groups.filter(name="director").exists()
+            and request.user.groups.filter(name="admins").exists()
+            and request.user.groups.filter(name="directors").exists()
         ):
             return True
         elif (
-            request.user.is_staff and request.user.groups.filter(name="admin").exists()
-        ):
-            return True
-        elif (
-            request.user.is_staff
-            and request.user.groups.filter(name="director").exists()
+            request.user.is_staff and request.user.groups.filter(name="admins").exists()
         ):
             return True
         elif (
             request.user.is_staff
-            and request.user.groups.filter(name="accountant").exists()
+            and request.user.groups.filter(name="directors").exists()
+        ):
+            return True
+        elif (
+            request.user.is_staff
+            and request.user.groups.filter(name="accountants").exists()
         ):
             return True
         else:
@@ -97,41 +97,41 @@ class IsOwnerOrAdminOrDirectorOrOperator(permissions.BasePermission):
     def has_permission(self, request, *args, **kwargs):
         if (
             request.user.is_staff
-            and request.user.groups.filter(name="admin").exists()
-            and request.user.groups.filter(name="director").exists()
-            and request.user.groups.filter(name="operator").exists()
+            and request.user.groups.filter(name="admins").exists()
+            and request.user.groups.filter(name="directors").exists()
+            and request.user.groups.filter(name="operators").exists()
         ):
             return True
         elif (
             request.user.is_staff
-            and request.user.groups.filter(name="admin").exists()
-            and request.user.groups.filter(name="director").exists()
+            and request.user.groups.filter(name="admins").exists()
+            and request.user.groups.filter(name="directors").exists()
         ):
             return True
         elif (
             request.user.is_staff
-            and request.user.groups.filter(name="admin").exists()
-            and request.user.groups.filter(name="operator").exists()
+            and request.user.groups.filter(name="admins").exists()
+            and request.user.groups.filter(name="operators").exists()
         ):
             return True
         elif (
             request.user.is_staff
-            and request.user.groups.filter(name="director").exists()
-            and request.user.groups.filter(name="operator").exists()
+            and request.user.groups.filter(name="directors").exists()
+            and request.user.groups.filter(name="operators").exists()
         ):
             return True
         elif (
-            request.user.is_staff and request.user.groups.filter(name="admin").exists()
-        ):
-            return True
-        elif (
-            request.user.is_staff
-            and request.user.groups.filter(name="director").exists()
+            request.user.is_staff and request.user.groups.filter(name="admins").exists()
         ):
             return True
         elif (
             request.user.is_staff
-            and request.user.groups.filter(name="operator").exists()
+            and request.user.groups.filter(name="directors").exists()
+        ):
+            return True
+        elif (
+            request.user.is_staff
+            and request.user.groups.filter(name="operators").exists()
         ):
             return True
         else:
@@ -144,7 +144,7 @@ class IsAdmin(permissions.BasePermission):
     """
 
     def has_permission(self, request, *args, **kwargs):
-        if request.user.groups.filter(name="admin").exists() and request.user.is_staff:
+        if request.user.groups.filter(name="admins").exists() and request.user.is_staff:
             return True
         else:
             return False
@@ -157,7 +157,7 @@ class IsOperator(permissions.BasePermission):
 
     def has_permission(self, request, *args, **kwargs):
         if (
-            request.user.groups.filter(name="operator").exists()
+            request.user.groups.filter(name="operators").exists()
             and request.user.is_staff
         ):
             return True
@@ -173,7 +173,7 @@ class IsAccountant(permissions.BasePermission):
 
     def has_permission(self, request, *args, **kwargs):
         if (
-            request.user.groups.filter(name="accountant").exists()
+            request.user.groups.filter(name="accountants").exists()
             and request.user.is_staff
         ):
             return True
@@ -191,7 +191,7 @@ class isStoreInCharge(permissions.BasePermission):
 
     def has_permission(self, request, *args, **kwargs):
         if (
-            request.user.groups.filter(name="store_in_charge").exists()
+            request.user.groups.filter(name="store_in_chargers").exists()
             and request.user.is_staff
         ):
             return True
@@ -206,7 +206,7 @@ class isHR(permissions.BasePermission):
     """
 
     def has_permission(self, request, *args, **kwargs):
-        if request.user.groups.filter(name="hr").exists() and request.user.is_staff:
+        if request.user.groups.filter(name="hrs").exists() and request.user.is_staff:
             return True
         else:
             return False
@@ -220,7 +220,7 @@ class isProcurementManager(permissions.BasePermission):
 
     def has_permission(self, request, *args, **kwargs):
         if (
-            request.user.groups.filter(name="procurement_manager").exists()
+            request.user.groups.filter(name="procurement_managers").exists()
             and request.user.is_staff
         ):
             return True
@@ -234,7 +234,10 @@ class isClient(permissions.BasePermission):
     """
 
     def has_permission(self, request, *args, **kwargs):
-        if request.user.groups.filter(name="client").exists() and request.user.is_staff:
+        if (
+            request.user.groups.filter(name="clients").exists()
+            and request.user.is_staff
+        ):
             return True
         else:
             return False
