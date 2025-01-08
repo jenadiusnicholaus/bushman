@@ -1,6 +1,11 @@
 from rest_framework import viewsets
 
 
+from authentication.permissions import (
+    IsOwnerOrAdmin,
+    IsAccountant,
+    IsOwnerOrAdminOrAccountant,
+)
 from sales_confirmation.models import (
     SalesConfirmationAccommodation,
     SalesConfirmationChartersPriceList,
@@ -44,7 +49,7 @@ from utils.pdf import SalesConfirmationPDF
 class SalesConfirmationViewSet(viewsets.ModelViewSet):
     serializer_class = GetSalesConfirmationProposalSerializer
     queryset = SalesConfirmationProposal.objects.all().order_by("-created_date")
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrAdminOrAccountant]
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
@@ -165,10 +170,10 @@ class CalculateTotalSalesAmount(APIView):
         return Response(response_data, status=status.HTTP_200_OK)
 
 
-class SalesConfirmation(viewsets.ModelViewSet):
+class FinalSalesConfirmationStatusViewSet(viewsets.ModelViewSet):
     serializer_class = GetSalesConfirmationProposalStatusSerializer
     queryset = SalesConfirmationProposalStatus.objects.filter().order_by("-created_at")
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrAdminOrAccountant]
 
     def patch(self, request, *args, **kwargs):
         # we save signed document here use UploadDocSerializer
@@ -258,7 +263,7 @@ class GetCalendaStats(viewsets.ModelViewSet):
 class SalesConfirmationProposalSafaryExtrasViewSets(viewsets.ModelViewSet):
     queryset = SalesConfirmationProposalSafaryExtras.objects.all()
     serializer_class = GetSalesConfirmationProposalSafaryExtrasSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrAdminOrAccountant]
 
     def list(self, request, *args, **kwargs):
         sales_inquiry_id = request.query_params.get("sales_inquiry_id")
@@ -308,7 +313,7 @@ class SalesConfirmationProposalSafaryExtrasViewSets(viewsets.ModelViewSet):
 class SalesConfirmationAccommodationViewSets(viewsets.ModelViewSet):
     queryset = SalesConfirmationAccommodation.objects.all()
     serializer_class = GetSalesConfirmationAccommodationSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrAdminOrAccountant]
 
     def list(self, request, *args, **kwargs):
         sales_inquiry_id = request.query_params.get("sales_inquiry_id")
@@ -389,7 +394,7 @@ class SalesConfirmationAccommodationViewSets(viewsets.ModelViewSet):
 class SalesConfirmationChartersPriceViewSet(viewsets.ModelViewSet):
     queryset = SalesConfirmationChartersPriceList.objects.all()
     serializer_class = GetSalesConfirmationChartersPriceListSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrAdminOrAccountant]
 
     def list(self, request, *args, **kwargs):
         sales_inquiry_id = request.query_params.get("sales_inquiry_id")

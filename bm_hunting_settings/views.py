@@ -4,8 +4,9 @@ from django.shortcuts import render
 import logging
 
 from rest_framework import viewsets
+from rest_framework.decorators import api_view, permission_classes
 
-from authentication.permissions import IsAdmin
+from authentication.permissions import IsAdmin, IsOwnerOrAdminOrDirectorOrOperator
 from bm_hunting_settings.models import (
     Country,
     Currency,
@@ -59,7 +60,6 @@ from rest_framework.permissions import IsAuthenticated
 from django_countries import countries
 from django.db import transaction
 
-from rest_framework.decorators import api_view
 
 from sales.models import (
     ContactType,
@@ -88,6 +88,7 @@ from django.db.models import Case, When, IntegerField
 
 
 @api_view(["GET"])
+@permission_classes([IsAuthenticated, IsOwnerOrAdminOrDirectorOrOperator])
 def country_list(request):
     country_choices = Country.objects.all()
     serializers = CountrySerializeers(country_choices, many=True)
@@ -95,6 +96,7 @@ def country_list(request):
 
 
 @api_view(["GET"])
+@permission_classes([IsAuthenticated, IsOwnerOrAdminOrDirectorOrOperator])
 def nationalities(request):
     country_choices = Nationalities.objects.all()
     serializers = NationalitiesSerializeers(country_choices, many=True)
@@ -102,6 +104,7 @@ def nationalities(request):
 
 
 @api_view(["GET"])
+@permission_classes([IsAuthenticated, IsOwnerOrAdminOrDirectorOrOperator])
 def contactTypes(request):
     contact_types = ContactType.objects.all()
     serializers = GetContactTypeSerializer(contact_types, many=True)
@@ -116,7 +119,8 @@ def contactTypes(request):
 
 
 @api_view(["GET"])
-def entityBySalesEquiry(request):
+@permission_classes([IsAuthenticated, IsOwnerOrAdminOrDirectorOrOperator])
+def entityBySalesEnquiry(request):
     sales_inquiry_id = request.query_params.get("sales_inquiry_id", None)
 
     if sales_inquiry_id is None:
@@ -145,7 +149,7 @@ def entityBySalesEquiry(request):
 class AccommodationTypeViewSets(viewsets.ModelViewSet):
     queryset = AccommodationType.objects.filter().order_by("-id")
     serializer_class = GetAccommodationTypeSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrAdminOrDirectorOrOperator]
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
@@ -189,6 +193,7 @@ class UnitsViewsSet(viewsets.ModelViewSet):
 class PHViewSets(viewsets.ModelViewSet):
     queryset = Entity.objects.all()
     serializer_class = GetEntitySerializers
+    permission_classes = [IsAuthenticated]
 
     def list(self, request, *args, **kwargs):
         # Filter to get the category with the name "PH"
@@ -215,6 +220,7 @@ class SeasonsViewSets(viewsets.ModelViewSet):
     serializer_class = GetSeasonsSerializer
     queryset = Seasons.objects.all()
     permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrAdminOrDirectorOrOperator]
 
     def list(self, request, *args, **kwargs):
         try:
@@ -263,7 +269,7 @@ class SpeciesListView(viewsets.ModelViewSet):
     queryset = Species.objects.all()
     serializer_class = SpeciesSerializer
     # IsAdmin,
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrAdminOrDirectorOrOperator]
 
     def get_object(self, *args, **kwargs):
         id = self.request.query_params.get("species_id", None)
@@ -325,7 +331,7 @@ class SpeciesListView(viewsets.ModelViewSet):
 class LicenceRegulatoryHuntingPackageSpecies(viewsets.ModelViewSet):
     serializer_class = GetRegulatoryHuntingPackageSpeciesSerializers
     queryset = RegulatoryHuntingPackageSpecies.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrAdminOrDirectorOrOperator]
 
     def list(self, request, *args, **kwargs):
         quota_id = self.request.query_params.get("quota_id", None)
@@ -348,7 +354,7 @@ class EntityCateriesView(viewsets.ModelViewSet):
 class HutingAreaViewSets(viewsets.ModelViewSet):
     serializer_class = HutingAreaSerializers
     queryset = HuntingArea.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrAdminOrDirectorOrOperator]
 
     def list(self, request, *args, **kwargs):
         # get all huting areas
@@ -428,7 +434,7 @@ class HutingAreaViewSets(viewsets.ModelViewSet):
 class RegulatoryHuntingPackageViewSets(viewsets.ModelViewSet):
     serializer_class = GetRegulatoryHuntingPackageSerializers
     queryset = RegulatoryHuntingpackage.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrAdminOrDirectorOrOperator]
 
     def list(self, request, *args, **kwargs):
         # get all huting areas
@@ -484,7 +490,7 @@ class RegulatoryHuntingPackageViewSets(viewsets.ModelViewSet):
 class LicenceAreaSpeciesView(viewsets.ModelViewSet):
     serializer_class = GetRegulatoryHuntingPackageSpeciesSerializers
     queryset = RegulatoryHuntingPackageSpecies.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrAdminOrDirectorOrOperator]
 
     def list(self, request, *args, **kwargs):
         area_id = self.request.query_params.get("area_id", None)
@@ -536,7 +542,7 @@ class LicenceAreaSpeciesView(viewsets.ModelViewSet):
 class SalesPackageSpeciesView(viewsets.ModelViewSet):
     serializer_class = GetSalesPackageSpeciesSerializer
     queryset = SalesPackageSpecies.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrAdminOrDirectorOrOperator]
 
     def list(self, request, *args, **kwargs):
         sales_package_id = self.request.query_params.get("sales_package_id", None)
@@ -562,7 +568,7 @@ class SalesPackageSpeciesView(viewsets.ModelViewSet):
 class SafaryExtrasViewSets(viewsets.ModelViewSet):
     queryset = SafaryExtras.objects.filter().order_by("-created_at")
     serializer_class = GetSafaryExtrasSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrAdminOrDirectorOrOperator]
 
     def list(self, request, *args, **kwargs):
         # get all huting areas

@@ -49,50 +49,55 @@ def format_any_date(date):
         raise ValueError("Unsupported date type. Must be a string or datetime object.")
 
 
-# from django.utils import timezone
-# from datetime import datetime, timedelta
-# from your_app.models import Quota  # Replace 'your_app' with your actual app name
-
-
 class CurrentQuota:
-    from bm_hunting_settings.models import Quota
 
-    current_date = timezone.now().date()
+    @staticmethod
+    def get_current_quota():
+        current_date = timezone.now().date()
+        from bm_hunting_settings.models import Quota
 
-    # Fetch the current valid quota
-    current_quota = None
-    quotas = Quota.objects.all()
+        # Fetch currently valid quotas (those that have started and have not ended)
+        current_quotas = Quota.objects.filter(
+            start_date__lte=current_date, end_date__gte=current_date
+        )
 
-    try:
-        for q in quotas:
-            if q.end_date >= current_date:  # Check if the quota is still valid
-                current_quota = q
-                break
-
-        # If no valid quota exists, create one
-        if not current_quota:
-            # Define the start and end dates for the new quota
-            current_year = current_date.year
-            start_date = datetime(current_year, 7, 1)  # July 1 of the current year
-            end_date = datetime(current_year + 1, 6, 30)  # June 30 of the next year
-
-            # Check if a quota for this period already exists
-            existing_quota = Quota.objects.filter(
-                start_date=start_date, end_date=end_date
-            ).exists()
-
-            if not existing_quota:
-                # Create the new quota
-                current_quota = Quota.objects.create(
-                    start_date=start_date,
-                    end_date=end_date,
-                    name=f"Quota for {current_year}",
-                )
-                print(f"Created a new quota: {current_quota}")
-            else:
-                print("Quota for the next year already exists.")
-        else:
+        if current_quotas.exists():
+            current_quota = (
+                current_quotas.first()
+            )  # You can modify this to get the desired one if multiple exist
             print(f"Current valid quota: {current_quota}")
+            return current_quota
 
-    except Quota.DoesNotExist:
-        CurrentQuota = None
+        # If no current quota exists, check for future quotas
+        future_quotas = Quota.objects.filter(start_date__gt=current_date)
+
+        if future_quotas.exists():
+            print("No current quota exists; the next quota starts in the future.")
+            return None
+
+        # If no valid or future quota exists, create a new quota for the next period
+        current_year = current_date.year
+        start_date = datetime(current_year, 7, 1).date()  # July 1 of the current year
+        end_date = datetime(current_year + 1, 6, 30).date()  # June 30 of the next year
+
+        # Check if a quota for this period already exists
+        existing_quota = Quota.objects.filter(
+            start_date=start_date, end_date=end_date
+        ).exists()
+
+        if not existing_quota:
+            # Create the new quota
+            new_quota = Quota.objects.create(
+                start_date=start_date,
+                end_date=end_date,
+                name=f"Quota for {current_year}",
+            )
+            print(f"Created a new quota: {new_quota}")
+            return new_quota
+        else:
+            print("Quota for the next year already exists.")
+            return None
+
+
+# Example usage:
+# current_quota_instance = CurrentQuota.get_current_quota()

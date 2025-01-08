@@ -5,7 +5,7 @@ from .views import (
     SalesConfirmationProposalSafaryExtrasViewSets,
     SalesConfirmationViewSet,
     CalculateTotalSalesAmount,
-    SalesConfirmation,
+    FinalSalesConfirmationStatusViewSet,
     GetCalendaStats,
     SalesConfirmationAccommodationViewSets,
     SalesConfirmationChartersPriceViewSet,
@@ -27,7 +27,9 @@ from .other_views.companion_observer_views import (
 router = routers.DefaultRouter()
 router.register(r"sales-confirmation-vset", SalesConfirmationViewSet)
 router.register(
-    r"sales-confirmation-status-vset", SalesConfirmation, basename="sales-confirmation"
+    r"sales-confirmation-status-vset",
+    FinalSalesConfirmationStatusViewSet,
+    basename="sales-confirmation",
 )
 router.register(r"calendar-stats-vset", GetCalendaStats, basename="calendar-stats")
 router.register(

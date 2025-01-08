@@ -1,5 +1,6 @@
 from rest_framework import viewsets
 
+from authentication.permissions import IsOwnerOrAdminOrDirectorOrOperator
 from bm_hunting_settings.models import IdentityType
 from sales.helpers import SalesHelper
 from sales.models import Entity, EntityCategories
@@ -27,7 +28,7 @@ from rest_framework.permissions import IsAuthenticated
 class SalesConfirmationCompanionViewSets(viewsets.ModelViewSet):
     queryset = SalesConfirmationCompanions.objects.all()
     serializer_class = GetSalesConfirmationCompanionsSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrAdminOrDirectorOrOperator]
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
@@ -145,7 +146,7 @@ class SalesConfirmationCompanionViewSets(viewsets.ModelViewSet):
 class SalesConfirmationProposalObserversViewSets(viewsets.ModelViewSet):
     queryset = SalesConfirmationProposalObserver.objects.all()
     serializer_class = GetSalesConfirmationProposalObserverSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrAdminOrDirectorOrOperator]
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()

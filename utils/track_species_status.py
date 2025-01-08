@@ -21,7 +21,7 @@ class TrackSpeciesStatus:
         """
         from utils.utitlities import CurrentQuota
 
-        current_quota = CurrentQuota.current_quota
+        current_quota = CurrentQuota.get_current_quota()
 
         try:
             sales_inquiry = SalesInquiry.objects.get(
@@ -184,8 +184,9 @@ class TrackSpeciesStatus:
         based on the sold species quantity from the sales inquiry, depending on the status.
         """
         current_year = timezone.now().year
+        from utils.utitlities import CurrentQuota
 
-        current_quota = Quota.objects.filter(start_date__year=current_year).first()
+        current_quota = CurrentQuota.get_current_quota()
 
         try:
             species_status = SalesQuotaSpeciesStatus.objects.get(
@@ -234,7 +235,6 @@ class TrackSpeciesStatus:
                     game,
                 )
             except ValueError as e:
-                print(e)
                 raise ValueError(f"Failed to take back species quantity to quota: {e}")
 
         else:
@@ -263,7 +263,7 @@ class TrackSpeciesStatus:
         """
         from utils.utitlities import CurrentQuota
 
-        current_quota = CurrentQuota.current_quota
+        current_quota = CurrentQuota.get_current_quota()
 
         # if game_state == "completed":
         # then check for all remaing comfirmed quantity and return it for specific sales proposal, quota and area

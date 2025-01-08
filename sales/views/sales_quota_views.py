@@ -1,3 +1,8 @@
+from authentication.permissions import (
+    IsAdmin,
+    IsOwnerOrAdmin,
+    IsOwnerOrAdminOrDirectorOrOperator,
+)
 from bm_hunting_settings.models import (
     HuntingArea,
     HuntingQuatasArea,
@@ -24,7 +29,7 @@ from django.db.models import Case, When, IntegerField
 class QuotaViewSets(viewsets.ModelViewSet):
     serializer_class = GetQuotaSerializer
     queryset = Quota.objects.filter().order_by("-create_at")
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrAdminOrDirectorOrOperator]
 
     def list(self, request, *args, **kwargs):
         quota_id = request.query_params.get("quota_id", None)
@@ -96,12 +101,12 @@ class QuotaHuntingAreaSpeciesViewSets(viewsets.ModelViewSet):
 
     queryset = QuotaHuntingAreaSpecies.objects.all()
     serializer_class = QuotaHuntingAreaSpeciesSerializers
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
 
     def list(self, request, *args, **kwargs):
         from utils.utitlities import CurrentQuota
 
-        current_quota = CurrentQuota.current_quota
+        current_quota = CurrentQuota.get_current_quota()
 
         current_year = timezone.now().year
         quota_id = request.query_params.get("quota_id")

@@ -21,8 +21,8 @@ from .views import (
     AccommodationTypeViewSets,
     SalesChartersPriceListViewSet,
 )
-from .views import country_list, nationalities, contactTypes, entityBySalesEquiry
-from .other_views.priceList_views import PricesListListView, CreatePriceListViewSet
+from .views import country_list, nationalities, contactTypes, entityBySalesEnquiry
+from .other_views.priceList_views import PricesListView, CreatePriceListViewSet
 from .other_views.sales_package import SalesPackageViewSet
 
 
@@ -38,7 +38,7 @@ router.register(
     RegulatoryHuntingPackageViewSets,
     basename="regulatory_hunting_packages",
 )
-router.register(r"price-list", PricesListListView)
+router.register(r"price-list", PricesListView)
 router.register(r"create-price-list", CreatePriceListViewSet)
 router.register(r"hunting-types", HuntingTypesViewSets)
 router.register(r"currencies", CurrencyViewSets)
@@ -76,5 +76,5 @@ urlpatterns = [
     path("countries/", country_list, name="country-list"),
     path("nationalities/", nationalities, name="nationalities"),
     path("contact-types/", contactTypes, name="contact_types"),
-    path("sales-inquiry-entity/", entityBySalesEquiry, name="species_list"),
+    path("sales-inquiry-entity/", entityBySalesEnquiry, name="species_list"),
 ]

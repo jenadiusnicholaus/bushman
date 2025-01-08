@@ -1,3 +1,4 @@
+from authentication.permissions import IsOwnerOrAdminOrDirectorOrOperator
 from bm_hunting_settings.serializers import (
     CreateGeoLocationsSerializers,
     CreateLocationSerializer,
@@ -37,7 +38,7 @@ from utils.track_species_status import TrackSpeciesStatus
 class SalesConfirmationContractviewSet(viewsets.ModelViewSet):
     queryset = SalesConfirmationContract.objects.all()
     serializer_class = GetSalesConfirmationContractSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrAdminOrDirectorOrOperator]
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
@@ -78,7 +79,7 @@ class SalesConfirmationContractviewSet(viewsets.ModelViewSet):
 class EntityContractPermitViewset(viewsets.ModelViewSet):
     queryset = EntityContractPermit.objects.all()
     serializer_class = GetEntityContractPermitSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrAdminOrDirectorOrOperator]
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
@@ -147,7 +148,7 @@ class EntityContractPermitViewset(viewsets.ModelViewSet):
 class ClientGameActivityViewset(viewsets.ModelViewSet):
     queryset = GameActivity.objects.all()
     serializer_class = GetGameActivitySerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrAdminOrDirectorOrOperator]
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
@@ -300,7 +301,7 @@ class ClientGameActivityViewset(viewsets.ModelViewSet):
 class GameActivityRegistrationForWebPlatFormvieSet(viewsets.ModelViewSet):
     queryset = GameActivity.objects.all()
     serializer_class = GetGameActivitySerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrAdminOrDirectorOrOperator]
 
     def create(self, request, *args, **kwargs):
         game_activity_data = {
@@ -488,7 +489,7 @@ class GameActivityRegistrationForWebPlatFormvieSet(viewsets.ModelViewSet):
 class InitiateClientGameViewSet(generics.CreateAPIView):
     queryset = GameActivity.objects.all()
     serializer_class = GetGameActivitySerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrAdminOrDirectorOrOperator]
     allowed_methods = "POST"
 
     def create(self, request, *args, **kwargs):

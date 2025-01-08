@@ -31,7 +31,7 @@ from rest_framework.views import APIView
 class ApprovalChainModuleViewSet(viewsets.ModelViewSet):
     serializer_class = GetApprovalChainModuleSerializer
     queryset = ApprovalChainModule.objects.all()
-    permission_classes = [IsAuthenticated, IsValidLogin, IsAdmin]
+    permission_classes = [IsAuthenticated, IsAdmin]
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
@@ -136,7 +136,7 @@ class ApprovalChainModuleViewSet(viewsets.ModelViewSet):
 class GetApprovalRoleApiView(APIView):
     serializer_class = GetApprovalChainRoleSerializer
     queryset = ApprovalChainRole.objects.all()
-    permission_classes = [IsAuthenticated, IsValidLogin, IsAdmin]
+    permission_classes = [IsAuthenticated, IsAdmin]
 
     def get(self, request, *args, **kwargs):
         objects = ApprovalChainRole.objects.all()

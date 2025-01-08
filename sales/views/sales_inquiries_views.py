@@ -37,12 +37,16 @@ from django.utils import timezone
 from django.db.models import Q
 
 from utils.pdf import SalesInquiryPDF
+from authentication.permissions import IsOwnerOrAdmin
 
 
 class SalesInquiriesViewSet(viewsets.ModelViewSet):
     queryset = SalesInquiry.objects.filter().order_by("-created_date")
     serializer_class = GetSalesInquirySerializers
-    permission_classes = [IsAuthenticated]
+    permission_classes = [
+        IsAuthenticated,
+        IsOwnerOrAdmin,
+    ]
 
     from django.db.models import Q
 
@@ -364,7 +368,7 @@ class SalesInquiriesViewSet(viewsets.ModelViewSet):
 class SalesInquiriesClientBasicinfosViewSet(viewsets.ModelViewSet):
     queryset = Entity.objects.all()
     serializer_class = GetEntitySerializers
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
 
     def list(self, request, *args, **kwargs):
         entity_id = request.query_params.get("entity_id", None)
@@ -453,7 +457,7 @@ class SalesInquiriesClientBasicinfosViewSet(viewsets.ModelViewSet):
 class SearchSalesInquiriesViewSet(viewsets.ModelViewSet):
     queryset = SalesInquiry.objects.all()
     serializer_class = GetSalesInquirySerializers
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
 
     def list(self, request, *args, **kwargs):
         queryset = self.queryset.all().order_by(
@@ -472,7 +476,7 @@ class SearchSalesInquiriesViewSet(viewsets.ModelViewSet):
 class SalesClientContactsViewSet(viewsets.ModelViewSet):
     queryset = Contacts.objects.all()
     serializer_class = GetContactsSerializers
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
 
     def list(self, request, *args, **kwargs):
         entity_id = request.query_params.get("entity_id", None)
@@ -597,7 +601,7 @@ class SalesClientContactsViewSet(viewsets.ModelViewSet):
 class SalesIquiryPreferenceViewSet(viewsets.ModelViewSet):
     queryset = SalesIquiryPreference.objects.all()
     serializer_class = SalesIquiryPreferenceSerializers
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
 
     def list(self, request, *args, **kwargs):
         sales_inquiry_id = request.query_params.get("sales_inquiry_id", None)

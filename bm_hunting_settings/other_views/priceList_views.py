@@ -2,6 +2,8 @@ from rest_framework import status
 from rest_framework.response import Response
 from django.db import transaction
 
+from authentication.permissions import IsDirector, IsOwnerOrAdmin
+
 # from utils.utitlities import CurrentQuota
 from ..other_serializers.price_list_serializers import (
     CreateHuntingPackageCompanionsHunterSerializer,
@@ -36,7 +38,7 @@ class CreatePriceListViewSet(viewsets.ModelViewSet):
     queryset = HuntingPriceList.objects.filter(
         hunting_price_list_type__hunting_price_list_type_package__sales_package__sales_quota__start_date__year=current_year
     )
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
 
     def create(self, request, *args, **kwargs):
         # sales_package_data = {
@@ -190,10 +192,10 @@ class CreatePriceListViewSet(viewsets.ModelViewSet):
         )
 
 
-class PricesListListView(viewsets.ModelViewSet):
+class PricesListView(viewsets.ModelViewSet):
     serializer_class = GetHuntingPriceTypePackageSerializer
     queryset = HuntingPriceTypePackage.objects.all().order_by("-create_date")
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsDirector]
 
     def get_queryset(self):
         return (

@@ -2,6 +2,7 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from django.db import transaction
 
+from authentication.permissions import IsOperator, IsOwnerOrAdmin, IsOwnerOrAdminOrDirectorOrOperator
 from bm_hunting_settings.models import SalesPackages
 from bm_hunting_settings.other_serializers.price_list_serializers import (
     CreateSalesPackageSerializer,
@@ -9,10 +10,13 @@ from bm_hunting_settings.other_serializers.price_list_serializers import (
     GetSalesPackageSerializer,
 )
 
+from rest_framework.permissions import IsAuthenticated
+
 
 class SalesPackageViewSet(viewsets.ModelViewSet):
     queryset = SalesPackages.objects.filter().order_by("-created_at")
     serializer_class = GetSalesPackageSerializer
+    permission_classes = [IsAuthenticated, IsOwnerOrAdminOrDirectorOrOperator]
 
     def create(self, request, *args, **kwargs):
         sales_package_data = {

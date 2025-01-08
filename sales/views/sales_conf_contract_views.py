@@ -1,3 +1,4 @@
+from authentication.permissions import IsOwnerOrAdmin
 from bm_hunting_settings.serializers import (
     CreateGeoLocationsSerializers,
     CreateLocationSerializer,
@@ -34,7 +35,7 @@ from rest_framework import generics
 class SalesConfirmationContractviewSet(viewsets.ModelViewSet):
     queryset = SalesConfirmationContract.objects.all()
     serializer_class = GetSalesConfirmationContractSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
@@ -69,7 +70,7 @@ class SalesConfirmationContractviewSet(viewsets.ModelViewSet):
 class EntityContractPermitViewset(viewsets.ModelViewSet):
     queryset = EntityContractPermit.objects.all()
     serializer_class = GetEntityContractPermitSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
@@ -135,163 +136,163 @@ class EntityContractPermitViewset(viewsets.ModelViewSet):
 
 
 #  to rethink this viewset
-class ClientGameActivityViewset(viewsets.ModelViewSet):
-    queryset = GameActivity.objects.all()
-    serializer_class = GetGameActivitySerializer
-    permission_classes = [IsAuthenticated]
+# class ClientGameActivityViewset(viewsets.ModelViewSet):
+#     queryset = GameActivity.objects.all()
+#     serializer_class = GetGameActivitySerializer
+#     permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
 
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
-        response_data = []
-        for data in serializer.data:
-            pdf_file = GamePDF.generate_pdf(data, return_type="base64")
-            data["pdf"] = pdf_file["pdf"]
-            response_data.append(data)
+#     def list(self, request, *args, **kwargs):
+#         queryset = self.get_queryset()
+#         serializer = self.get_serializer(queryset, many=True)
+#         response_data = []
+#         for data in serializer.data:
+#             pdf_file = GamePDF.generate_pdf(data, return_type="base64")
+#             data["pdf"] = pdf_file["pdf"]
+#             response_data.append(data)
 
-        return Response(response_data, status=status.HTTP_200_OK)
+#         return Response(response_data, status=status.HTTP_200_OK)
 
-    def create(self, request, *args, **kwargs):
-        # Prepare data for game activity, geo location, location, and game killed activity
-        game_activity_data = {
-            "entity_contract_permit": request.data.get("entity_contract_permit_id"),
-            "client": request.data.get("client_id"),
-            "start_date": request.data.get("start_date"),
-            "end_date": request.data.get("end_date"),
-        }
-        geo_location_data = {
-            "coordinates_type": request.data.get("coordinates_type"),
-            "coordinates": request.data.get("coordinates"),
-        }
-        location_data = {
-            "location_type": request.data.get("location_type", None),
-            "geo_coordinates": None,
-            "is_disabled": request.data.get("is_disabled", False),
-        }
-        game_killed_activity_data = {
-            "game_killed_registration": None,
-            "species": request.data.get("species_id"),
-            "quantity": request.data.get("quantity"),
-            "location": None,
-            "area": request.data.get("area_id"),
-            "time": request.data.get("time"),
-            "date": request.data.get("date"),
-            "weapon_used": request.data.get("weapon_used"),
-            "description": request.data.get("description"),
-            "user": request.user.id,
-            "spacies_gender": request.data.get("spacies_gender"),
-            "status": request.data.get("status"),
-        }
+#     def create(self, request, *args, **kwargs):
+#         # Prepare data for game activity, geo location, location, and game killed activity
+#         game_activity_data = {
+#             "entity_contract_permit": request.data.get("entity_contract_permit_id"),
+#             "client": request.data.get("client_id"),
+#             "start_date": request.data.get("start_date"),
+#             "end_date": request.data.get("end_date"),
+#         }
+#         # geo_location_data = {
+#         #     "coordinates_type": request.data.get("coordinates_type"),
+#         #     "coordinates": request.data.get("coordinates"),
+#         # }
+#         # location_data = {
+#         #     "location_type": request.data.get("location_type", None),
+#         #     "geo_coordinates": None,
+#         #     "is_disabled": request.data.get("is_disabled", False),
+#         # }
+#         # game_killed_activity_data = {
+#         #     "game_killed_registration": None,
+#         #     "species": request.data.get("species_id"),
+#         #     "quantity": request.data.get("quantity"),
+#         #     "location": None,
+#         #     "area": request.data.get("area_id"),
+#         #     "time": request.data.get("time"),
+#         #     "date": request.data.get("date"),
+#         #     "weapon_used": request.data.get("weapon_used"),
+#         #     "description": request.data.get("description"),
+#         #     "user": request.user.id,
+#         #     "spacies_gender": request.data.get("spacies_gender"),
+#         #     "status": request.data.get("status"),
+#         # }
 
-        # Use transaction.atomic() to manage rollback on failure
-        with transaction.atomic():
-            # 1. Validate and save the game activity
-            game_activity_serializer = CreateGameActivitySerializer(
-                data=game_activity_data
-            )
-            if not game_activity_serializer.is_valid():
-                return Response(
-                    game_activity_serializer.errors, status=status.HTTP_400_BAD_REQUEST
-                )
+#         # Use transaction.atomic() to manage rollback on failure
+#         with transaction.atomic():
+#             # 1. Validate and save the game activity
+#             game_activity_serializer = CreateGameActivitySerializer(
+#                 data=game_activity_data
+#             )
+#             if not game_activity_serializer.is_valid():
+#                 return Response(
+#                     game_activity_serializer.errors, status=status.HTTP_400_BAD_REQUEST
+#                 )
 
-            saved_game_activity_obj = game_activity_serializer.save()
+#             saved_game_activity_obj = game_activity_serializer.save()
 
-            # 2. Validate and save the geo location
-            geo_location_serializer = CreateGeoLocationsSerializers(
-                data=geo_location_data
-            )
-            if not geo_location_serializer.is_valid():
-                saved_game_activity_obj.delete()  # Rollback saved game activity object
-                return Response(
-                    geo_location_serializer.errors, status=status.HTTP_400_BAD_REQUEST
-                )
+#             # 2. Validate and save the geo location
+#             # geo_location_serializer = CreateGeoLocationsSerializers(
+#             #     data=geo_location_data
+#             # )
+#             # if not geo_location_serializer.is_valid():
+#             #     saved_game_activity_obj.delete()  # Rollback saved game activity object
+#             #     return Response(
+#             #         geo_location_serializer.errors, status=status.HTTP_400_BAD_REQUEST
+#             #     )
 
-            saved_geo_location_obj = geo_location_serializer.save()
+#             # saved_geo_location_obj = geo_location_serializer.save()
 
-            # 3. Validate and save the location
-            location_data["geo_coordinates"] = saved_geo_location_obj.id
-            location_serializer = CreateLocationSerializer(data=location_data)
-            if not location_serializer.is_valid():
-                saved_game_activity_obj.delete()
-                saved_geo_location_obj.delete()
-                return Response(
-                    location_serializer.errors, status=status.HTTP_400_BAD_REQUEST
-                )
+#             # # 3. Validate and save the location
+#             # location_data["geo_coordinates"] = saved_geo_location_obj.id
+#             # location_serializer = CreateLocationSerializer(data=location_data)
+#             # if not location_serializer.is_valid():
+#             #     saved_game_activity_obj.delete()
+#             #     saved_geo_location_obj.delete()
+#             #     return Response(
+#             #         location_serializer.errors, status=status.HTTP_400_BAD_REQUEST
+#             #     )
 
-            saved_location_obj = location_serializer.save()
+#             # saved_location_obj = location_serializer.save()
 
-            # 4. Validate and save the game killed activity
-            game_killed_activity_data["location"] = saved_location_obj.id
-            game_killed_activity_data["game_killed_registration"] = (
-                saved_game_activity_obj.id
-            )
-            game_killed_activity_serializer = CreateGameKilledActivitySerializer(
-                data=game_killed_activity_data
-            )
-            if not game_killed_activity_serializer.is_valid():
-                saved_game_activity_obj.delete()
-                saved_geo_location_obj.delete()
-                saved_location_obj.delete()
-                return Response(
-                    game_killed_activity_serializer.errors,
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+#             # # 4. Validate and save the game killed activity
+#             # game_killed_activity_data["location"] = saved_location_obj.id
+#             # game_killed_activity_data["game_killed_registration"] = (
+#             #     saved_game_activity_obj.id
+#             # )
+#             # game_killed_activity_serializer = CreateGameKilledActivitySerializer(
+#             #     data=game_killed_activity_data
+#             # )
+#             # if not game_killed_activity_serializer.is_valid():
+#             #     saved_game_activity_obj.delete()
+#             #     saved_geo_location_obj.delete()
+#             #     saved_location_obj.delete()
+#             #     return Response(
+#             #         game_killed_activity_serializer.errors,
+#             #         status=status.HTTP_400_BAD_REQUEST,
+#             #     )
 
-            saved_game_killed_activity_obj = game_killed_activity_serializer.save()
+#             # saved_game_killed_activity_obj = game_killed_activity_serializer.save()
 
-            # 5. Validate and save the game activity professional hunter
-            # is possible to have multiple professional hunters for a game activity
+#             # 5. Validate and save the game activity professional hunter
+#             # is possible to have multiple professional hunters for a game activity
 
-            professional_hunters_ids = request.data.get("professional_hunters_ids")
-            if professional_hunters_ids:
-                for ph_id in professional_hunters_ids:
-                    game_activity_professional_hunter_data = {
-                        "game_activity": saved_game_activity_obj.id,
-                        "ph": ph_id,
-                    }
-                    game_activity_professional_hunter_serializer = (
-                        CreateGameActivityProfessionalHunterSerializer(
-                            data=game_activity_professional_hunter_data
-                        )
-                    )
-                    if not game_activity_professional_hunter_serializer.is_valid():
-                        saved_game_activity_obj.delete()
-                        saved_geo_location_obj.delete()
-                        saved_location_obj.delete()
-                        saved_game_killed_activity_obj.delete()
-                        return Response(
-                            game_activity_professional_hunter_serializer.errors,
-                            status=status.HTTP_400_BAD_REQUEST,
-                        )
+#             professional_hunters_ids = request.data.get("professional_hunters_ids")
+#             if professional_hunters_ids:
+#                 for ph_id in professional_hunters_ids:
+#                     game_activity_professional_hunter_data = {
+#                         "game_activity": saved_game_activity_obj.id,
+#                         "ph": ph_id,
+#                     }
+#                     game_activity_professional_hunter_serializer = (
+#                         CreateGameActivityProfessionalHunterSerializer(
+#                             data=game_activity_professional_hunter_data
+#                         )
+#                     )
+#                     if not game_activity_professional_hunter_serializer.is_valid():
+#                         saved_game_activity_obj.delete()
+#                         # saved_geo_location_obj.delete()
+#                         # saved_location_obj.delete()
+#                         # saved_game_killed_activity_obj.delete()
+#                         return Response(
+#                             game_activity_professional_hunter_serializer.errors,
+#                             status=status.HTTP_400_BAD_REQUEST,
+#                         )
 
-                    saved_game_activity_professional_hunter_obj = (
-                        game_activity_professional_hunter_serializer.save()
-                    )
-                    # 6. Return the saved game activity data
-                    return Response(
-                        {
-                            "message": "Game activity created successfully",
-                            "data": game_activity_serializer.data,
-                        },
-                        status=status.HTTP_201_CREATED,
-                    )
+#                     saved_game_activity_professional_hunter_obj = (
+#                         game_activity_professional_hunter_serializer.save()
+#                     )
+#                     # 6. Return the saved game activity data
+#                     return Response(
+#                         {
+#                             "message": "Game activity created successfully",
+#                             "data": game_activity_serializer.data,
+#                         },
+#                         status=status.HTTP_201_CREATED,
+#                     )
 
-        return Response(
-            {
-                "message": "Game activity created successfully",
-                "data": game_activity_serializer.data,
-            },
-            status=status.HTTP_201_CREATED,
-        )
+#         return Response(
+#             {
+#                 "message": "Game activity created successfully",
+#                 "data": game_activity_serializer.data,
+#             },
+#             status=status.HTTP_201_CREATED,
+#         )
 
-    #
+#     #
 
 
 # to rethink this viewset
 class GameActivityRegistrationForWebPlatFormvieSet(viewsets.ModelViewSet):
     queryset = GameActivity.objects.all()
     serializer_class = GetGameActivitySerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
 
     def create(self, request, *args, **kwargs):
         game_activity_data = {
@@ -472,7 +473,7 @@ class GameActivityRegistrationForWebPlatFormvieSet(viewsets.ModelViewSet):
 class InitiateClientGameViewSet(generics.CreateAPIView):
     queryset = GameActivity.objects.all()
     serializer_class = GetGameActivitySerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
     allowed_methods = "POST"
 
     def create(self, request, *args, **kwargs):
@@ -533,7 +534,7 @@ class GameActivitiesViewSet(viewsets.ModelViewSet):
 
     queryset = GameKilledActivity.objects.all()
     serializer_class = GetGameKilledActivitySerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
 
     def list(self, request, *args, **kwargs):
         game_activity_id = self.request.query_params.get("game_activity_id")

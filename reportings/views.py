@@ -19,7 +19,7 @@ class QuotaStatsViewSets(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         from utils.utitlities import CurrentQuota
 
-        current_quota = CurrentQuota.current_quota
+        current_quota = CurrentQuota.get_current_quota()
         queryset = self.get_queryset().filter(id=current_quota.id)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
